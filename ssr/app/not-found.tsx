@@ -17,8 +17,11 @@ export default async function NotFound() {
     <div className="flex min-h-screen relative items-end py-10 overflow-hidden justify-center bg-[#E8E8E8] font-sans dark:bg-black">
       <Image
         src="/moonNotFound.png"
-        className=" absolute top-[200px] -rotate-65 opacity-10"
+        className=" absolute top-[200px] -rotate-65 "
         alt="Not Found"
+        style={{
+          opacity: 0.25,
+        }}
         width={1400}
         height={1200}
       />
