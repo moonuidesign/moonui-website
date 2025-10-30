@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1760855328372,
+      "tag": "0000_tranquil_synch",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1760858346636,
+      "tag": "0001_marvelous_wolfsbane",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760861648620,
+      "tag": "0002_wandering_steel_serpent",
+      "breakpoints": true
+    }
+  ]
+}
