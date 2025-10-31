@@ -2,14 +2,14 @@ import Image from 'next/image';
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <div className="flex min-h-screen w-full items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+      <main className="flex w-full max-w-[1440px] max-h-[400px] flex-col items-center justify-center gap-16 py-32 px-16 bg-white dark:bg-black">
         <Image
-          className="dark:invert"
+          className="w-full h-full "
           src="/next.svg"
           alt="Next.js logo"
-          width={100}
-          height={20}
+          width={1000}
+          height={2000}
           priority
         />
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
