@@ -21,10 +21,11 @@ export default function NotFound() {
       {/* <Meteors /> */}
       <Image
         src="/moonNotFound.png"
-        className="absolute top-[25%] left-1/2 w-[120%] h-[180%] -translate-x-1/2 -rotate-65" // PERUBAIKAN: Koreksi translate-x untuk pemusatan yang benar
+        className="absolute top-[25%]  left-1/2 w-[120%] h-[180%] -translate-x-1/2 -rotate-65" // PERUBAIKAN: Koreksi translate-x untuk pemusatan yang benar
         alt="Not Found"
         style={{
           opacity: 0.25,
+          zIndex: 0,
         }}
         width={1400}
         height={1200}
@@ -41,7 +42,7 @@ export default function NotFound() {
         >
           404
         </FuzzyText>
-        <div className="flex mt-10 flex-row items-center gap-3">
+        <div className="flex mt-10 flex-row items-center gap-1">
           <h2 className="text-[30px] font-sans font-semibold">
             We’re almost ready to launch
           </h2>
@@ -52,7 +53,7 @@ export default function NotFound() {
             height={40}
           />
         </div>
-        <div className="text-[18px] gap-2 w-full flex flex-row text-[#707070] justify-center items-center font-jakarta font-light">
+        <div className="text-[18px] gap-1 w-full flex flex-row text-[#707070] justify-center items-center font-jakarta font-light">
           <p>Get</p>
           <div className="flex  flex-row">
             <p className="font-medium text-[#2E2E2E]">latest updates</p>
@@ -66,7 +67,7 @@ export default function NotFound() {
           <p className="font-medium text-[#2E2E2E]">exclusive</p>
           <p>offers from MoonUI Design.</p>
         </div>
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col mt-8 items-center gap-3">
           <div className="flex items-center gap-3 rounded-xl bg-white p-2 shadow-md">
             <span>
               <Mail className="text-[#E8E8E8]" size={30} />
@@ -87,13 +88,15 @@ export default function NotFound() {
       <div className=" flex gap-4 ">
         <Link
           href="x.com/moonuidesign"
-          className="flex items-center gap-2 rounded-[9px] bg-[#8A7F8D] w-[32px] h-[32px] justify-center text-white"
+          target="_blank"
+          className="flex items-center z-2 gap-2 rounded-[9px] bg-[#8A7F8D] w-[32px] h-[32px] justify-center text-white"
         >
           <Image src="/x.svg" width={18} height={18} alt="Social Media X" />
         </Link>
         <Link
           href="instagram.com/moonuidesign"
-          className="flex items-center gap-2 rounded-[9px] bg-white w-[32px] h-[32px] justify-center text-[#8A7F8D]"
+          target="_blank"
+          className="flex items-center z-2 gap-2 rounded-[9px] bg-white w-[32px] h-[32px] justify-center text-[#8A7F8D]"
         >
           <Image
             src="/instagram.svg"
@@ -104,7 +107,8 @@ export default function NotFound() {
         </Link>
         <Link
           href="dribbble.com/moonuidesign"
-          className="flex items-center gap-2 rounded-[9px] bg-white w-[32px] h-[32px] justify-center text-[#8A7F8D]"
+          target="_blank"
+          className="flex items-center z-2 gap-2 rounded-[9px] bg-white w-[32px] h-[32px] justify-center text-[#8A7F8D]"
         >
           <Image
             src="/dribbble.svg"
