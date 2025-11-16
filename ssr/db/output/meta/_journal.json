@@ -15,6 +15,13 @@
       "when": 1763264347802,
       "tag": "0001_famous_senator_kelly",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763286737268,
+      "tag": "0002_strange_the_hand",
+      "breakpoints": true
     }
   ]
 }

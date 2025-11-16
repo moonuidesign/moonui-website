@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
+import { Suspense } from 'react';
+import { ToastNotifier } from '@/libs/toast';
+import { ToastContainer } from 'react-toastify';
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: '--font-plus-jakarta-sans',
@@ -37,6 +40,21 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${inter.variable} ${plusJakarta.variable} ${geistMono.variable} antialiased`}
       >
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+        <Suspense>
+          <ToastNotifier />
+        </Suspense>
         {children}
       </body>
     </html>

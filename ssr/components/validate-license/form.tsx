@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { FieldErrors, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTransition } from 'react';
 
@@ -13,7 +13,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import {
@@ -29,7 +28,7 @@ import { Loader2 } from 'lucide-react';
 import { validateLicenseAction } from '@/serverAction/ValidateLicense/verifyOtp';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
-import { Key, SecuritySafe } from 'iconsax-reactjs';
+import { SecuritySafe } from 'iconsax-reactjs';
 
 export function ValidateLicenseForm() {
   const [isPending, startTransition] = useTransition();
@@ -44,13 +43,26 @@ export function ValidateLicenseForm() {
   const onSubmit = (values: LicenseValidationSchema) => {
     startTransition(async () => {
       try {
-        await validateLicenseAction(values);
+        const result = await validateLicenseAction(values);
+        if (result.success) {
+          toast.success(result.message);
+        } else {
+          toast.error(result.message);
+        }
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : 'An unknown error occurred.',
         );
       }
     });
+  };
+
+  const onInvalidSubmit = (errors: FieldErrors<LicenseValidationSchema>) => {
+    // Ambil pesan error dari field 'licenseKey' dan tampilkan sebagai toast
+    if (errors.licenseKey) {
+      toast.error(errors.licenseKey.message);
+    }
+    // Jika ada field lain, Anda bisa menambahkan 'else if' di sini
   };
 
   return (
@@ -66,12 +78,15 @@ export function ValidateLicenseForm() {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <form
+            onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
+            className="space-y-5"
+          >
             <FormField
               control={form.control}
               name="licenseKey"
               render={({ field }) => (
-                <FormItem className="w-full h-[48px] relative flex justify-center items-center">
+                <FormItem className="w-full h-12 relative flex flex-col justify-center items-center">
                   <FormControl className="w-full h-full">
                     <Input
                       className="pl-10 rounded-[13px] bg-[#F7F7F7] border-[#E0E0E0] focus-visible:ring-[1px] focus-visible:ring-[#FD4F13] border-2"
@@ -82,8 +97,6 @@ export function ValidateLicenseForm() {
                   </FormControl>
 
                   <SecuritySafe className="absolute left-3 text-[#B8B8B8]" />
-
-                  <FormMessage />
                 </FormItem>
               )}
             />

@@ -16,13 +16,13 @@ import type { AdapterAccountType } from 'next-auth/adapters';
 // ENUMS (ENUMERASI)
 // =================================================================
 
-// export const typeEnum = pgEnum('type', ['figma', 'framer']);
+export const typeEnum = pgEnum('type', ['figma', 'framer']);
 
-// export const contentStatusEnum = pgEnum('content_status', [
-//   'draft',
-//   'published',
-//   'archived',
-// ]);
+export const contentStatusEnum = pgEnum('content_status', [
+  'draft',
+  'published',
+  'archived',
+]);
 
 // =================================================================
 // BAGIAN 1: PENGGUNA & OTENTIKASI
@@ -156,8 +156,8 @@ export const contentTemplates = pgTable('content_templates', {
   assetUrl: jsonb('asset_url').notNull(),
   urlPreview: text('url_preview'),
   compatibility: varchar('compatibility', { length: 100 }),
-  // type: typeEnum('type').notNull(),
-  // status: contentStatusEnum('status').default('draft').notNull(),
+  type: typeEnum('type').notNull(),
+  status: contentStatusEnum('status').default('draft').notNull(),
   viewCount: integer('view_count').default(0).notNull(),
 
   userId: text('user_id')
@@ -178,8 +178,8 @@ export const contentComponents = pgTable('content_components', {
   title: varchar('title', { length: 100 }).notNull(),
   slug: varchar('slug', { length: 120 }).unique().notNull(),
   imageUrl: text('image_url'),
-  // type: typeEnum('type').notNull(),
-  // status: contentStatusEnum('status').default('draft').notNull(),
+  type: typeEnum('type').notNull(),
+  status: contentStatusEnum('status').default('draft').notNull(),
   viewCount: integer('view_count').default(0).notNull(),
   copyCount: integer('copy_count').default(0).notNull(),
   userId: text('user_id')
@@ -326,7 +326,7 @@ export const categoryGradientsRelations = relations(
 // Relasi untuk Konten
 export const contentTemplatesRelations = relations(
   contentTemplates,
-  ({ one, many }) => ({
+  ({ one }) => ({
     user: one(users, {
       fields: [contentTemplates.userId],
       references: [users.id],
@@ -340,7 +340,7 @@ export const contentTemplatesRelations = relations(
 
 export const contentComponentsRelations = relations(
   contentComponents,
-  ({ one, many }) => ({
+  ({ one }) => ({
     user: one(users, {
       fields: [contentComponents.userId],
       references: [users.id],

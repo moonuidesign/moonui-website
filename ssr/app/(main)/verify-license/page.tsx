@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import Image from 'next/image';
 import { ValidateLicenseForm } from '@/components/validate-license/form';
 
 function FormSkeleton() {

@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import Image from 'next/image';
 import { VerifyLicenseOTPForm } from '@/components/otp-validate';
 
 function FormSkeleton() {

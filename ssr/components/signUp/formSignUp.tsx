@@ -4,7 +4,7 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 
 import {
   Form,
@@ -21,12 +21,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Lock1, Sms, User } from 'iconsax-reactjs';
-
+import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { RegisterSchema, RegisterSchemaType } from '@/types/register';
-import { registerWithGoogle } from '@/serverAction/Auth/signUp';
+import {
+  registerWithCredentials,
+  registerWithGoogle,
+} from '@/serverAction/Auth/signUp';
 import { Input } from '../ui/input';
+import { toast } from 'react-toastify';
 
 interface RegisterFormProps {
   signature?: string;
@@ -36,8 +40,7 @@ interface RegisterFormProps {
 
 export function RegisterForm({ signature, email }: RegisterFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+
   const form = useForm<RegisterSchemaType>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
@@ -50,27 +53,27 @@ export function RegisterForm({ signature, email }: RegisterFormProps) {
   });
 
   const onSubmit = (values: RegisterSchemaType) => {
-    setError('');
-    setSuccess('');
+    startTransition(async () => {
+      const result = await registerWithCredentials(values);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        const signInResult = await signIn('credentials', {
+          email: values.email,
+          password: values.password,
+          redirect: false,
+        });
 
-    // startTransition(async () => {
-    //   const result = await registerWithCredentials(values);
-    //   if (result.error) {
-    //     setError(result.error);
-    //   } else {
-    //     const signInResult = await signIn('credentials', {
-    //       email: values.email,
-    //       password: values.password,
-    //       redirect: false,
-    //     });
-
-    //     if (signInResult?.ok) {
-    //       window.location.href = '/dashboard';
-    //     } else {
-    //       setError(signInResult?.error || 'Login failed after registration.');
-    //     }
-    //   }
-    // });
+        if (signInResult?.ok) {
+          toast.error('Sukses mendaftar');
+          window.location.href = '/dashboard';
+        } else {
+          toast.error(
+            signInResult?.error || 'Login failed after registration.',
+          );
+        }
+      }
+    });
   };
 
   const onGoogleSubmit = (formData: FormData) => {

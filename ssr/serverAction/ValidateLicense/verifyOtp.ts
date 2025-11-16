@@ -16,11 +16,10 @@ import { ResponseAction } from '@/types/response-action';
 import redis from '@/libs/redis-local';
 
 const getOtpKey = (licenseKey: string) => `otp:${licenseKey}`;
-const getResendLimitKey = (licenseKey: string) => `resend-limit:${licenseKey}`;
 
 export async function validateLicenseAction(
   data: LicenseValidationSchema,
-): Promise<ResponseAction<void> | void> {
+): Promise<ResponseAction<void>> {
   const validatedFields = licenseValidationSchema.safeParse(data);
 
   if (!validatedFields.success) {
@@ -122,20 +121,10 @@ export async function resendOtpAction(
   }
 
   const { email, licenseKey } = verificationResult.payload;
-  const limitKey = getResendLimitKey(licenseKey);
-  if (await redis.get(limitKey)) {
-    return {
-      code: 429,
-      success: false,
-      message:
-        'You can only request a new OTP once every minute. Please wait before trying again.',
-    };
-  }
   const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
   const newExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
   console.log(`[DEV ONLY] NEW OTP for ${email} is: ${newOtp}`);
   await redis.set(getOtpKey(licenseKey), newOtp, 'EX', 600);
-  await redis.set(limitKey, 'true', 'EX', 60);
   const newSignature = await generateLicenseSignature(
     email,
     newOtp,

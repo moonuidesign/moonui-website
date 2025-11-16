@@ -1,104 +1,76 @@
-'use server';
-import { users } from '@/db/migration/schema';
-import { db } from '@/libs/db';
+import redis from '@/libs/redis-local';
 import { verifyResetPasswordSignature } from '@/libs/signature';
 import { ResponseAction } from '@/types/response-action';
+import z from 'zod';
 
-import { and, eq } from 'drizzle-orm';
-import * as z from 'zod';
-
-// Definisikan skema Zod secara statis di sini
 const actionVerificationOTPSchema = z.object({
   otp: z.string().min(6, { message: 'OTP must be 6 characters.' }),
   signature: z.string().min(1, { message: 'Signature is required.' }),
 });
-
-// Ekstrak tipe dari skema statis
 type ActionVerificationOTPSchema = z.infer<typeof actionVerificationOTPSchema>;
+const getPasswordResetOtpKey = (email: string) => `password-reset-otp:${email}`;
 
 export async function verifyOTPForgotPassword(
   data: ActionVerificationOTPSchema,
 ): Promise<ResponseAction<null>> {
-  // Validasi input menggunakan skema Zod statis
   const result = actionVerificationOTPSchema.safeParse(data);
   if (!result.success) {
     const errors = result.error.issues.map((issue) => issue.message);
-
-    return {
-      code: 400,
-      success: false,
-      message: errors.join(', '), // Gabungkan error menjadi satu string
-    };
+    return { code: 400, success: false, message: errors.join(', ') };
   }
 
-  // Verifikasi signature
-  const { payload, valid, expired } = await verifyResetPasswordSignature(
-    result.data.signature,
-  );
-
-  if (!valid) {
-    return {
-      code: 400,
-      success: false,
-      message: 'The signature is not valid.',
-    };
-  }
-  if (valid && expired) {
-    return {
-      code: 400,
-      success: false,
-      message: 'Your request has expired. Please try again.',
-    };
-  }
-
-  // Periksa apakah OTP cocok
-  if (result.data.otp !== payload?.otp) {
-    return {
-      code: 400,
-      success: false,
-      message: 'The OTP code is incorrect.',
-    };
-  }
+  const { otp, signature } = result.data;
 
   try {
-    // Cari pengguna berdasarkan email dan token reset
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(
-        and(
-          eq(users.email, payload.email),
-          eq(users.resetToken, result.data.otp),
-        ),
-      );
+    const { payload, valid, expired } = await verifyResetPasswordSignature(
+      signature,
+    );
 
-    if (!user) {
+    if (!valid || !payload) {
       return {
-        code: 409,
+        code: 400,
         success: false,
-        message: 'User not found or the provided code is incorrect.',
+        message: 'The signature is not valid.',
+      };
+    }
+    if (expired) {
+      return {
+        code: 400,
+        success: false,
+        message: 'Your request has expired. Please try again.',
       };
     }
 
-    // Hapus token setelah berhasil diverifikasi
-    await db
-      .update(users)
-      .set({
-        resetToken: null,
-        resetTokenExpiry: null,
-      })
-      .where(eq(users.id, user.id));
+    const redisKey = getPasswordResetOtpKey(payload.email);
+    const storedOtp = await redis.get(redisKey);
+
+    if (!storedOtp) {
+      return {
+        code: 400,
+        success: false,
+        message: 'OTP has expired. Please request a new one.',
+      };
+    }
+
+    if (otp !== payload.otp || otp !== storedOtp) {
+      return {
+        code: 400,
+        success: false,
+        message: 'The OTP code is incorrect.',
+      };
+    }
+
+    await redis.del(redisKey);
 
     return {
       code: 200,
       success: true,
       message: 'OTP verified successfully.',
       data: null,
-      url: result.data.signature, // Mengembalikan signature untuk langkah selanjutnya
+      url: signature,
     };
   } catch (error) {
     console.error('Error verifying OTP:', error);
-    // Penanganan error umum
     return {
       code: 500,
       success: false,

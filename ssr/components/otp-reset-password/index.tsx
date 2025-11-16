@@ -58,6 +58,48 @@ const formatTime = (seconds: number) => {
     .padStart(2, '0')}`;
 };
 
+// Initializer function to read from localStorage without an effect
+const getInitialState = () => {
+  const initialState = {
+    sessionResendCount: 0,
+    dailyResendCount: 0,
+    remainingTime: 0,
+  };
+
+  // This check prevents errors during server-side rendering
+  if (typeof window === 'undefined') {
+    return initialState;
+  }
+
+  // 1. Initialize daily limit
+  const dailyDataRaw = localStorage.getItem(DAILY_LIMIT_STORAGE_KEY);
+  const today = new Date().toDateString();
+  if (dailyDataRaw) {
+    const { count, date } = JSON.parse(dailyDataRaw);
+    if (date === today) {
+      initialState.dailyResendCount = count;
+    } else {
+      localStorage.removeItem(DAILY_LIMIT_STORAGE_KEY); // It's a new day
+    }
+  }
+
+  // 2. Initialize cooldown
+  const cooldownDataRaw = localStorage.getItem(COOLDOWN_STORAGE_KEY);
+  if (cooldownDataRaw) {
+    const { count, start, delay } = JSON.parse(cooldownDataRaw);
+    const elapsed = Math.floor((Date.now() - start) / 1000);
+    if (elapsed < delay) {
+      initialState.sessionResendCount = count;
+      initialState.remainingTime = delay - elapsed;
+    } else {
+      initialState.sessionResendCount = count; // Keep count for next exponential backoff
+      localStorage.removeItem(COOLDOWN_STORAGE_KEY);
+    }
+  }
+
+  return initialState;
+};
+
 export default function VerifyForgotPasswordOTPForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -70,10 +112,9 @@ export default function VerifyForgotPasswordOTPForm() {
   const [isVerified, setIsVerified] = useState(false);
   const [successCountdown, setSuccessCountdown] = useState(3);
 
-  // State untuk pembatasan
-  const [sessionResendCount, setSessionResendCount] = useState(0);
-  const [dailyResendCount, setDailyResendCount] = useState(0);
-  const [remainingTime, setRemainingTime] = useState(0);
+  // State for cooldown and limits, initialized lazily
+  const [cooldownState, setCooldownState] = useState(getInitialState);
+  const { sessionResendCount, dailyResendCount, remainingTime } = cooldownState;
   const isInCooldown = remainingTime > 0;
 
   const email = useMemo(() => {
@@ -87,40 +128,20 @@ export default function VerifyForgotPasswordOTPForm() {
   }, [activeSignature]);
 
   const getDelayForAttempt = useCallback((attempt: number) => {
-    const baseDelay = 30; // 30 detik
+    const baseDelay = 30; // 30 seconds
     const multiplier = Math.pow(2, Math.min(attempt, 9));
     return baseDelay * multiplier;
   }, []);
 
-  useEffect(() => {
-    const dailyDataRaw = localStorage.getItem(DAILY_LIMIT_STORAGE_KEY);
-    const today = new Date().toDateString();
-    if (dailyDataRaw) {
-      const { count, date } = JSON.parse(dailyDataRaw);
-      if (date === today) setDailyResendCount(count);
-      else localStorage.removeItem(DAILY_LIMIT_STORAGE_KEY);
-    }
-
-    const cooldownDataRaw = localStorage.getItem(COOLDOWN_STORAGE_KEY);
-    if (cooldownDataRaw) {
-      const { count, start, delay } = JSON.parse(cooldownDataRaw);
-      const elapsed = Math.floor((Date.now() - start) / 1000);
-      if (elapsed < delay) {
-        setSessionResendCount(count);
-        setRemainingTime(delay - elapsed);
-      } else {
-        setSessionResendCount(count); // Keep session count for next attempt calculation
-        localStorage.removeItem(COOLDOWN_STORAGE_KEY);
-      }
-    }
-  }, []);
-
+  // Effect for the cooldown timer
   useEffect(() => {
     if (!isInCooldown) return;
-    const timer = setInterval(
-      () => setRemainingTime((prev) => (prev > 1 ? prev - 1 : 0)),
-      1000,
-    );
+    const timer = setInterval(() => {
+      setCooldownState((prev) => ({
+        ...prev,
+        remainingTime: prev.remainingTime > 1 ? prev.remainingTime - 1 : 0,
+      }));
+    }, 1000);
     return () => clearInterval(timer);
   }, [isInCooldown]);
 
@@ -194,17 +215,17 @@ export default function VerifyForgotPasswordOTPForm() {
       } else {
         toast.success('A new verification code has been sent.');
         form.reset();
-        router.replace(result.url); // Use replace to update URL with new signature
+        router.replace(result.url);
 
         const newSessionCount = sessionResendCount + 1;
         const newDailyCount = dailyResendCount + 1;
-        const today = new Date().toDateString();
-
-        setSessionResendCount(newSessionCount);
-        setDailyResendCount(newDailyCount);
-
         const delay = getDelayForAttempt(newSessionCount - 1);
-        setRemainingTime(delay);
+
+        setCooldownState({
+          sessionResendCount: newSessionCount,
+          dailyResendCount: newDailyCount,
+          remainingTime: delay,
+        });
 
         localStorage.setItem(
           COOLDOWN_STORAGE_KEY,
@@ -212,7 +233,10 @@ export default function VerifyForgotPasswordOTPForm() {
         );
         localStorage.setItem(
           DAILY_LIMIT_STORAGE_KEY,
-          JSON.stringify({ count: newDailyCount, date: today }),
+          JSON.stringify({
+            count: newDailyCount,
+            date: new Date().toDateString(),
+          }),
         );
       }
     });
@@ -280,7 +304,7 @@ export default function VerifyForgotPasswordOTPForm() {
                         {[...Array(6)].map((_, index) => (
                           <InputOTPSlot
                             key={index}
-                            className="rounded-[14px] shadow-none border  bg-[#F7F7F7] data-[active=true]:ring-1 data-[active=true]:ring-[#FD4F13] h-[50px] w-[50px]"
+                            className="rounded-[14px] data-[active=true]:ring-1 data-[active=true]:ring-[#FD4F13] h-[50px] w-[50px]"
                             index={index}
                           />
                         ))}

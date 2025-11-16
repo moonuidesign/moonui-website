@@ -1,7 +1,7 @@
 'use server';
 import { ResponseAction } from '@/types/response-action';
 
-interface LemonSqueezyValidationResponse {
+export interface LemonSqueezyValidationResponse {
   valid: boolean;
   error: string | null;
   license_key: {
@@ -9,6 +9,8 @@ interface LemonSqueezyValidationResponse {
     status: string;
     key: string;
     expires_at: string | null;
+    activation_limit: number;
+    activation_usage: number;
   };
   instance: number | string | null;
   meta: {
@@ -44,7 +46,7 @@ export async function validateLicenseKey(
     );
 
     const data: LemonSqueezyValidationResponse = await response.json();
-    console.log(data);
+
     if (!response.ok || !data.valid) {
       return {
         success: false,
@@ -53,6 +55,17 @@ export async function validateLicenseKey(
       };
     }
 
+    const { status } = data.license_key;
+
+    if (status === 'active') {
+      return {
+        success: false,
+        code: 403,
+        message: 'Sudah diaktifkan',
+      };
+    }
+
+    console.log(data);
     return {
       success: true,
       code: 200,

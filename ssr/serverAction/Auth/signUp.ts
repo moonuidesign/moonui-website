@@ -57,7 +57,7 @@ export async function registerWithCredentials(values: RegisterSchemaType) {
     await activateLicense(licenseKey, newUser.id, email);
   } catch (error) {
     console.error('LICENSE_ACTIVATION_FAILED', error);
-    // Idealnya, hapus pengguna yang baru dibuat jika aktivasi gagal
+
     return {
       error: 'Failed to activate your license. Please contact support.',
     };

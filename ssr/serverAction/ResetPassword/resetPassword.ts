@@ -1,6 +1,6 @@
 'use server';
 import { users } from '@/db/migration/schema';
-import { db } from '@/libs/db';
+import { db } from '@/libs/drizzle';
 import { verifyResetPasswordSignature } from '@/libs/signature';
 import { hashPassword } from '@/libs/utils';
 import { ResponseAction } from '@/types/response-action';
@@ -93,8 +93,6 @@ export async function resetPassword(
       .update(users)
       .set({
         password: hashedPassword,
-        resetToken: null, // Hapus token setelah berhasil reset
-        resetTokenExpiry: null,
       })
       .where(eq(users.email, result.data.email));
 
