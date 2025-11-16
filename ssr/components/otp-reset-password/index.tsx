@@ -1,13 +1,18 @@
 'use client';
 
-import type React from 'react';
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import {
+  useState,
+  useTransition,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Form, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'react-toastify';
-import { AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
 import * as z from 'zod';
+import { toast } from 'react-toastify';
+import { Loader2, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 
 import {
   Card,
@@ -15,37 +20,36 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../ui/card';
+} from '@/components/ui/card';
 import {
+  Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
-} from '../ui/form';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '../ui/input-otp';
-import { Button } from '../ui/button';
-import { Progress } from '../ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { DynamicBreadcrumb } from '../breadCrumb';
-
+} from '@/components/ui/form';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from '@/components/ui/input-otp';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { extractDataFromSignature } from '@/libs/signature';
 import { verifyOTPForgotPassword } from '@/serverAction/ForgotPassword/verifyOTP';
 import { sendOTPForgotPassword } from '@/serverAction/ForgotPassword/sendOTP';
 
-// Skema Zod statis
-const verificationOTPSchema = z.object({
-  otp: z
-    .string()
-    .min(6, { message: 'Your one-time password must be 6 characters.' }),
+// Skema Zod
+const OTPSchema = z.object({
+  otp: z.string().min(6, { message: 'OTP must be 6 characters.' }),
 });
+type OTPSchemaType = z.infer<typeof OTPSchema>;
 
-type VerificationOTPSchema = z.infer<typeof verificationOTPSchema>;
-
-// Konstanta untuk kunci localStorage
+// Konstanta
 const COOLDOWN_STORAGE_KEY = 'cooldown_forgot_password';
 const DAILY_LIMIT_STORAGE_KEY = 'daily_limit_forgot_password';
 const DAILY_LIMIT_COUNT = 10;
+
 const formatTime = (seconds: number) => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -54,81 +58,74 @@ const formatTime = (seconds: number) => {
     .padStart(2, '0')}`;
 };
 
-export default function VerifyFogotPasswordOTPForm() {
+export default function VerifyForgotPasswordOTPForm() {
   const router = useRouter();
-  const params = useSearchParams();
-  const activeSignature = params?.get('signature') ?? '';
+  const searchParams = useSearchParams();
+  const activeSignature = searchParams.get('signature') || '';
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [verified, setVerified] = useState(false);
-  const [successCountdown, setSuccessCountdown] = useState(5);
+  const [isVerifying, startVerifyTransition] = useTransition();
+  const [isResending, startResendTransition] = useTransition();
+
+  const [error, setError] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
+  const [successCountdown, setSuccessCountdown] = useState(3);
 
   // State untuk pembatasan
-  const [sessionResendCount, setSessionResendCount] = useState(0); // Untuk exponential backoff
-  const [dailyResendCount, setDailyResendCount] = useState(0); // Untuk batas harian
-  const [cooldownTime, setCooldownTime] = useState(0);
+  const [sessionResendCount, setSessionResendCount] = useState(0);
+  const [dailyResendCount, setDailyResendCount] = useState(0);
   const [remainingTime, setRemainingTime] = useState(0);
   const isInCooldown = remainingTime > 0;
 
-  // Ekstrak email dari signature dengan aman
   const email = useMemo(() => {
     if (!activeSignature) return '';
-    const { data } = extractDataFromSignature(activeSignature);
-    return data?.email || '';
+    try {
+      const { data } = extractDataFromSignature(activeSignature);
+      return data?.email || '';
+    } catch {
+      return '';
+    }
   }, [activeSignature]);
 
-  // Fungsi untuk menghitung jeda eksponensial
   const getDelayForAttempt = useCallback((attempt: number) => {
     const baseDelay = 30; // 30 detik
-    // 2^0=1, 2^1=2, 2^2=4, ... max 2^9
     const multiplier = Math.pow(2, Math.min(attempt, 9));
     return baseDelay * multiplier;
   }, []);
 
-  // Efek untuk inisialisasi state pembatasan dari localStorage
   useEffect(() => {
-    // 1. Inisialisasi batas harian
     const dailyDataRaw = localStorage.getItem(DAILY_LIMIT_STORAGE_KEY);
     const today = new Date().toDateString();
     if (dailyDataRaw) {
       const { count, date } = JSON.parse(dailyDataRaw);
-      if (date === today) {
-        setDailyResendCount(count);
-      } else {
-        localStorage.removeItem(DAILY_LIMIT_STORAGE_KEY);
-      }
+      if (date === today) setDailyResendCount(count);
+      else localStorage.removeItem(DAILY_LIMIT_STORAGE_KEY);
     }
 
-    // 2. Inisialisasi cooldown
     const cooldownDataRaw = localStorage.getItem(COOLDOWN_STORAGE_KEY);
     if (cooldownDataRaw) {
       const { count, start, delay } = JSON.parse(cooldownDataRaw);
       const elapsed = Math.floor((Date.now() - start) / 1000);
       if (elapsed < delay) {
         setSessionResendCount(count);
-        setCooldownTime(delay);
         setRemainingTime(delay - elapsed);
       } else {
-        // Cooldown selesai, tapi simpan jumlah percobaan sesi
-        setSessionResendCount(count);
+        setSessionResendCount(count); // Keep session count for next attempt calculation
         localStorage.removeItem(COOLDOWN_STORAGE_KEY);
       }
     }
   }, []);
 
-  // Efek untuk timer cooldown
   useEffect(() => {
     if (!isInCooldown) return;
-    const timer = setInterval(() => {
-      setRemainingTime((prev) => (prev > 1 ? prev - 1 : 0));
-    }, 1000);
+    const timer = setInterval(
+      () => setRemainingTime((prev) => (prev > 1 ? prev - 1 : 0)),
+      1000,
+    );
     return () => clearInterval(timer);
   }, [isInCooldown]);
 
-  // Efek untuk countdown setelah verifikasi sukses
   useEffect(() => {
-    if (!verified) return;
+    if (!isVerified) return;
     const timer = setInterval(() => {
       setSuccessCountdown((prev) => {
         if (prev <= 1) {
@@ -144,61 +141,61 @@ export default function VerifyFogotPasswordOTPForm() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [verified, activeSignature, router]);
+  }, [isVerified, activeSignature, router]);
 
-  const form = useForm<VerificationOTPSchema>({
-    resolver: zodResolver(verificationOTPSchema),
+  const form = useForm<OTPSchemaType>({
+    resolver: zodResolver(OTPSchema),
     defaultValues: { otp: '' },
   });
 
-  async function onSubmit(data: VerificationOTPSchema) {
-    if (!activeSignature) {
-      toast.error('Invalid token. Please start over.');
-      return;
-    }
-    setIsLoading(true);
-    try {
+  const onSubmit = (data: OTPSchemaType) => {
+    setError(null);
+    startVerifyTransition(async () => {
       const result = await verifyOTPForgotPassword({
         ...data,
         signature: activeSignature,
       });
+
       if (!result.success) {
-        toast.error(result.message as string);
-        form.setError('otp', {
-          type: 'manual',
-          message: result.message as string,
-        });
+        const message =
+          typeof result.message === 'string'
+            ? result.message
+            : 'An unknown error occurred.';
+        setError(message);
+        form.setError('otp', { type: 'manual', message });
       } else {
         toast.success('OTP verification successful!');
         localStorage.removeItem(COOLDOWN_STORAGE_KEY);
         localStorage.removeItem(DAILY_LIMIT_STORAGE_KEY);
-        setVerified(true);
+        setIsVerified(true);
       }
-    } finally {
-      setIsLoading(false);
-    }
-  }
+    });
+  };
 
-  async function handleResend() {
+  const handleResend = () => {
     if (isInCooldown || isResending || !email) return;
 
-    // Cek batas harian sebelum melakukan apa pun
     if (dailyResendCount >= DAILY_LIMIT_COUNT) {
-      toast.error('You have reached the daily limit for resending OTPs.');
+      setError('You have reached the daily limit for resending OTPs.');
       return;
     }
 
-    setIsResending(true);
-    try {
+    setError(null);
+    startResendTransition(async () => {
       const result = await sendOTPForgotPassword({ email });
+
       if (!result.success || !result.url) {
-        toast.error(result.message as string);
+        const message =
+          typeof result.message === 'string'
+            ? result.message
+            : 'Failed to resend OTP.';
+        toast.error(message);
+        setError(message);
       } else {
         toast.success('A new verification code has been sent.');
         form.reset();
-        router.replace(result.url); // Perbarui URL dengan signature baru
+        router.replace(result.url); // Use replace to update URL with new signature
 
-        // Update state dan localStorage untuk pembatasan
         const newSessionCount = sessionResendCount + 1;
         const newDailyCount = dailyResendCount + 1;
         const today = new Date().toDateString();
@@ -206,149 +203,150 @@ export default function VerifyFogotPasswordOTPForm() {
         setSessionResendCount(newSessionCount);
         setDailyResendCount(newDailyCount);
 
-        const delay = getDelayForAttempt(newSessionCount - 1); // attempt 0 -> 2^0
-        setCooldownTime(delay);
+        const delay = getDelayForAttempt(newSessionCount - 1);
         setRemainingTime(delay);
 
-        // Simpan data cooldown sesi
         localStorage.setItem(
           COOLDOWN_STORAGE_KEY,
-          JSON.stringify({
-            count: newSessionCount,
-            start: Date.now(),
-            delay: delay,
-          }),
+          JSON.stringify({ count: newSessionCount, start: Date.now(), delay }),
         );
-
-        // Simpan data batas harian
         localStorage.setItem(
           DAILY_LIMIT_STORAGE_KEY,
-          JSON.stringify({
-            count: newDailyCount,
-            date: today,
-          }),
+          JSON.stringify({ count: newDailyCount, date: today }),
         );
       }
-    } catch (error: unknown) {
-      console.error('Failed to resend OTP:', error);
-      toast.error(
-        'An error occurred while resending the code. Please try again.',
-      );
-    } finally {
-      setIsResending(false);
-    }
+    });
+  };
+
+  if (!activeSignature || !email) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-destructive">Session Invalid</CardTitle>
+          <CardDescription>
+            The link is missing or invalid. Please{' '}
+            <a href="/forgot-password" className="underline">
+              start over
+            </a>
+            .
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (isVerified) {
+    return (
+      <Card className="w-full max-w-[480px] gap-8 px-5 py-12 rounded-[40px]">
+        <CardContent className="flex justify-center items-center flex-col text-center">
+          <CheckCircle2 className="mx-auto text-green-500 w-16 h-16" />
+          <h3 className="text-xl font-semibold mt-4">
+            Verification Successful!
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Redirecting you to reset your password in {successCountdown}s...
+          </p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
-    <div className="flex flex-col gap-5 justify-center items-center md:h-[calc(100vh-30vh)] w-full md:px-0 md:py-5 lg:px-10">
-      <div className="w-full flex">
-        <DynamicBreadcrumb />
-      </div>
-      <Card className="w-full max-w-md h-auto p-5 flex flex-col justify-center items-center mx-auto">
-        <CardHeader className="w-full text-center space-y-2">
-          <CardTitle className="text-2xl">Check Your Email</CardTitle>
-          <CardDescription>
-            We&apos;ve sent a 6-digit verification code to your email address.
-            {email && <span className="font-semibold block mt-1">{email}</span>}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="w-full pt-4">
-          {verified ? (
-            <div className="text-center py-4 space-y-3">
-              <CheckCircle2 className="mx-auto text-green-500 w-16 h-16" />
-              <h3 className="text-xl font-semibold">
-                OTP Verification Successful
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Redirecting you in {successCountdown} seconds...
-              </p>
-            </div>
-          ) : (
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
+    <Card className="w-full max-w-[480px] gap-8 px-2 py-12 rounded-[40px]">
+      <CardHeader className="flex justify-center items-center flex-col">
+        <CardTitle className="font-jakarta flex justify-center items-center text-[32px] font-extrabold">
+          Check Your Email
+        </CardTitle>
+        <CardDescription className="font-sans text-center text-[16px] flex-col flex justify-center items-center">
+          <p>Please enter the six digit code we sent to</p>
+          <span className="text-[20px] font-bold text-[#FD4F13]">{email}</span>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex justify-center items-center w-full">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="otp"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <InputOTP
+                      maxLength={6}
+                      {...field}
+                      className="flex justify-center items-center"
+                    >
+                      <InputOTPGroup className="gap-2 flex justify-center items-center flex-row">
+                        {[...Array(6)].map((_, index) => (
+                          <InputOTPSlot
+                            key={index}
+                            className="rounded-[14px] shadow-none border  bg-[#F7F7F7] data-[active=true]:ring-1 data-[active=true]:ring-[#FD4F13] h-[50px] w-[50px]"
+                            index={index}
+                          />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </FormControl>
+                  <FormMessage className="text-center" />
+                </FormItem>
+              )}
+            />
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <Button
+                type="submit"
+                className="w-full bg-[#2E2E2E] h-[50px] text-white font-light rounded-[13px] font-sans text-[16px]"
+                disabled={isVerifying || isResending}
               >
-                <FormField
-                  control={form.control}
-                  name="otp"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="sr-only">
-                        One-Time Password
-                      </FormLabel>
-                      <FormControl>
-                        <InputOTP maxLength={6} {...field}>
-                          <InputOTPGroup className="w-full flex justify-center gap-2">
-                            {[...Array(6)].map((_, index) => (
-                              <InputOTPSlot
-                                key={index}
-                                index={index}
-                                className="w-10 h-10 md:w-12 md:h-12"
-                              />
-                            ))}
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                {isVerifying && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Verify
+              </Button>
+
+              <div className="flex flex-row gap-2 text-[16px] justify-center items-center">
+                <span className="font-normal text-[#707070]">
+                  Didn&apos;t receive the code?
+                </span>
+                <Button
+                  type="button"
+                  variant="link"
+                  className="font-medium hover:underline p-0 h-auto"
+                  onClick={handleResend}
+                  disabled={
+                    isVerifying ||
+                    isResending ||
+                    isInCooldown ||
+                    dailyResendCount >= DAILY_LIMIT_COUNT
+                  }
+                >
+                  {isResending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : isInCooldown ? (
+                    <span className="flex items-center text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-1" />
+                      Resend in {formatTime(remainingTime)}
+                    </span>
+                  ) : (
+                    'Resend'
                   )}
-                />
-
-                <div className="space-y-4">
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isLoading || isResending}
-                  >
-                    {isLoading ? 'Verifying...' : 'Verify OTP'}
-                  </Button>
-
-                  <div className="text-center text-sm space-y-2">
-                    {isInCooldown ? (
-                      <div className="space-y-2">
-                        <Progress
-                          value={(remainingTime / cooldownTime) * 100}
-                          className="h-1"
-                        />
-                        <p className="text-muted-foreground flex items-center justify-center">
-                          <Clock className="h-4 w-4 mr-1.5" />
-                          Resend available in {formatTime(remainingTime)}
-                        </p>
-                      </div>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="link"
-                        className="p-0 h-auto"
-                        onClick={handleResend}
-                        disabled={
-                          isResending || dailyResendCount >= DAILY_LIMIT_COUNT
-                        }
-                      >
-                        {isResending
-                          ? 'Resending...'
-                          : "Didn't receive the code? Resend"}
-                      </Button>
-                    )}
-                  </div>
-
-                  {dailyResendCount >= DAILY_LIMIT_COUNT && (
-                    <Alert variant="destructive" className="mt-4">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Daily Limit Reached</AlertTitle>
-                      <AlertDescription>
-                        You have tried to resend the code too many times. Please
-                        try again tomorrow.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </div>
-              </form>
-            </Form>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                </Button>
+              </div>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

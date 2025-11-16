@@ -1,17 +1,10 @@
-// Lokasi: src/libs/db.ts
-
+'use server';
 import * as schema from '../db/migration/schema';
 import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-const client = postgres(process.env.DATABASE_URL!);
-export const db = drizzle(client, { schema });
 
-/**
- * Mengambil data pengguna lengkap dari database berdasarkan email.
- * @param email - Alamat email pengguna.
- * @returns Objek user atau null jika tidak ditemukan.
- */
+import bcryptjs from 'bcryptjs';
+import { db } from './drizzle';
+
 export const getUserFromDb = async (email: string) => {
   try {
     // PERBAIKAN: Menggunakan schema.users untuk konsistensi.
@@ -27,4 +20,13 @@ export const getUserFromDb = async (email: string) => {
     // Melempar error di sini jika terjadi kesalahan koneksi database, dll.
     throw new Error('Terjadi kesalahan saat berkomunikasi dengan database.');
   }
+};
+
+export const generatePasswordHash = async (password: string) => {
+  // generates a random salt. A salt is a random value used in the hashing process to ensure
+  // that even if two users have the same password, their hashed passwords will be different.
+  // The 10 in the function call represents the cost factor, which determines how much
+  // computational work is needed to compute the hash.
+  const salt = await bcryptjs.genSalt(10);
+  return bcryptjs.hash(password, salt);
 };

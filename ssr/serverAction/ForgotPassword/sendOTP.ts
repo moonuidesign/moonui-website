@@ -1,7 +1,7 @@
 'use server';
 
 import { users } from '@/db/migration/schema';
-import { db } from '@/libs/db';
+import { db } from '@/libs/drizzle';
 import { sendPasswordResetEmail } from '@/libs/mail';
 import { generateResetPasswordSignature } from '@/libs/signature';
 import { generateOTP } from '@/libs/utils';
@@ -15,13 +15,11 @@ const sendOTPForgotPasswordSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
 });
 
-// Tipe TypeScript yang diinferensikan dari skema Zod
 type SendOTPForgotPasswordSchema = z.infer<typeof sendOTPForgotPasswordSchema>;
 
 export async function sendOTPForgotPassword(
   data: SendOTPForgotPasswordSchema,
 ): Promise<ResponseAction<null>> {
-  // Validasi data input menggunakan skema statis
   const result = sendOTPForgotPasswordSchema.safeParse(data);
   if (!result.success) {
     const errors = result.error.issues.map((issue) => issue.message);
@@ -54,14 +52,6 @@ export async function sendOTPForgotPassword(
     const resetUrl = `/forgot-password/otp?signature=${encodeURIComponent(
       signature,
     )}`;
-
-    await db
-      .update(users)
-      .set({
-        resetToken: otp,
-        resetTokenExpiry: expiryTime,
-      })
-      .where(eq(users.id, user.id));
 
     await sendPasswordResetEmail(result.data.email, otp, resetUrl);
 

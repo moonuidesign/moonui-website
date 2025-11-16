@@ -156,3 +156,87 @@ export function extractDataFromSignature(signatureString: string): {
     return { success: false };
   }
 }
+
+// ==================================================================
+// === BAGIAN BARU: KHUSUS UNTUK VERIFIKASI LISENSI ===
+// ==================================================================
+
+export interface LicenseVerificationPayload {
+  email: string;
+  otp: string;
+  licenseKey: string; // <-- Kunci lisensi ditambahkan di sini
+  expiresAt: number;
+}
+
+/**
+ * Menghasilkan signature yang mengikat email, OTP, dan kunci lisensi.
+ */
+export async function generateLicenseSignature(
+  email: string,
+  otp: string,
+  licenseKey: string, // <-- Parameter baru
+  expiresAt: Date,
+): Promise<string> {
+  const payload: LicenseVerificationPayload = {
+    email,
+    otp,
+    licenseKey,
+    expiresAt: expiresAt.getTime(),
+  };
+
+  const payloadString = JSON.stringify(payload);
+  const encodedPayload = base64UrlEncode(payloadString);
+
+  const key = await getHmacKey(SECRET_KEY);
+  const dataBuffer = new TextEncoder().encode(encodedPayload);
+  const signatureBuffer = await crypto.subtle.sign('HMAC', key, dataBuffer);
+  const signature = bufferToHex(signatureBuffer);
+
+  return `${encodedPayload}.${signature}`;
+}
+
+/**
+ * Memverifikasi signature yang dibuat untuk verifikasi lisensi.
+ */
+export async function verifyLicenseSignature(signatureString: string): Promise<{
+  valid: boolean;
+  expired: boolean;
+  payload?: LicenseVerificationPayload;
+}> {
+  try {
+    const [encodedPayload, signatureHex] = signatureString.split('.');
+    if (!encodedPayload || !signatureHex) {
+      return { valid: false, expired: false };
+    }
+
+    const key = await getHmacKey(SECRET_KEY);
+    const dataBuffer = new TextEncoder().encode(encodedPayload);
+
+    const signatureBuffer = new Uint8Array(
+      (signatureHex.match(/.{1,2}/g) || []).map((byte) => parseInt(byte, 16)),
+    );
+
+    const isValid = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      signatureBuffer,
+      dataBuffer,
+    );
+
+    if (!isValid) {
+      return { valid: false, expired: false, payload: undefined };
+    }
+
+    const payloadString = base64UrlDecode(encodedPayload);
+    const payload = JSON.parse(payloadString) as LicenseVerificationPayload;
+
+    if (Date.now() > payload.expiresAt) {
+      return { valid: true, expired: true, payload };
+    }
+
+    return { valid: true, expired: false, payload };
+  } catch (error) {
+    console.error('Error verifying license signature:', error);
+    return { valid: false, expired: false, payload: undefined };
+  }
+}

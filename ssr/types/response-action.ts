@@ -13,5 +13,4 @@ export type ErrorResponse = {
   url?: string;
 };
 
-// Union type yang akan digunakan di seluruh aplikasi
 export type ResponseAction<T> = SuccessResponse<T> | ErrorResponse;

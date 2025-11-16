@@ -28,26 +28,9 @@ function FormSkeleton() {
 
 export default function Page() {
   return (
-    <div className="dark:bg-black mb-0 lg:mb-20 h-[80vh] dark:bg-dot-white">
-      <div className="md:grid-cols-2 lg:grid-cols-2 w-full md:grid lg:grid py-20 flex container mx-auto">
-        {/* Kolom gambar tidak berubah, ini bisa dirender secara statis */}
-        <div className="col-span-1 justify-center items-center hidden h-full w-full lg:flex md:flex">
-          <Image
-            alt="otp"
-            width={100}
-            height={100}
-            src="/otp.svg"
-            className="w-[80%] h-full"
-            priority // Tambahkan priority karena ini LCP (Largest Contentful Paint) di layout ini
-          />
-        </div>
-
-        {/* Kolom form */}
-        <div className="w-full col-span-1 backdrop-blur-xs bg-opacity-40 rounded-xl p-5 md:px-0 lg:px-24 md:py-0 lg:py-10">
-          {/* 
-            Bungkus HANYA komponen yang menggunakan useSearchParams dengan Suspense.
-            Layout di sekitarnya akan dirender terlebih dahulu.
-          */}
+    <div className="bg-[#E8E8E8] h-screen">
+      <div className="dark:bg-black w-screen container mx-auto h-screen max-w-[1440px] max-h-[1024px] flex justify-center items-center">
+        <div className="w-full flex h-[80%] min-h-[650px] justify-center item-center backdrop-blur-xs bg-opacity-40 rounded-xl p-5 ">
           <Suspense fallback={<FormSkeleton />}>
             <VerifyEmailOTPForm />
           </Suspense>

@@ -1,138 +1,193 @@
 'use client';
 
-import type React from 'react';
-
-import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Clock } from 'lucide-react';
-import { verifyEmail } from '@/serverAction/VerifyEmail/verifyEmail';
-import { sendOTPEmail } from '@/serverAction/VerifyEmail/sendOTP';
-import { DynamicBreadcrumb } from '../breadCrumb';
+import * as z from 'zod';
+import { toast } from 'react-toastify';
+import { Loader2, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../ui/card';
-import { Button } from '../ui/button';
-import { FormField, Form, FormItem, FormLabel, FormControl } from '../ui/form';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '../ui/input-otp';
+} from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from '@/components/ui/input-otp';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { verifyEmail } from '@/serverAction/VerifyEmail/verifyEmail';
+import { sendOTPEmail } from '@/serverAction/VerifyEmail/sendOTP';
 
-// Skema Zod statis
-const verifyEmailClientSchema = z.object({
-  otp: z.string().min(6, { message: 'OTP must be 6 characters long' }),
+// Skema Zod untuk form OTP
+const OTPSchema = z.object({
+  otp: z.string().min(6, { message: 'OTP must be 6 characters.' }),
 });
+type OTPSchemaType = z.infer<typeof OTPSchema>;
+const getInitialCooldownState = () => {
+  if (typeof window === 'undefined') {
+    return { resendCount: 0, remainingTime: 0, isInCooldown: false };
+  }
 
-type VerifyEmailClientSchema = z.infer<typeof verifyEmailClientSchema>;
+  const savedData = localStorage.getItem('resendVerifyEmail');
+  if (savedData) {
+    const {
+      resendCount: savedResendCount,
+      cooldownStart,
+      cooldownTime,
+    } = JSON.parse(savedData);
+    const now = Date.now();
+    const elapsed = Math.floor((now - cooldownStart) / 1000);
+
+    if (elapsed < cooldownTime) {
+      return {
+        resendCount: savedResendCount,
+        remainingTime: cooldownTime - elapsed,
+        isInCooldown: true,
+      };
+    }
+    localStorage.removeItem('resendVerifyEmail');
+  }
+  return { resendCount: 0, remainingTime: 0, isInCooldown: false };
+};
 
 export default function VerifyEmailOTPForm() {
-  const params = useSearchParams();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [verified, setVerified] = useState(false);
-  const [resendCount, setResendCount] = useState(0);
-  const [cooldownTime, setCooldownTime] = useState(0);
-  const [isInCooldown, setIsInCooldown] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(0);
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email') || '';
 
+  const [isVerifying, startVerifyTransition] = useTransition();
+  const [isResending, startResendTransition] = useTransition();
+
+  const [error, setError] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
+
+  // Initialize state using the helper function to avoid effect
+  const [cooldownState, setCooldownState] = useState(getInitialCooldownState);
+  const { resendCount, remainingTime, isInCooldown } = cooldownState;
+
+  // Setter for state to simplify updates
+  const setResendCount = (count: number) =>
+    setCooldownState((prev) => ({ ...prev, resendCount: count }));
+  const setRemainingTime = (time: number) =>
+    setCooldownState((prev) => ({ ...prev, remainingTime: time }));
+  const setIsInCooldown = (cooldown: boolean) =>
+    setCooldownState((prev) => ({ ...prev, isInCooldown: cooldown }));
+
+  // Fungsi untuk menghitung penundaan berdasarkan jumlah percobaan
   const getDelayForAttempt = useCallback(() => {
-    // Penundaan yang dimodifikasi: dimulai dari 30 detik dan berlipat ganda setiap kali, maks 10 upaya
     const baseDelay = 30; // 30 detik penundaan dasar
-    const multiplier = Math.pow(2, Math.min(resendCount, 9)); // 2^n hingga 2^9
-    return baseDelay * multiplier; // 30, 60, 120, 240, 480, 960, 1920, 3840, 7680, 15360
+    const multiplier = Math.pow(2, Math.min(resendCount, 9)); // eksponensial backoff
+    return baseDelay * multiplier;
   }, [resendCount]);
 
-  useEffect(() => {
-    const savedData = localStorage.getItem('resendVerifyEmail');
-    const dailyData = localStorage.getItem('dailyResendLimit');
-    const today = new Date().toDateString();
-
-    let initialResendCount = 0;
-
-    if (dailyData) {
-      const { count, date } = JSON.parse(dailyData);
-      if (date === today) {
-        initialResendCount = count;
-      } else {
-        // Atur ulang hitungan harian jika ini hari baru
-        localStorage.setItem(
-          'dailyResendLimit',
-          JSON.stringify({
-            count: 0,
-            date: today,
-          }),
-        );
-      }
-    }
-
-    if (savedData) {
-      const {
-        resendCount: savedResendCount,
-        cooldownStart,
-        cooldownTime: savedCooldownTime,
-      } = JSON.parse(savedData);
-      const now = Date.now();
-      const elapsed = Math.floor((now - cooldownStart) / 1000);
-
-      if (elapsed < savedCooldownTime) {
-        const remaining = savedCooldownTime - elapsed;
-        setResendCount(savedResendCount);
-        setCooldownTime(savedCooldownTime);
-        setRemainingTime(remaining);
-        setIsInCooldown(true);
-      } else {
-        setResendCount(
-          savedResendCount > initialResendCount
-            ? savedResendCount
-            : initialResendCount,
-        );
-        setIsInCooldown(false);
-        localStorage.removeItem('resendVerifyEmail');
-      }
-    } else {
-      setResendCount(initialResendCount);
-    }
-  }, []);
-
+  // Efek untuk menangani timer cooldown
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
     if (isInCooldown && remainingTime > 0) {
       timer = setInterval(() => {
-        setRemainingTime((prev) => {
-          const newTime = prev - 1;
-
-          const savedData = localStorage.getItem('resendVerifyEmail');
-          if (savedData) {
-            const parsed = JSON.parse(savedData);
-            parsed.remainingTime = newTime;
-            localStorage.setItem('resendVerifyEmail', JSON.stringify(parsed));
-          }
-
-          if (newTime <= 0) {
-            setIsInCooldown(false);
-            localStorage.removeItem('resendVerifyEmail');
-            return 0;
-          }
-          return newTime;
-        });
+        setRemainingTime(remainingTime - 1);
+        if (remainingTime <= 1) {
+          setIsInCooldown(false);
+          localStorage.removeItem('resendVerifyEmail');
+          if (timer) clearInterval(timer);
+        }
       }, 1000);
     }
-
     return () => {
       if (timer) clearInterval(timer);
     };
   }, [isInCooldown, remainingTime]);
 
-  const form = useForm<VerifyEmailClientSchema>({
-    resolver: zodResolver(verifyEmailClientSchema),
+  const form = useForm<OTPSchemaType>({
+    resolver: zodResolver(OTPSchema),
+    defaultValues: { otp: '' },
   });
 
-  const email = params?.get('email') ?? '';
+  const onSubmit = (data: OTPSchemaType) => {
+    setError(null);
+    startVerifyTransition(async () => {
+      const result = await verifyEmail({ ...data, email });
+      if (!result.success) {
+        const errorMessage = Array.isArray(result.message)
+          ? result.message.join(', ')
+          : result.message || 'An unknown error occurred.';
+        setError(errorMessage);
+        form.setError('otp', {
+          type: 'manual',
+          message: errorMessage,
+        });
+      } else {
+        toast.success('Email verified successfully!');
+        setIsVerified(true);
+        setTimeout(() => router.push('/dashboard/monitoring'), 2000);
+      }
+    });
+  };
+
+  const handleResend = () => {
+    if (isInCooldown) return;
+
+    const dailyData = localStorage.getItem('dailyResendLimit');
+    const today = new Date().toDateString();
+    let dailyCount = 0;
+
+    if (dailyData) {
+      const { count, date } = JSON.parse(dailyData);
+      if (date === today) dailyCount = count;
+    }
+
+    if (dailyCount >= 10) {
+      toast.error('You have reached the daily limit for resending OTPs.');
+      return;
+    }
+
+    setError(null);
+    startResendTransition(async () => {
+      const result = await sendOTPEmail({ email });
+      if (!result.success) {
+        toast.error(
+          (Array.isArray(result.message)
+            ? result.message.join(', ')
+            : result.message) || 'Failed to resend OTP.',
+        );
+      } else {
+        toast.success('A new OTP has been sent.');
+        const newDailyCount = dailyCount + 1;
+        localStorage.setItem(
+          'dailyResendLimit',
+          JSON.stringify({ count: newDailyCount, date: today }),
+        );
+        setResendCount(newDailyCount);
+
+        const delay = getDelayForAttempt();
+        localStorage.setItem(
+          'resendVerifyEmail',
+          JSON.stringify({
+            resendCount: newDailyCount,
+            cooldownStart: Date.now(),
+            cooldownTime: delay,
+          }),
+        );
+        setRemainingTime(delay);
+        setIsInCooldown(true);
+        form.reset();
+      }
+    });
+  };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -142,208 +197,128 @@ export default function VerifyEmailOTPForm() {
       .padStart(2, '0')}`;
   };
 
-  const onSubmit = useCallback(
-    async (data: VerifyEmailClientSchema) => {
-      setIsLoading(true);
-      try {
-        const result = await verifyEmail({ ...data, email });
-        if (!result.success) {
-          toast.error(result.message);
-          setIsLoading(false); // Pastikan untuk mengatur ulang isLoading pada kegagalan
-        } else {
-          setVerified(true);
-          toast.success('Email verified successfully!');
-          // Tidak ada pembaruan status pemuatan atau pendinginan di sini karena komponen akan di-unmount/diganti
-        }
-      } catch {
-        toast.error('An unexpected error occurred during verification.');
-        setIsLoading(false);
-      }
-    },
-    [email],
-  );
-
-  const handleResend = useCallback(async () => {
-    const dailyData = localStorage.getItem('dailyResendLimit');
-    const today = new Date().toDateString();
-    let dailyCount = 0;
-
-    if (dailyData) {
-      const { count, date } = JSON.parse(dailyData);
-      if (date === today) {
-        dailyCount = count;
-      }
-    }
-
-    if (dailyCount >= 10) {
-      toast.error('You have reached the daily limit for resending OTPs.');
-      return;
-    }
-
-    if (isInCooldown) return;
-    setIsLoading(true);
-
-    try {
-      const result = await sendOTPEmail({ email });
-      if (!result.success) {
-        toast.error(result.message);
-      } else {
-        toast.success('A new OTP has been sent to your email.');
-
-        const newDailyCount = dailyCount + 1;
-        localStorage.setItem(
-          'dailyResendLimit',
-          JSON.stringify({
-            count: newDailyCount,
-            date: today,
-          }),
-        );
-        setResendCount(newDailyCount);
-
-        const delay = getDelayForAttempt();
-        const now = Date.now();
-        localStorage.setItem(
-          'resendVerifyEmail',
-          JSON.stringify({
-            resendCount: newDailyCount,
-            cooldownStart: now,
-            cooldownTime: delay,
-          }),
-        );
-
-        setCooldownTime(delay);
-        setRemainingTime(delay);
-        setIsInCooldown(true);
-      }
-    } catch {
-      toast.error('Failed to resend OTP. Please try again later.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [email, getDelayForAttempt, isInCooldown]);
-
-  return (
-    <div className="flex flex-col gap-5 justify-center items-center md:h-[calc(100vh-57vh)] lg:h-[calc(100vh-40vh)] w-full md:px-0 md:py-5 lg:px-10 lg:py-20">
-      <div className="w-full flex">
-        <DynamicBreadcrumb />
-      </div>
-      <Card className="w-full h-full p-5 flex  justify-center items-center flex-col">
-        <CardHeader className="w-full flex justify-center items-center md:h-[80%] lg:h-[50%]">
-          <CardTitle className="text-2xl">Verify Your Email</CardTitle>
+  if (!email) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-destructive">Invalid Link</CardTitle>
           <CardDescription>
-            We&apos;ve sent a 6-digit code to your email. Please enter it below.
+            The verification link is missing an email. Please{' '}
+            <a href="/register" className="underline">
+              start over
+            </a>
+            .
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          {verified ? (
-            <div className="text-center p-4  max-w-md mx-auto w-full">
-              <div className=" text-green-500">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-              </div>
-              <h3 className="text-lg md:text-xl lg:text-2xl font-semibold mb-2 md:mb-3">
-                Email Verified!
-              </h3>
-              <p className="text-gray-500 text-sm md:text-base mb-4 md:mb-6">
-                Your email has been successfully verified. You can now proceed.
-              </p>
-              <Button
-                className="w-full max-w-xs md:max-w-sm mx-auto"
-                onClick={() => router.push('/dashboard/monitoring')}
-              >
-                Go to Dashboard
-              </Button>
-            </div>
-          ) : (
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                <div className="space-y-2">
-                  <FormField
-                    name="otp"
-                    control={form.control}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>One-Time Password (OTP)</FormLabel>
-                        <FormControl>
-                          <InputOTP
-                            maxLength={6}
-                            {...field}
-                            className="justify-center items-center flex gap-5"
-                          >
-                            <InputOTPGroup className="w-full flex justify-center items-center gap-5 ">
-                              <InputOTPSlot
-                                index={0}
-                                className="rounded-md border"
-                              />
-                              <InputOTPSlot
-                                index={1}
-                                className="rounded-md border"
-                              />
-                              <InputOTPSlot
-                                index={2}
-                                className="rounded-md border"
-                              />
-                              <InputOTPSlot
-                                index={3}
-                                className="rounded-md border"
-                              />
-                              <InputOTPSlot
-                                index={4}
-                                className="rounded-md border"
-                              />
-                              <InputOTPSlot
-                                index={5}
-                                className="rounded-md border"
-                              />
-                            </InputOTPGroup>
-                          </InputOTP>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <div className="mt-2 flex gap-1 flex-col">
-                    <div className="flex justify-center mt-2">
-                      <Button
-                        type="button"
-                        variant="link"
-                        className="p-0 h-auto text-sm"
-                        onClick={handleResend}
-                        disabled={isInCooldown || isLoading}
-                      >
-                        {isInCooldown ? (
-                          <>
-                            <Clock className="h-4 w-4 mr-1" />
-                            Resend available in: {formatTime(remainingTime)}
-                          </>
-                        ) : (
-                          "Didn't receive the code? Resend"
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Verifying...' : 'Verify'}
-                </Button>
-              </form>
-            </Form>
-          )}
+      </Card>
+    );
+  }
+
+  if (isVerified) {
+    return (
+      <Card className="w-full max-w-[480px] gap-8 px-5 py-12 rounded-[40px]">
+        <CardContent className="flex justify-center items-center flex-col">
+          <CheckCircle2 className="mx-auto text-green-500 w-16 h-16" />
+          <h3 className="text-xl font-semibold">Email Verified!</h3>
+          <p className="text-sm text-muted-foreground">
+            Redirecting you to the dashboard...
+          </p>
         </CardContent>
       </Card>
-    </div>
+    );
+  }
+
+  return (
+    <Card className="w-full max-w-[480px] gap-8 px-2 py-12 rounded-[40px]">
+      <CardHeader className="flex justify-center items-center flex-col">
+        <CardTitle className="font-jakarta flex justify-center items-center text-[32px] font-extrabold">
+          Check Your Email
+        </CardTitle>
+        <CardDescription className="font-sans text-center text-[16px] flex-col flex justify-center items-center">
+          <p>Please enter the six digit verification code we sent to</p>
+          <span className="text-[20px] font-bold text-[#FD4F13]">{email}</span>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex justify-center items-center w-full">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="otp"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <InputOTP
+                      maxLength={6}
+                      {...field}
+                      className="flex justify-center items-center"
+                    >
+                      <InputOTPGroup className="gap-2 flex justify-center items-center flex-row">
+                        {[...Array(6)].map((_, index) => (
+                          <InputOTPSlot
+                            key={index}
+                            className="rounded-[14px] shadow-none border bg-[#F7F7F7] data-[active=true]:ring-1 data-[active=true]:ring-[#FD4F13] h-[50px] w-[50px]"
+                            index={index}
+                          />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </FormControl>
+                  <FormMessage className="text-center" />
+                </FormItem>
+              )}
+            />
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <Button
+                type="submit"
+                className="w-full bg-[#2E2E2E] h-[50px] text-white font-light rounded-[13px] font-sans text-[16px]"
+                disabled={isVerifying || isResending}
+              >
+                {isVerifying && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Verify Email
+              </Button>
+
+              <div className="flex flex-row gap-2 text-[16px] justify-center items-center">
+                <span className="font-normal text-[#707070]">
+                  Didn&apos;t receive the code?
+                </span>
+                <Button
+                  type="button"
+                  variant="link"
+                  className="font-medium hover:underline p-0 h-auto"
+                  onClick={handleResend}
+                  disabled={isVerifying || isResending || isInCooldown}
+                >
+                  {isResending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : isInCooldown ? (
+                    <span className="flex items-center text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-1" />
+                      Resend in {formatTime(remainingTime)}
+                    </span>
+                  ) : (
+                    'Resend'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <div className="relative flex h-screen p-4 w-screen flex-col items-center justify-between overflow-hidden bg-[#E8E8E8] font-sans dark:bg-black">
+    <div className="relative max-w-[1440px] max-h-[1024px] flex h-screen p-4 w-screen flex-col items-center justify-between overflow-hidden bg-[#E8E8E8] font-sans dark:bg-black">
       <span className="py-4 mb-10 bg-black h-fit flex  w-full flex-row justify-center items-center gap-2 px-4 rounded-lg">
         <div className="flex gap-2 text-[#B8B8B8]">
           <p>Built faster websites with </p>
