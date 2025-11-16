@@ -1,7 +1,6 @@
 'use server';
 import { users } from '@/db/migration/schema';
-import { db } from '@/libs/drizzle';
-
+import { db } from '@/libs/db';
 import { verifyResetPasswordSignature } from '@/libs/signature';
 import { ResponseAction } from '@/types/response-action';
 
@@ -37,7 +36,32 @@ export async function verifyOTPForgotPassword(
     result.data.signature,
   );
 
+  if (!valid) {
+    return {
+      code: 400,
+      success: false,
+      message: 'The signature is not valid.',
+    };
+  }
+  if (valid && expired) {
+    return {
+      code: 400,
+      success: false,
+      message: 'Your request has expired. Please try again.',
+    };
+  }
+
+  // Periksa apakah OTP cocok
+  if (result.data.otp !== payload?.otp) {
+    return {
+      code: 400,
+      success: false,
+      message: 'The OTP code is incorrect.',
+    };
+  }
+
   try {
+    // Cari pengguna berdasarkan email dan token reset
     const [user] = await db
       .select()
       .from(users)
@@ -47,5 +71,38 @@ export async function verifyOTPForgotPassword(
           eq(users.resetToken, result.data.otp),
         ),
       );
-  } catch (error) {}
+
+    if (!user) {
+      return {
+        code: 409,
+        success: false,
+        message: 'User not found or the provided code is incorrect.',
+      };
+    }
+
+    // Hapus token setelah berhasil diverifikasi
+    await db
+      .update(users)
+      .set({
+        resetToken: null,
+        resetTokenExpiry: null,
+      })
+      .where(eq(users.id, user.id));
+
+    return {
+      code: 200,
+      success: true,
+      message: 'OTP verified successfully.',
+      data: null,
+      url: result.data.signature, // Mengembalikan signature untuk langkah selanjutnya
+    };
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    // Penanganan error umum
+    return {
+      code: 500,
+      success: false,
+      message: 'An unexpected error occurred while verifying the OTP.',
+    };
+  }
 }
