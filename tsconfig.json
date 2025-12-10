@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"],
+      "@tables": ["./db/migration/tables"],
+      "@relations": ["./db/migration/relations"],
+      "@schema": ["./db/migration/schema.ts"],
+      "@components/*": ["./components/*"],
+      "@shadcn/*": ["./components/ui/*"],
+      "@ssr": ["./server-action"],
+      "@types": ["./types"],
+      "@hooks": ["./hooks"],
+      "@libs": ["./libs"],
+      "@contexts/*": ["./contexts/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts",
+    "components/landing-page/newslatter",
+    "components/assets/sidebar/index"
+  ],
+  "exclude": ["node_modules"]
+}

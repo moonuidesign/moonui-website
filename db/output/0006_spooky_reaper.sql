@@ -1,0 +1,1 @@
+ALTER TABLE "content_designs" DROP COLUMN "link_download";

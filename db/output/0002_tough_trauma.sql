@@ -1,0 +1,1 @@
+ALTER TABLE "content_components" ADD COLUMN "code_snippets" jsonb;
