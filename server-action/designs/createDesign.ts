@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { db } from '@/libs/drizzle';
-import { contentDesigns } from '@/db/migration/schema';
+import { contentDesigns } from '@/db/migration';
 import { auth } from '@/libs/auth';
 import { s3Client } from '@/libs/getR2 copy';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
@@ -14,36 +14,53 @@ type ActionResponse = { success: string } | { error: string };
 export async function createContentDesign(
   formData: FormData,
 ): Promise<ActionResponse> {
+  console.log('[CreateDesign] Started');
   const session = await auth();
-  if (!session?.user?.id) return { error: 'Unauthorized: Harap login.' };
+  if (!session?.user?.id) {
+    console.error('[CreateDesign] Unauthorized: No session or user ID');
+    return { error: 'Unauthorized: Harap login.' };
+  }
   const userId = session.user.id;
+  console.log('[CreateDesign] UserId:', userId);
 
   const rawData = formData.get('data');
   if (!rawData || typeof rawData !== 'string') {
+    console.error(
+      '[CreateDesign] Invalid Data: data field missing or not string',
+    );
     return { error: 'Data form rusak atau tidak valid.' };
   }
 
   let parsedJson: unknown;
   try {
     parsedJson = JSON.parse(rawData);
+    console.log('[CreateDesign] Parsed JSON:', parsedJson);
   } catch (e) {
+    console.error('[CreateDesign] JSON Parse Error:', e);
     return { error: 'Format JSON tidak valid.' };
   }
 
   const validated = ContentDesignSchema.safeParse(parsedJson);
   if (!validated.success) {
-    console.error('Validation Error:', validated.error.flatten());
+    console.error(
+      '[CreateDesign] Validation Error:',
+      validated.error.flatten(),
+    );
     return { error: 'Input tidak valid. Periksa kembali form anda.' };
   }
 
   const values = validated.data;
+  console.log('[CreateDesign] Validated Values:', values);
 
   // Handle Single Image Upload
   const imageFile = formData.get('image');
   let imageUrl = '';
+  // let fileSize = ''; // We will use sourceFile size if available, or image size
+  // let fileFormat = '';
 
   if (imageFile instanceof File && imageFile.size > 0) {
     try {
+      console.log('[CreateDesign] Uploading Image:', imageFile.name);
       const ext = imageFile.name.split('.').pop();
       const fileName = `designs/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
@@ -56,15 +73,60 @@ export async function createContentDesign(
         }),
       );
 
-      imageUrl = `https://${process.env.ACCOUNT_CLOUDFLARE}.r2.dev/${fileName}`;
+      imageUrl = `${fileName}`;
+      console.log('[CreateDesign] Image Uploaded:', imageUrl);
     } catch (e) {
-      console.error('Upload Failed:', e);
+      console.error('[CreateDesign] Upload Failed:', e);
       return { error: 'Gagal mengupload gambar ke server.' };
     }
   } else {
-     // Optional: if image is required, return error here.
-     // For now, let's say it's required for new design.
-     return { error: 'Gambar design wajib diupload.' };
+    // Optional: if image is required, return error here.
+    // For now, let's say it's required for new design.
+    console.error('[CreateDesign] No Image File Provided');
+    return { error: 'Gambar design wajib diupload.' };
+  }
+
+  // Handle Source File Upload (for linkDownload)
+  const sourceFile = formData.get('sourceFile');
+  let linkDownload = '';
+  let fileSize = '';
+  let fileFormat = '';
+
+  if (sourceFile instanceof File && sourceFile.size > 0) {
+    try {
+      console.log('[CreateDesign] Uploading Source File:', sourceFile.name);
+      const ext = sourceFile.name.split('.').pop();
+      const fileName = `designs/source/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+
+      await s3Client.send(
+        new PutObjectCommand({
+          Bucket: process.env.BUCKET_NAME!,
+          Key: fileName,
+          Body: Buffer.from(await sourceFile.arrayBuffer()),
+          ContentType: sourceFile.type,
+        }),
+      );
+
+      linkDownload = `${fileName}`;
+      fileSize = (sourceFile.size / 1024 / 1024).toFixed(2) + ' MB';
+      fileFormat = ext?.toUpperCase() || 'FILE';
+      console.log('[CreateDesign] Source File Uploaded:', linkDownload);
+    } catch (e) {
+      console.error('[CreateDesign] Source File Upload Failed:', e);
+      return { error: 'Gagal mengupload source file.' };
+    }
+  } else {
+    // Fallback to imageUrl if sourceFile not provided.
+    console.log('[CreateDesign] No Source File, using Image URL as fallback');
+    linkDownload = imageUrl;
+    fileSize =
+      (imageFile instanceof File ? imageFile.size / 1024 / 1024 : 0).toFixed(
+        2,
+      ) + ' MB';
+    fileFormat =
+      (imageFile instanceof File
+        ? imageFile.name.split('.').pop()?.toUpperCase()
+        : 'IMG') || 'IMG';
   }
 
   const lastItem = await db
@@ -74,26 +136,35 @@ export async function createContentDesign(
     .limit(1);
 
   const nextNumber = (lastItem[0]?.number ?? 0) + 1;
+  console.log('[CreateDesign] Next Number:', nextNumber);
 
   try {
-    await db.insert(contentDesigns).values({
+    const insertData = {
       userId,
       title: values.title,
       slug: values.slug, // JSONB
       description: values.description,
-      imageUrl: imageUrl, 
+      imagesUrl: [imageUrl], // Store as JSON array
+      linkDownload: linkDownload,
+      urlBuyOneTime: values.urlBuyOneTime,
+      size: fileSize,
+      format: fileFormat,
       categoryDesignsId: values.categoryDesignsId,
       tier: values.tier,
       statusContent: values.statusContent,
       number: nextNumber,
       viewCount: 0,
       downloadCount: 0,
-    });
+    };
+    console.log('[CreateDesign] Inserting DB:', insertData);
 
+    await db.insert(contentDesigns).values(insertData);
+
+    console.log('[CreateDesign] DB Insert Success');
     revalidatePath('/dashboard/designs');
     return { success: 'Design berhasil dibuat!' };
   } catch (error) {
-    console.error('DB Insert Error:', error);
+    console.error('[CreateDesign] DB Insert Error:', error);
     return { error: 'Gagal menyimpan data ke database.' };
   }
 }

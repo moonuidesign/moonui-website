@@ -1,4 +1,5 @@
-import { users } from '@/db/migration/schema';
+'use server';
+import { users } from '@/db/migration';
 import { unstable_update } from '@/libs/auth';
 import { db } from '@/libs/drizzle';
 import redis from '@/libs/redis-local';

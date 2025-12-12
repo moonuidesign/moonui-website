@@ -1,13 +1,5 @@
-import { getCategoriesWithSubCategories } from '@/server-action/getCategoryComponent';
-import { DesignForm } from '../DesignForm';
+import CreateDesign from '@/modules/dashboard/designs/create-page';
 
-export default async function CreateDesignPage() {
-  const categories = await getCategoriesWithSubCategories();
-
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Tambah Design Baru</h1>
-      <DesignForm categories={categories} />
-    </div>
-  );
+export default async function CreatePage() {
+  return <CreateDesign />;
 }

@@ -81,7 +81,6 @@ export function ComponentCard({
         </div>
       </CardFooter>
 
-      {/* overlay yang muncul saat hover */}
       <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
         <button
           onClick={handlecopy}

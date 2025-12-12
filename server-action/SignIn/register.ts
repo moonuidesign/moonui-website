@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import { ResponseAction } from '@/types/response-action';
 import { registerSchema, RegisterSchema } from '@/types/register';
-import { users } from '@/db/migration/schema';
+import { users } from '@/db/migration';
 import { db, generatePasswordHash } from '../../libs/db';
 import { ZodIssue } from 'zod';
 

@@ -1,17 +1,17 @@
 'use server';
 
 import { db } from '@/libs/drizzle';
-import { newsletterSubscribers } from '@/db/migration/schema';
-import { 
-  sendNewsletterWelcomeEmail, 
+import {
+  sendNewsletterWelcomeEmail,
   sendBroadcastEmail,
   generateGeneralEmailHtml,
   generateDiscountEmailHtml,
-  generateNewComponentEmailHtml
+  generateNewComponentEmailHtml,
 } from '@/libs/mail';
 import { eq, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import { BroadcastPayload } from '@/types/newsletter';
+import { newsletterSubscribers } from '@/db/migration/tables/newsletter';
 
 const subscribeSchema = z.object({
   email: z.string().email(),
@@ -80,9 +80,9 @@ export async function broadcastNewsletter(payload: BroadcastPayload) {
       .where(eq(newsletterSubscribers.isActive, true));
 
     const emails = activeSubscribers.map((s) => s.email);
-    
+
     if (emails.length === 0) {
-        return { error: 'No active subscribers found' };
+      return { error: 'No active subscribers found' };
     }
 
     let subject = '';
@@ -106,10 +106,10 @@ export async function broadcastNewsletter(payload: BroadcastPayload) {
     // Batching logic for BCC (safe limit ~40-50)
     const chunkSize = 40;
     for (let i = 0; i < emails.length; i += chunkSize) {
-        const chunk = emails.slice(i, i + chunkSize);
-        await sendBroadcastEmail(subject, htmlContent, chunk);
+      const chunk = emails.slice(i, i + chunkSize);
+      await sendBroadcastEmail(subject, htmlContent, chunk);
     }
-    
+
     return { success: `Broadcast sent to ${emails.length} subscribers` };
   } catch (error) {
     console.error('Broadcast error:', error);

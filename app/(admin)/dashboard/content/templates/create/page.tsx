@@ -1,13 +1,5 @@
-import { getCategoriesWithSubCategories } from '@/server-action/getCategoryComponent';
-import { TemplateForm } from '../TemplateForm';
+import CreateTemplate from '@/modules/dashboard/templates/create-page';
 
-export default async function CreateTemplatePage() {
-  const categories = await getCategoriesWithSubCategories();
-
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Tambah Template Baru</h1>
-      <TemplateForm categories={categories} />
-    </div>
-  );
+export default async function Page() {
+  return <CreateTemplate />;
 }

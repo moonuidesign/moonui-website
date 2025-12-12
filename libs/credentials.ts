@@ -1,6 +1,7 @@
 'use server';
-import { db } from '@/libs/db';
+
 import bcryptjs from 'bcryptjs';
+import { db } from './drizzle';
 
 export const generatePasswordHash = async (password: string) => {
   const salt = await bcryptjs.genSalt(10);

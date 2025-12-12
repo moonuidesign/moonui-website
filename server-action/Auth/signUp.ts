@@ -6,7 +6,7 @@ import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 
-import { users } from '@/db/migration/schema';
+import { users } from '@/db/migration';
 
 import { verifyLicenseSignature } from '@/libs/signature';
 import { RegisterSchema, RegisterSchemaType } from '@/types/register';

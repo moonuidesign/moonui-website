@@ -1,155 +1,290 @@
 'use server';
 
 import { db } from '@/libs/drizzle';
-import { eq, and, ilike, desc } from 'drizzle-orm';
+import { eq, and, ilike, desc, or, sql, isNull, isNotNull } from 'drizzle-orm';
 import {
   contentComponents,
   contentDesigns,
   contentGradients,
   contentTemplates,
-} from '@/db/migration/schema';
+  categoryComponents,
+  categoryTemplates,
+  categoryGradients,
+  categoryDesigns,
+  users,
+} from '@/db/migration';
 
 export type SearchResultItem = {
   id: string;
   title: string;
-  type: 'Component' | 'Template' | 'Gradient' | 'Design';
-  tier: 'free' | 'pro' | 'pro_plus';
-  category: string;
-  subcategory: string | null;
+  type:
+    | 'Component'
+    | 'Template'
+    | 'Gradient'
+    | 'Design'
+    | 'Category'
+    | 'SubCategory';
+  tier?: 'free' | 'pro' | 'pro_plus';
+  category?: string;
+  subcategory?: string | null;
   url: string;
   description?: string | null;
   number?: number | null;
+  contentType?: 'components' | 'templates' | 'gradients' | 'designs'; // For categories
+  slug?: string;
+  parentSlug?: string; // For subcategories
 };
 
-export async function getGlobalSearchData(query?: string) {
-  const results: SearchResultItem[] = [];
+export type GlobalSearchResponse = {
+  templates: SearchResultItem[];
+  templateCategories: SearchResultItem[];
+  templateSubCategories: SearchResultItem[];
+  components: SearchResultItem[];
+  componentCategories: SearchResultItem[];
+  componentSubCategories: SearchResultItem[];
+  designs: SearchResultItem[];
+  designCategories: SearchResultItem[];
+  designSubCategories: SearchResultItem[];
+  gradients: SearchResultItem[];
+  gradientCategories: SearchResultItem[];
+  gradientSubCategories: SearchResultItem[];
+};
+
+export async function getGlobalSearchData(
+  query?: string,
+): Promise<GlobalSearchResponse> {
   const searchQuery = query ? `%${query}%` : undefined;
 
-  console.log('[GlobalSearch] Starting search with query:', query);
+  // Helper to fetch content items
+  const fetchItems = async (
+    table: any,
+    catTable: any,
+    type: 'Component' | 'Template' | 'Gradient' | 'Design',
+    limit: number,
+    urlPrefix: string,
+  ) => {
+    // 1. Identify columns safely
+    const titleCol = 'title' in table ? table.title : table.name;
+    const statusCol = 'statusContent' in table ? table.statusContent : undefined;
+    const slugCol = 'slug' in table ? table.slug : undefined;
+    
+    // 2. Build Where Clause
+    const conditions = [];
+
+    // Status Check (only if column exists)
+    if (statusCol) {
+      conditions.push(eq(statusCol, 'published'));
+    }
+
+    // Search Query
+    if (searchQuery) {
+      const orConditions = [
+        ilike(titleCol, searchQuery), // Title/Name
+        ilike(users.name, searchQuery), // Author
+        ilike(catTable.name, searchQuery), // Category Name
+      ];
+
+      // Slug Search (only if JSONB slug exists)
+      if (slugCol) {
+        orConditions.push(sql`${slugCol}->>'current' ILIKE ${searchQuery}`);
+      }
+
+      conditions.push(or(...orConditions));
+    }
+
+    const q = db
+      .select({
+        item: table,
+        category: catTable,
+        user: users,
+      })
+      .from(table)
+      .leftJoin(
+        catTable,
+        eq(table[`category${type}sId` as keyof typeof table], catTable.id),
+      )
+      .leftJoin(users, eq(table.userId, users.id))
+      .where(and(...conditions))
+      .orderBy(desc(table.createdAt))
+      .limit(limit);
+
+    const res = await q;
+    
+    return res.map(({ item, category }: any) => ({
+      id: item.id,
+      title: item.title || item.name,
+      type,
+      tier: item.tier as any,
+      number: item.number,
+      category: category?.name || 'Uncategorized',
+      url: `/assets/${urlPrefix}/${(item.slug as any)?.current}`,
+      contentType: urlPrefix as any,
+    }));
+  };
+
+  // Helper to fetch categories (Main or Sub)
+  const fetchCats = async (
+    table: any,
+    contentType: 'components' | 'templates' | 'gradients' | 'designs',
+    isSub: boolean,
+    limit: number,
+  ) => {
+    // If we need subcategories, we join to get parent name?
+    // For now simple fetch.
+    // If isSub is true, parentId should be NOT NULL. If false, parentId should be NULL.
+
+    let whereClause = undefined;
+
+    if (searchQuery) {
+      whereClause = ilike(table.name, searchQuery);
+    } else {
+      // Only apply strict parent/child logic if no search query,
+      // OR apply it always? Usually search should find any category.
+      // But the prompt implies distinct sections.
+      // Let's apply strict structure:
+      // Main Category: parentId IS NULL
+      // Sub Category: parentId IS NOT NULL
+      if (isSub) {
+        whereClause = isNotNull(table.parentId);
+      } else {
+        whereClause = isNull(table.parentId);
+      }
+    }
+
+    // If there is a search query, we should probably still respect the hierarchy
+    // OR just return matches.
+    // Let's respect hierarchy to keep them in their correct UI buckets.
+    const hierarchyClause = isSub
+      ? isNotNull(table.parentId)
+      : isNull(table.parentId);
+
+    const finalWhere = searchQuery
+      ? and(ilike(table.name, searchQuery), hierarchyClause)
+      : hierarchyClause;
+
+    // We might need to join to get parent slug for subcategories if we want to filter correctly later
+    // but the schema says parentId references id.
+
+    const q = db.select().from(table).where(finalWhere).limit(limit);
+
+    // For subcategories, we might want to know the parent slug.
+    // Let's do a join if it is sub
+    if (isSub) {
+      // This is a self-join scenario, might be complex with simple select.
+      // Let's just fetch for now, we can resolve parent slug if needed or just use ID.
+      // But for filtering we usually need slugs.
+      // Let's assume for now we use the subcategory's own slug/name.
+    }
+
+    const res = await q;
+    return res.map((c: any) => ({
+      id: c.id,
+      title: c.name,
+      type: isSub ? 'SubCategory' : 'Category',
+      contentType,
+      slug: c.name, // Using name as slug based on previous context
+      url: `/assets?type=${contentType}&category=${c.name}`,
+    }));
+  };
 
   try {
-    // 1. FETCH COMPONENTS
-    console.log('[GlobalSearch] Fetching Components...');
-    const components = await db.query.contentComponents.findMany({
-      where: and(
-        eq(contentComponents.statusContent, 'published'),
-        searchQuery ? ilike(contentComponents.title, searchQuery) : undefined,
+    const [
+      templates,
+      templateCategories,
+      templateSubCategories,
+      components,
+      componentCategories,
+      componentSubCategories,
+      designs,
+      designCategories,
+      designSubCategories,
+      gradients,
+      gradientCategories,
+      gradientSubCategories,
+    ] = await Promise.all([
+      // Templates (3 items)
+      fetchItems(
+        contentTemplates,
+        categoryTemplates,
+        'Template',
+        3,
+        'templates',
       ),
-      with: {
-        category: {
-          with: { parent: true },
-        },
-      },
-      limit: searchQuery ? 10 : 20,
-      orderBy: [desc(contentComponents.createdAt)],
-    });
-    console.log(`[GlobalSearch] Found ${components.length} components`);
+      // Template Cats (5)
+      fetchCats(categoryTemplates, 'templates', false, 5),
+      // Template SubCats (5)
+      fetchCats(categoryTemplates, 'templates', true, 5),
 
-    components.forEach((item) => {
-      const mainCategory =
-        item.category?.parent?.name || item.category?.name || 'Uncategorized';
-      const subCategory = item.category?.parent ? item.category?.name : null;
-
-      results.push({
-        id: item.id,
-        title: item.title,
-        type: 'Component',
-        tier: item.tier as 'free' | 'pro',
-        number: item.number,
-        category: mainCategory,
-        subcategory: subCategory,
-        url: `/assets/components/${item.slug.current}`,
-      });
-    });
-
-    // 2. FETCH TEMPLATES
-    console.log('[GlobalSearch] Fetching Templates...');
-    const templates = await db.query.contentTemplates.findMany({
-      where: and(
-        eq(contentTemplates.statusContent, 'published'),
-        searchQuery ? ilike(contentTemplates.title, searchQuery) : undefined,
+      // Components (3 items)
+      fetchItems(
+        contentComponents,
+        categoryComponents,
+        'Component',
+        3,
+        'components',
       ),
-      with: { category: { with: { parent: true } } },
-      limit: searchQuery ? 10 : 20,
-      orderBy: [desc(contentTemplates.createdAt)],
-    });
-    console.log(`[GlobalSearch] Found ${templates.length} templates`);
+      // Component Cats (5)
+      fetchCats(categoryComponents, 'components', false, 5),
+      // Component SubCats (5)
+      fetchCats(categoryComponents, 'components', true, 5),
 
-    templates.forEach((item) => {
-      const mainCategory =
-        item.category?.parent?.name || item.category?.name || 'Uncategorized';
-      const subCategory = item.category?.parent ? item.category?.name : null;
+      // Designs (3 items)
+      fetchItems(contentDesigns, categoryDesigns, 'Design', 3, 'designs'),
+      // Design Cats (5)
+      fetchCats(categoryDesigns, 'designs', false, 5),
+      // Design SubCats (5)
+      fetchCats(categoryDesigns, 'designs', true, 5),
 
-      results.push({
-        id: item.id,
-        title: item.title,
-        type: 'Template',
-        tier: item.tier as 'free' | 'pro_plus',
-        number: item.number,
-        category: mainCategory,
-        subcategory: subCategory,
-        url: `/assets/templates/${item.slug.current}`,
-      });
-    });
-
-    // 3. FETCH GRADIENTS
-    console.log('[GlobalSearch] Fetching Gradients...');
-    const gradients = await db.query.contentGradients.findMany({
-      where: searchQuery ? ilike(contentGradients.name, searchQuery) : undefined,
-      with: { category: { with: { parent: true } } },
-      limit: searchQuery ? 10 : 20,
-      orderBy: [desc(contentGradients.createdAt)],
-    });
-    console.log(`[GlobalSearch] Found ${gradients.length} gradients`);
-
-    gradients.forEach((item) => {
-      results.push({
-        id: item.id,
-        title: item.name,
-        type: 'Gradient',
-        tier: item.tier as 'free' | 'pro',
-        number: item.number,
-        category: 'Colors',
-        subcategory: item.typeGradient,
-        url: `/assets/gradients/${item.slug.current}`,
-      });
-    });
-
-    // 4. FETCH DESIGNS
-    console.log('[GlobalSearch] Fetching Designs...');
-    const designs = await db.query.contentDesigns.findMany({
-      where: and(
-        eq(contentDesigns.statusContent, 'published'),
-        searchQuery ? ilike(contentDesigns.title, searchQuery) : undefined,
+      // Gradients (5 items - per prompt)
+      fetchItems(
+        contentGradients,
+        categoryGradients,
+        'Gradient',
+        5,
+        'gradients',
       ),
-      with: { category: { with: { parent: true } } },
-      limit: searchQuery ? 10 : 20,
-      orderBy: [desc(contentDesigns.createdAt)],
-    });
-    console.log(`[GlobalSearch] Found ${designs.length} designs`);
+      // Gradient Cats (5)
+      fetchCats(categoryGradients, 'gradients', false, 5),
+      // Gradient SubCats (5)
+      fetchCats(categoryGradients, 'gradients', true, 5),
+    ]);
 
-    designs.forEach((item) => {
-      const mainCategory =
-        item.category?.parent?.name || item.category?.name || 'Uncategorized';
-      const subCategory = item.category?.parent ? item.category?.name : null;
+    // For subcategories, we ideally need the parent slug to filter correctly.
+    // However, the current simple fetch doesn't get it.
+    // If the frontend logic for "more" subcategory requires "parent category + sub category",
+    // we might need to update this to fetch parent info.
+    // Given the constraints and current schema (parentId), I'll stick to basic fetch.
+    // The "slug" property is currently just the name.
 
-      results.push({
-        id: item.id,
-        title: item.title,
-        type: 'Design',
-        tier: item.tier as 'free' | 'pro_plus',
-        number: item.number,
-        category: mainCategory,
-        subcategory: subCategory,
-        url: `/assets/designs/${item.slug.current}`,
-      });
-    });
+    return {
+      templates,
+      templateCategories,
+      templateSubCategories,
+      components,
+      componentCategories,
+      componentSubCategories,
+      designs,
+      designCategories,
+      designSubCategories,
+      gradients,
+      gradientCategories,
+      gradientSubCategories,
+    };
   } catch (error) {
-    console.error('[GlobalSearch] Error fetching global search data:', error);
-    // You might want to rethrow or handle this specifically depending on your UI needs
-    // throw error; 
+    console.error('[GlobalSearch] Error:', error);
+    return {
+      templates: [],
+      templateCategories: [],
+      templateSubCategories: [],
+      components: [],
+      componentCategories: [],
+      componentSubCategories: [],
+      designs: [],
+      designCategories: [],
+      designSubCategories: [],
+      gradients: [],
+      gradientCategories: [],
+      gradientSubCategories: [],
+    };
   }
-
-  console.log(`[GlobalSearch] Returning total ${results.length} results`);
-  return results;
 }

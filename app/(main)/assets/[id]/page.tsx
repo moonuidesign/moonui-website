@@ -8,11 +8,11 @@ import {
   contentDesigns,
   contentGradients,
   contentTemplates,
-} from '@/db/migration/schema';
+} from '@/db/migration';
 import { auth } from '@/libs/auth';
 import { db } from '@/libs/drizzle';
 import { UnifiedContent } from '@/types/assets';
-import { and, desc, eq, gt, lt, ne } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, lt, ne } from 'drizzle-orm';
 
 import { notFound } from 'next/navigation';
 
@@ -162,63 +162,50 @@ async function renderPage(
     categoryIdField = contentGradients.categoryGradientsId;
   }
 
-  // Helper for Prev/Next/Related queries to avoid repetition?
-  // Since db.query[table] is type-safe, generic abstraction is tricky without `any`.
-  // We'll just do a simpler approach or direct query.
-  // Using direct query for flexibility across tables.
+  const categoryTable = getCategoryTable(type);
 
-  // NOTE: drizzle-orm functions need specific columns.
-  // We'll use `db.select` instead of `db.query` for generic dynamic table usage or switch.
-
-  // Actually, let's keep it simple. We mostly need 'number' for ordering.
-
-  // PREV ITEM
+  // 1. PREV ITEM (Fetch full object + Join Category)
   const prevItemRaw = await db
-    .select({ id: dbTable.id })
+    .select()
     .from(dbTable)
+    .leftJoin(categoryTable, eq(categoryIdField, categoryTable.id))
     .where(
       and(
         lt(dbTable.number, content.number),
         eq(categoryIdField, content.category?.id || ''),
       ),
     )
-    .orderBy(desc(dbTable.number))
+    .orderBy(desc(dbTable.number)) // Get the immediate previous number (e.g., 4 if current is 5)
     .limit(1);
 
-  const prevId = prevItemRaw[0]?.id;
+  const prevItem = prevItemRaw.length
+    ? normalizeContent(prevItemRaw[0], type)
+    : null;
 
-  // NEXT ITEM
+  // 2. NEXT ITEM (Fetch full object + Join Category)
   const nextItemRaw = await db
-    .select({ id: dbTable.id })
+    .select()
     .from(dbTable)
+    .leftJoin(categoryTable, eq(categoryIdField, categoryTable.id))
     .where(
       and(
         gt(dbTable.number, content.number),
         eq(categoryIdField, content.category?.id || ''),
       ),
     )
-    .orderBy(desc(dbTable.number)) // Wait, next item (greater number) should probably be ordered ASC if we want the *immediate* next?
-    // User logic was: gt(number, cur) -> orderBy desc(number). This finds the LARGEST number that is greater than current.
-    // Usually "Next" means "Number + 1". So if Current is 5. We want 6.
-    // gt(5) -> 6, 7, 8.
-    // orderBy desc -> 8.
-    // So "Next" gives the newest item? That's valid for "Newer Post".
-    // I will stick to original logic: orderBy(desc).
+    // FIX: Changed to 'asc' so we get the immediate next number (e.g. 6 if current is 5), not the last one
+    .orderBy(asc(dbTable.number))
     .limit(1);
 
-  const nextId = nextItemRaw[0]?.id;
+  const nextItem = nextItemRaw.length
+    ? normalizeContent(nextItemRaw[0], type)
+    : null;
 
-  // RELEVANT ITEMS
-  // We need to join with category table to be consistent with existing logic?
-  // Existing logic: leftJoin category.
-  // We can just query the content table if we have the category ID.
+  // 3. RELEVANT ITEMS
   const relevantItemsRaw = await db
-    .select() // Select all fields to normalize
+    .select()
     .from(dbTable)
-    .leftJoin(
-      getCategoryTable(type),
-      eq(categoryIdField, getCategoryTable(type).id),
-    )
+    .leftJoin(categoryTable, eq(categoryIdField, categoryTable.id))
     .where(
       and(
         eq(categoryIdField, content.category?.id || ''),
@@ -231,14 +218,11 @@ async function renderPage(
     normalizeContent(item, type),
   );
 
-  // POPULAR ITEMS
+  // 4. POPULAR ITEMS
   const popularItemsRaw = await db
     .select()
     .from(dbTable)
-    .leftJoin(
-      getCategoryTable(type),
-      eq(categoryIdField, getCategoryTable(type).id),
-    )
+    .leftJoin(categoryTable, eq(categoryIdField, categoryTable.id))
     .orderBy(desc(dbTable.downloadCount))
     .limit(3);
 
@@ -249,8 +233,9 @@ async function renderPage(
   return (
     <ContentDetailClient
       content={content}
-      prevId={prevId}
-      nextId={nextId}
+      // UPDATE: Pass the full objects, not just IDs
+      prevItem={prevItem}
+      nextItem={nextItem}
       relevantContent={relevantContent}
       popularContent={popularContent}
       userTier={user?.user.tier === 'pro_plus' ? 'pro_plus' : 'free'}

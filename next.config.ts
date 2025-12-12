@@ -6,17 +6,34 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   experimental: {
     serverActions: {
-      bodySizeLimit: '1mb',
+      bodySizeLimit: '50mb',
     },
     scrollRestoration: true,
     optimizeCss: true,
   },
   images: {
-    domains: [
-      'example.com',
-      'placehold.co',
-      'images.unsplash.com',
-      'moonui.com',
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'moonui.com',
+      },
+      {
+        protocol: 'https',
+        // This is your Cloudflare R2 / S3 bucket domain
+        hostname: 'e030a9ca75da2d22f1cdc516446cca19.r2.dev',
+      },
     ],
   },
   async headers() {

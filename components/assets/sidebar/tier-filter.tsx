@@ -8,7 +8,7 @@ import { TierType, useFilter } from '@/contexts';
 
 export const TierFilter = () => {
   const { selectedTiers, toggleTier } = useFilter();
-  const tiers: TierType[] = ['free', 'pro', 'pro_plus'];
+  const tiers: TierType[] = ['free', 'pro'];
 
   return (
     <div className="w-full pt-1 pb-4 bg-white rounded-2xl shadow-card-sm flex flex-col gap-2 overflow-hidden mb-4">

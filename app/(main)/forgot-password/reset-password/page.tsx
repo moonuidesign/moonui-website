@@ -1,13 +1,7 @@
-import ResetPasswordForm from '@/components/ResetPassword';
+import ResetPasswordForm from '@/components/reset-password';
 import Image from 'next/image';
 import { Suspense } from 'react';
 
-/**
- * Komponen Fallback (Skeleton Loader)
- * Ini akan ditampilkan di dalam layout Anda sementara
- * VerifyFogotPasswordOTPForm sedang menunggu untuk dirender di client.
- * Didesain agar ukurannya mirip dengan form aslinya.
- */
 function FormSkeleton() {
   return (
     <div className="w-full max-w-md h-auto p-5 flex flex-col justify-center items-center mx-auto animate-pulse">
@@ -36,7 +30,6 @@ export default function Page() {
   return (
     <div className="dark:bg-black mb-0 lg:mb-20 h-[80vh] dark:bg-dot-white">
       <div className="md:grid-cols-2 lg:grid-cols-2 w-full md:grid lg:grid py-20 flex container mx-auto">
-        {/* Kolom gambar tidak berubah, ini bisa dirender secara statis */}
         <div className="col-span-1 justify-center items-center hidden h-full w-full lg:flex md:flex">
           <Image
             alt="otp"

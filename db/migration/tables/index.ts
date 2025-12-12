@@ -12,3 +12,4 @@ export * from './users';
 export * from './licenses';
 export * from './licenses-transactions';
 export * from './verifications-tokens';
+export * from './newsletter';

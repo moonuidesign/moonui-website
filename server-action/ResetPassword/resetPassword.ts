@@ -1,5 +1,5 @@
 'use server';
-import { users } from '@/db/migration/schema';
+import { users } from '@/db/migration';
 import { db } from '@/libs/drizzle';
 import { verifyResetPasswordSignature } from '@/libs/signature';
 import { hashPassword } from '@/libs/utils';

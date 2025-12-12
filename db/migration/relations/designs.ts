@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { contentDesigns, users } from '@schema';
+import { contentDesigns, users } from '@/db/migration';
 import { categoryDesigns } from '@tables';
 
 export const contentDesignsRelations = relations(contentDesigns, ({ one }) => ({

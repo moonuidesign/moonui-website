@@ -1,21 +1,12 @@
 // components/layout/ContentFilterBar.tsx
 'use client';
 
-import {
-  LayoutGrid,
-  FileBox,
-  Palette,
-  Monitor,
-  Smartphone,
-  Globe,
-  PenTool,
-  Layers,
-} from 'lucide-react';
+import { LayoutGrid, FileBox, Palette, PenTool } from 'lucide-react';
 import { cn } from '@/libs/utils';
-import { PlatformType, useFilter } from '@/contexts';
+import { useFilter } from '@/contexts';
 
-export const NavbarFilter = () => {
-  const { contentType, setContentType, platform, setPlatform } = useFilter();
+export default function NavbarFilter() {
+  const { contentType, setContentType } = useFilter();
 
   const activePill =
     'bg-orange-600 text-white shadow-card-sm border-transparent';
@@ -70,44 +61,6 @@ export const NavbarFilter = () => {
           <span className="text-sm font-medium">Gradients</span>
         </button>
       </div>
-
-      {/* Right: Platform Filter */}
-      {contentType !== 'gradients' && contentType !== 'designs' && (
-        <div className="p-1.5 bg-zinc-100 rounded-[50px] flex items-center gap-1 overflow-x-auto max-w-full">
-          {(
-            [
-              'all',
-              'web',
-              'ios',
-              'android',
-              'desktop',
-              'cross_platform',
-            ] as PlatformType[]
-          ).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPlatform(p)}
-              className={cn(
-                'h-8 px-3 rounded-[20px] text-sm font-medium flex items-center gap-2 transition-all whitespace-nowrap',
-                platform === p
-                  ? 'bg-white text-zinc-900 shadow-sm'
-                  : 'text-zinc-500 hover:text-zinc-700',
-              )}
-            >
-              {p === 'all' && <LayoutGrid className="w-3 h-3" />}
-              {p === 'web' && <Globe className="w-3 h-3" />}
-              {p === 'ios' && <Smartphone className="w-3 h-3" />}
-              {p === 'android' && <Smartphone className="w-3 h-3" />}
-              {p === 'desktop' && <Monitor className="w-3 h-3" />}
-              {p === 'cross_platform' && <Layers className="w-3 h-3" />}
-
-              {p === 'cross_platform'
-                ? 'Cross Platform'
-                : p.charAt(0).toUpperCase() + p.slice(1)}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
-};
+}

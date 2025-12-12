@@ -1,6 +1,6 @@
 'use server';
 
-import { licenses, licenseTransactions } from '@/db/migration/schema';
+import { licenses, licenseTransactions } from '@/db/migration';
 import { db } from '@/libs/drizzle';
 
 type LicenseStatus = 'active' | 'inactive' | 'expired' | 'disabled';

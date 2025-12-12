@@ -1,5 +1,4 @@
-import VerifyEmailOTPForm from '@/components/OTPVerifyEmail';
-import Image from 'next/image';
+import VerifyEmailOTPForm from '@/components/otp-verify-email';
 import { Suspense } from 'react';
 
 function FormSkeleton() {

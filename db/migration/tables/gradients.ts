@@ -14,13 +14,17 @@ export const contentGradients = pgTable('content_gradients', {
     .$defaultFn(() => crypto.randomUUID()),
   name: text('name').notNull(),
   slug: jsonb('slug').notNull(),
+  description: jsonb('description'),
   colors: jsonb('colors').notNull(),
   number: integer('number').notNull(),
   typeGradient: varchar('type_gradient', {
     length: 50,
     enum: ['linear', 'radial', 'conic'],
   }).notNull(),
+  size: text('size'),
+  format: text('format'),
   image: text('image').notNull(),
+  urlBuyOneTime: text('url_buy_one_time'),
   linkDownload: text('link_download').notNull(),
   downloadCount: integer('download_count').default(0).notNull(),
   userId: text('user_id')

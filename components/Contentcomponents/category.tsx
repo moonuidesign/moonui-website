@@ -4,6 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { getCategoryComponents, type Category } from '@/server-action/getCategoryComponent';
+import { createCategoryComponent } from '@/server-action/getCategoryComponent/create';
+import { CategoryComponentSchema, type CategoryComponentFormValues } from '@/server-action/getCategoryComponent/validator';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -144,7 +147,7 @@ export function CategoryComponentForm({ parentCategories }: CategoryFormProps) {
 }
 export default async function ManageCategoriesPage() {
   // Ambil semua kategori dari server
-  const allCategories = await getCategoriesWithSubCategories();
+  const allCategories = await getCategoryComponents();
 
   // Filter untuk mendapatkan hanya kategori utama (yang tidak punya parentId)
   // Ini mencegah membuat sub-kategori di dalam sub-kategori (hierarki 1 level)

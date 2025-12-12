@@ -2,7 +2,7 @@
 import { AuthError } from 'next-auth';
 import { z } from 'zod';
 import { db } from '@/libs/drizzle';
-import { users } from '@/db/migration/schema';
+import { users } from '@/db/migration';
 import { eq } from 'drizzle-orm';
 import { signIn } from '@/libs/auth';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';

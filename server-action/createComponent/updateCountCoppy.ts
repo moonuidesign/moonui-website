@@ -1,6 +1,6 @@
 'use server';
 
-import { contentComponents } from '@/db/migration/schema';
+import { contentComponents } from '@/db/migration';
 import { db } from '@/libs/drizzle';
 import { eq, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';

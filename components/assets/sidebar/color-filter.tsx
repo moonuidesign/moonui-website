@@ -4,7 +4,7 @@
 import React from 'react';
 import { cn } from '@/libs/utils';
 import { Check, Plus } from 'lucide-react';
-import { useFilter } from './filter-context';
+import { useFilter } from '@/contexts';
 
 // Preset Colors
 const PRESET_COLORS = [

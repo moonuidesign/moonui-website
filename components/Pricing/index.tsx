@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link'; // 1. Import Link
 import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 

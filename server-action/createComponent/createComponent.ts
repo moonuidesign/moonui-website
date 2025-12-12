@@ -12,7 +12,7 @@ import {
   ContentComponentFormValues,
   ContentComponentSchema,
 } from './component-validator'; // Sesuaikan path validator
-import { contentComponents } from '@/db/migration/schema';
+import { contentComponents } from '@/db/migration';
 
 // ============================================================================
 // 1. TYPES & INTERFACES (STRICT TYPING)
@@ -191,20 +191,23 @@ export async function createContentComponent(
   values: ContentComponentFormValues,
   imageFile?: File | null,
 ): Promise<ActionResponse> {
+  console.log('[CreateComponent] Started');
   const session = await auth();
   if (!session?.user?.id) {
+    console.error('[CreateComponent] Unauthorized');
     return {
       success: false,
       error: 'Unauthorized: Harap login terlebih dahulu.',
     };
   }
   const userId = session.user.id;
+  console.log('[CreateComponent] UserId:', userId);
 
   // 1. Validation
   const validated = ContentComponentSchema.safeParse(values);
   if (!validated.success) {
     const errorDetails = validated.error.flatten().fieldErrors;
-    console.error('Validation Failed:', errorDetails);
+    console.error('[CreateComponent] Validation Failed:', errorDetails);
     return {
       success: false,
       error: 'Validasi data gagal.',
@@ -219,15 +222,21 @@ export async function createContentComponent(
     categoryComponentsId,
     subCategoryComponentsId, // Ambil field ini
     tier,
-    platform,
+    // platform, // Removed as it is not in schema
     statusContent,
+    urlBuyOneTime,
+    description,
     copyComponentTextHTML,
     copyComponentTextPlain,
   } = validated.data;
+  console.log('[CreateComponent] Validated Values:', validated.data);
+
   const finalCategoryId =
     subCategoryComponentsId && subCategoryComponentsId.trim() !== ''
       ? subCategoryComponentsId
       : categoryComponentsId;
+  console.log('[CreateComponent] Final Category ID:', finalCategoryId);
+
   let codeSnippets: CodeSnippets = {
     react: '',
     vue: '',
@@ -236,6 +245,7 @@ export async function createContentComponent(
   };
 
   if (rawHtmlInput && rawHtmlInput.trim().length > 0) {
+    console.log('[CreateComponent] Generating AI Code...');
     try {
       const [react, vue, angular, html] = await Promise.all([
         generateCodeWithAI('react', rawHtmlInput),
@@ -244,10 +254,18 @@ export async function createContentComponent(
         generateCodeWithAI('html', rawHtmlInput),
       ]);
       codeSnippets = { react, vue, angular, html };
+      console.log('[CreateComponent] AI Code Generation Complete');
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error('AI Generation Critical Error:', errorMsg);
+      console.error(
+        '[CreateComponent] AI Generation Critical Error:',
+        errorMsg,
+      );
     }
+  } else {
+    console.log(
+      '[CreateComponent] No Raw HTML Input provided, skipping AI generation',
+    );
   }
 
   // 3. Generate Number
@@ -258,9 +276,12 @@ export async function createContentComponent(
     .limit(1);
 
   const nextNumber = (lastComponent[0]?.number ?? 0) + 1;
+  console.log('[CreateComponent] Next Number:', nextNumber);
+
   let imageUrl: string | null = null;
   if (imageFile && imageFile.size > 0) {
     try {
+      console.log('[CreateComponent] Uploading Image:', imageFile.name);
       const ext = imageFile.name.split('.').pop();
       const fileName = `components/${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const buffer = Buffer.from(await imageFile.arrayBuffer());
@@ -276,15 +297,17 @@ export async function createContentComponent(
         }),
       );
 
-      imageUrl = `https://${process.env.ACCOUNT_CLOUDFLARE}.r2.dev/${fileName}`;
+      imageUrl = `${fileName}`;
+      console.log('[CreateComponent] Image Uploaded:', imageUrl);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Unknown upload error';
-      console.error('Upload Image Failed:', msg);
+      console.error('[CreateComponent] Upload Image Failed:', msg);
       return { success: false, error: 'Gagal mengupload gambar.' };
     }
   }
+
   try {
-    await db.insert(contentComponents).values({
+    const insertData = {
       userId,
       title,
       typeContent: type,
@@ -296,16 +319,22 @@ export async function createContentComponent(
       },
       categoryComponentsId: finalCategoryId,
       tier,
-      platform,
+      description,
+      // platform, // Removed
       statusContent,
+      urlBuyOneTime,
       number: nextNumber,
       imageUrl,
       viewCount: 0,
       copyCount: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
+    };
+    console.log('[CreateComponent] Inserting DB:', insertData);
 
+    await db.insert(contentComponents).values(insertData);
+
+    console.log('[CreateComponent] DB Insert Success');
     revalidatePath('/dashboard/components');
 
     return {
@@ -316,7 +345,7 @@ export async function createContentComponent(
     };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error('Database Error:', errorMsg);
+    console.error('[CreateComponent] Database Error:', errorMsg);
     return {
       success: false,
       error: 'Terjadi kesalahan sistem saat menyimpan ke database.',

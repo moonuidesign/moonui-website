@@ -1,7 +1,7 @@
 // app/register/page.tsx (atau lokasi file Anda)
 
 import { verifyLicenseSignature } from '@/libs/signature';
-import { RegisterForm } from '@/components/SignUP/formSignUp';
+import { RegisterForm } from '@/components/signup/formSignUp';
 import { redirect } from 'next/navigation'; // Import redirect
 
 export default async function RegisterPage({

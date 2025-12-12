@@ -1,5 +1,5 @@
 'use server';
-import * as schema from '../db/migration/schema';
+import * as schema from '../db/migration';
 import { eq } from 'drizzle-orm';
 
 import bcryptjs from 'bcryptjs';

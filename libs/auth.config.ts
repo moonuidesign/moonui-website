@@ -5,11 +5,27 @@ export const authConfig = {
     signIn: '/signin',
   },
   callbacks: {
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        token.roleUser = user.roleUser;
+        token.tier = user.tier;
+      }
+      if (trigger === 'update' && session) {
+        token = { ...token, ...session };
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token) {
+        session.user.roleUser = token.roleUser as 'admin' | 'user' | 'superadmin';
+        session.user.tier = token.tier as string;
+      }
+      return session;
+    },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const user = auth?.user;
 
-      // Definisikan path
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
       const isOnAdmin = nextUrl.pathname.startsWith('/admin');
       const isOnCoba = nextUrl.pathname.startsWith('/coba');
@@ -17,57 +33,50 @@ export const authConfig = {
 
       // 1. JIKA BELUM LOGIN
       if (!isLoggedIn) {
-        // Jika mencoba masuk halaman yang butuh akses, lempar ke login
         if (isOnDashboard || isOnAdmin || isOnCoba) {
-          return Response.redirect(new URL('/signin', nextUrl));
+          return false; // Otomatis redirect ke /signin
         }
         return true;
       }
 
-      // 2. JIKA SUDAH LOGIN (Logic Role & Tier)
+      // 2. JIKA SUDAH LOGIN
       if (isLoggedIn) {
-        // A. Cek Superadmin / Admin
-        if (user?.roleUser === 'admin' || user?.roleUser === 'superadmin') {
-          // Jika admin nyasar ke halaman login atau coba, balikin ke dashboard admin
+        const role = user?.roleUser ?? 'user';
+
+        // --- Logika ADMIN ---
+        if (role === 'admin' || role === 'superadmin') {
+          // Jika admin ada di halaman login atau coba -> lempar ke Dashboard
           if (isOnLogin || isOnCoba) {
-            return Response.redirect(new URL('/admin/dashboard', nextUrl));
+            return Response.redirect(new URL('/dashboard', nextUrl));
           }
-          // Izinkan akses ke mana saja (atau batasi akses user biasa jika perlu)
+          // Admin boleh akses apapun yang diawali /admin dan /dashboard
           return true;
         }
 
-        // B. Cek Regular User
-        if (user?.roleUser === 'user') {
-          // Cek Tier Lisensi
-          // Asumsi: 'free' berarti expired/tidak aktif, 'pro'/'pro_plus' berarti aktif
+        // --- Logika USER BIASA ---
+        if (role === 'user') {
+          // Jika user biasa mencoba masuk halaman admin -> tolak
+          if (isOnAdmin) {
+            return Response.redirect(new URL('/dashboard', nextUrl)); // Atau ke 404
+          }
+
+          // Cek Status Lisensi (Tier)
           const isLicenseActive =
             user?.tier === 'pro' || user?.tier === 'pro_plus';
 
-          if (!isLicenseActive) {
-            // JIKA LISENSI MATI / FREE
-            // Jangan biarkan masuk dashboard, paksa ke /coba
+          if (isLicenseActive) {
+            // Lisensi AKTIF
+            if (isOnLogin || isOnCoba) {
+              return Response.redirect(new URL('/dashboard', nextUrl));
+            }
+          } else {
+            // Lisensi MATI / FREE
             if (isOnDashboard) {
               return Response.redirect(new URL('/coba', nextUrl));
             }
-            // Izinkan akses ke /coba
-            if (isOnCoba) {
-              return true;
+            if (isOnLogin) {
+              return Response.redirect(new URL('/coba', nextUrl));
             }
-          } else {
-            // JIKA LISENSI AKTIF
-            // Jangan biarkan masuk /coba (opsional, tergantung flow)
-            if (isOnCoba) {
-              return Response.redirect(new URL('/dashboard', nextUrl));
-            }
-            // Izinkan masuk dashboard
-            return true;
-          }
-
-          // Redirect user dari login page ke tujuan yang benar
-          if (isOnLogin) {
-            return Response.redirect(
-              new URL(isLicenseActive ? '/dashboard' : '/coba', nextUrl),
-            );
           }
         }
       }
@@ -75,5 +84,5 @@ export const authConfig = {
       return true;
     },
   },
-  providers: [], // Providers didefinisikan di auth.ts
+  providers: [], // Diisi di auth.ts
 } satisfies NextAuthConfig;

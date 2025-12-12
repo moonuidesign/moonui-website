@@ -27,8 +27,12 @@ export const ContentGradientSchema = z.object({
 
   categoryGradientsId: z.string().min(1, 'Category required'),
 
+  description: z.any().optional(),
+
   // Slug / Tags (Label)
   slug: z.array(z.string()).min(1, 'Minimal satu tag/label wajib diisi'),
+  
+  urlBuyOneTime: z.string().optional(),
 
   tier: z.enum(GRADIENT_TIER_OPTIONS),
 });

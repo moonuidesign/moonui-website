@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { licenses, licenseTransactions, users } from '../schema';
+import { licenses, licenseTransactions, users } from '@tables';
 
 export const licenseTransactionsRelations = relations(
   licenseTransactions,

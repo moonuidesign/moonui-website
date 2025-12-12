@@ -1,7 +1,7 @@
 import { db } from '@/libs/drizzle';
-import { licenses, users } from '@/db/migration/schema';
+import { licenses, users } from '@/db/migration';
 import { sendExpirationNoticeEmail } from '@/libs/mail';
-import { and, between, eq, sql } from 'drizzle-orm';
+import { and, between, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {

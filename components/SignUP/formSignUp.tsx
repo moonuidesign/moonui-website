@@ -65,7 +65,7 @@ export function RegisterForm({ signature, email }: RegisterFormProps) {
         });
 
         if (signInResult?.ok) {
-          toast.error('Sukses mendaftar');
+          toast.success('Sukses mendaftar');
           window.location.href = '/dashboard';
         } else {
           toast.error(

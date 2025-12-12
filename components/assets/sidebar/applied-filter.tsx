@@ -84,7 +84,7 @@ export const AppliedFilters = () => {
         {categorySlugs.map((slug) => (
           <div
             key={slug}
-            className="h-7 pl-2 pr-1 bg-zinc-800 rounded-lg flex items-center gap-1"
+            className="h-7 pl-2 pr-1 bg-orange-600 rounded-lg flex items-center gap-1"
           >
             <span className="text-white text-xs font-medium capitalize">
               {slug}

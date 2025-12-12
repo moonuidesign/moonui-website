@@ -1,4 +1,4 @@
-import { categoryComponents } from '@/db/migration/schema';
+import { categoryComponents } from '@/db/migration';
 import { InferSelectModel } from 'drizzle-orm';
 
 export type CategoryComponent = InferSelectModel<typeof categoryComponents>;
@@ -9,4 +9,5 @@ export interface NavCategoryItem {
   name: string;
   slug: string;
   count?: number;
+  children?: NavCategoryItem[];
 }

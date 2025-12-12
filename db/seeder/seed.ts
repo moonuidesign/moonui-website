@@ -1,4 +1,5 @@
 import { db } from '@/libs/drizzle';
+import bcrypt from 'bcryptjs';
 import {
   accounts,
   categoryComponents,
@@ -14,220 +15,391 @@ import {
   newsletterSubscribers,
   sessions,
   users,
-} from './migration/schema';
+} from '@schema';
 
 async function seed() {
-  console.log('🚀 Memulai Seeding Lengkap (Super Admin, Admin, User)...');
+  console.log('🚀 Starting Extensive Database Seeding (MoonUI Edition)...');
 
   try {
     // =================================================================
-    // 1. BERSIHKAN DATABASE (Reset Total)
+    // 1. CLEANUP
     // =================================================================
-    console.log('🗑️  Menghapus data lama...');
-
-    // Hapus tabel child
+    console.log('🗑️  Cleaning up old data...');
+    // Delete in reverse order of dependencies to avoid foreign key constraints
     await db.delete(licenseTransactions);
     await db.delete(licenses);
     await db.delete(contentTemplates);
     await db.delete(contentComponents);
     await db.delete(contentGradients);
     await db.delete(contentDesigns);
-
-    // Hapus tabel parent
     await db.delete(categoryTemplates);
     await db.delete(categoryComponents);
     await db.delete(categoryGradients);
     await db.delete(categoryDesigns);
-
-    // Hapus user
     await db.delete(accounts);
     await db.delete(sessions);
     await db.delete(newsletterSubscribers);
     await db.delete(users);
-
-    console.log('✅ Database bersih.');
+    console.log('✅ Database cleaned.');
 
     // =================================================================
-    // 2. BUAT USERS (3 Tipe Role)
+    // 2. USERS
     // =================================================================
-    console.log('👥 Membuat Users...');
+    console.log('👥 Creating Users...');
 
-    // A. SUPER ADMIN (Pemilik Aset Utama)
+    const hashedPassword = await bcrypt.hash('password123', 10);
+
     const [superAdmin] = await db
       .insert(users)
       .values({
-        name: 'The Boss (Super Admin)',
+        name: 'Super Admin',
         email: 'super@moonui.com',
-        image: 'https://github.com/shadcn.png',
+        password: hashedPassword,
+        image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=super',
         roleUser: 'superadmin',
         emailVerified: new Date(),
       })
       .returning();
 
-    // B. ADMIN (Staff Pengelola)
-    const [adminStaff] = await db
+    const [admin] = await db
       .insert(users)
       .values({
-        name: 'Alex (Staff Admin)',
-        email: 'alex@moonui.com',
-        image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36',
+        name: 'Admin Staff',
+        email: 'admin@moonui.com',
+        password: hashedPassword,
+        image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
         roleUser: 'admin',
         emailVerified: new Date(),
       })
       .returning();
 
-    // C. USER PRO (Customer Berbayar)
     const [userPro] = await db
       .insert(users)
       .values({
-        name: 'Sarah (Pro User)',
-        email: 'sarah@client.com',
-        image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
+        name: 'Pro User',
+        email: 'pro@client.com',
+        password: hashedPassword,
+        image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pro',
         roleUser: 'user',
         emailVerified: new Date(),
       })
       .returning();
 
-    // D. USER FREE (Customer Gratisan)
     const [userFree] = await db
       .insert(users)
       .values({
-        name: 'John (Free User)',
-        email: 'john@gmail.com',
-        roleUser: 'user', // User biasa
+        name: 'Free User',
+        email: 'free@gmail.com',
+        password: hashedPassword,
+        image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=free',
+        roleUser: 'user',
         emailVerified: new Date(),
       })
       .returning();
 
-    console.log(`✅ Users Created: 
-      - Super Admin ID: ${superAdmin.id}
-      - Admin Staff ID: ${adminStaff.id}
-      - User Pro ID: ${userPro.id}
-      - User Free ID: ${userFree.id}
-    `);
+    console.log('✅ Users created with password: password123');
 
     // =================================================================
-    // 3. BUAT KATEGORI (Dimiliki oleh Super Admin & Admin)
+    // 3. CATEGORIES & SUB-CATEGORIES
     // =================================================================
-    console.log('📂 Membuat Kategori...');
+    console.log('📂 Creating Categories & Sub-categories...');
 
-    // Kategori Official (Punya Super Admin)
-    const [catDash] = await db
-      .insert(categoryTemplates)
-      .values({
-        name: 'Official Dashboards',
-        description: 'Template resmi MoonUI',
-        userId: superAdmin.id,
-      })
-      .returning();
+    const createCategories = async (
+      table: any,
+      names: string[],
+      subNames: string[],
+      userId: string,
+      type: string
+    ) => {
+      const parents = [];
+      for (const name of names) {
+        const [cat] = await db
+          .insert(table)
+          .values({
+            name,
+            description: `Curated collection of ${name.toLowerCase()} ${type}.`,
+            userId,
+          })
+          .returning();
+        parents.push(cat);
+      }
 
-    // Kategori Komunitas/Blog (Punya Admin Staff)
-    const [catCommunity] = await db
-      .insert(categoryDesigns)
-      .values({
-        name: 'Community Designs',
-        description: 'Desain kurasi komunitas',
-        userId: adminStaff.id, // <--- Dimiliki oleh Admin biasa
-      })
-      .returning();
+      // Add sub-categories to ALL parents
+      for (const parent of parents) {
+        const selectedSubs = subNames
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 4); // Pick random 4 subcategories
+        for (const subName of selectedSubs) {
+          await db.insert(table).values({
+            name: `${subName}`,
+            description: `${subName} style for ${parent.name}.`,
+            parentId: parent.id,
+            userId,
+          });
+        }
+      }
+      return parents;
+    };
 
-    console.log('✅ Kategori selesai.');
+    // TEMPLATE CATEGORIES
+    const templateCats = [
+      'Dashboards',
+      'Landing Pages',
+      'E-commerce',
+      'Portfolios',
+      'Blogs',
+      'Marketing',
+      'SaaS Apps',
+    ];
+    const templateSubs = [
+      'Minimal',
+      'Dark Mode',
+      'Corporate',
+      'Creative',
+      'SaaS',
+      'Mobile First',
+      'Web3',
+      'AI Powered',
+    ];
+    const createdTemplateCats = await createCategories(
+      categoryTemplates,
+      templateCats,
+      templateSubs,
+      superAdmin.id,
+      'templates'
+    );
+
+    // COMPONENT CATEGORIES
+    const componentCats = [
+      'Inputs',
+      'Buttons',
+      'Cards',
+      'Navigation',
+      'Modals',
+      'Forms',
+      'Data Display',
+      'Feedback',
+    ];
+    const componentSubs = [
+      'React',
+      'Vue',
+      'Accessible',
+      'Animated',
+      'Glassmorphism',
+      'Neumorphism',
+      'Radix UI',
+      'Shadcn',
+    ];
+    const createdComponentCats = await createCategories(
+      categoryComponents,
+      componentCats,
+      componentSubs,
+      admin.id,
+      'components'
+    );
+
+    // DESIGN CATEGORIES
+    const designCats = ['UI Kits', 'Icon Sets', 'Wireframes', 'Mockups', 'Illustrations'];
+    const designSubs = ['Figma', 'Sketch', 'Adobe XD', 'Vector', '3D', 'Abstract'];
+    const createdDesignCats = await createCategories(
+      categoryDesigns,
+      designCats,
+      designSubs,
+      admin.id,
+      'design resources'
+    );
+
+    // GRADIENT CATEGORIES
+    const gradientCats = ['Warm', 'Cool', 'Pastel', 'Neon', 'Dark', 'Nature'];
+    const gradientSubs = ['Linear', 'Radial', 'Mesh', 'Conic', 'Noise', 'Holographic'];
+    const createdGradientCats = await createCategories(
+      categoryGradients,
+      gradientCats,
+      gradientSubs,
+      superAdmin.id,
+      'gradients'
+    );
+
+    console.log('✅ Categories created.');
 
     // =================================================================
-    // 4. BUAT KONTEN (Aset Digital)
+    // 4. CONTENT (Assets)
     // =================================================================
-    console.log('📝 Membuat Konten Aset...');
+    console.log('📝 Creating Content Assets...');
 
-    // A. Konten Premium (Milik Super Admin)
-    await db.insert(contentTemplates).values({
-      title: 'MoonUI Pro Dashboard',
-      slug: { current: 'moon-pro-dash' },
-      description: 'Dashboard premium full fitur',
-      assetUrl: { file: 'https://cdn.moonui.com/dash-pro.zip' },
-      urlPreview: 'https://moonui.com/preview/pro',
-      typeContent: 'template',
-      linkDonwload: 'https://moonui.com/dl/pro',
-      tier: 'pro_plus', // Hanya untuk user berbayar
-      platform: 'web',
-      statusContent: 'published',
-      userId: superAdmin.id,
-      categoryTemplatesId: catDash.id,
-    });
+    // Helper: Templates (Figma & Framer)
+    const createTemplates = async (count: number, cats: any[]) => {
+        for (let i = 1; i <= count; i++) {
+            const cat = cats[Math.floor(Math.random() * cats.length)];
+            const tool = i % 2 === 0 ? 'framer' : 'figma';
+            const isPro = i % 3 === 0;
+            
+            await db.insert(contentTemplates).values({
+                title: `${tool === 'figma' ? 'Figma' : 'Framer'} ${cat.name} Template v${i}`,
+                slug: { current: `${tool}-template-${i}-${Date.now()}` },
+                description: `A high-quality, responsive ${tool} template for ${cat.name}. Includes 15+ pages and dark mode.`,
+                assetUrl: [{ file: `https://moonui.com/downloads/${tool}-template-${i}.zip`, type: 'zip' }], // JSONB array
+                imagesUrl: [{ url: `https://placehold.co/1200x800/png?text=${tool}+Template+${i}`, type: 'preview' }], // JSONB array
+                urlPreview: `https://moonui.com/preview/${tool}/${i}`,
+                typeContent: tool,
+                linkDonwload: `https://moonui.com/api/download/${i}`,
+                urlBuyOneTime: isPro ? 'https://gumroad.com/l/moonui-template-pro' : null,
+                tier: isPro ? 'pro_plus' : 'free',
+                platform: 'web', // Although not in schema sometimes, safe to keep if interface allows
+                statusContent: 'published',
+                userId: superAdmin.id,
+                categoryTemplatesId: cat.id,
+                number: i,
+                viewCount: Math.floor(Math.random() * 5000),
+                downloadCount: Math.floor(Math.random() * 500),
+                createdAt: new Date(Date.now() - Math.floor(Math.random() * 10000000000)),
+            });
+        }
+    };
 
-    // B. Konten Free (Milik Super Admin)
-    await db.insert(contentTemplates).values({
-      title: 'Simple Landing Page',
-      slug: { current: 'simple-landing' },
-      description: 'Landing page gratis',
-      assetUrl: { file: 'https://cdn.moonui.com/free.zip' },
-      urlPreview: 'https://moonui.com/preview/free',
-      typeContent: 'template',
-      linkDonwload: 'https://moonui.com/dl/free',
-      tier: 'free', // Bisa diakses User Free
-      platform: 'web',
-      statusContent: 'published',
-      userId: superAdmin.id,
-      categoryTemplatesId: catDash.id,
-    });
+    // Helper: Components
+    const createComponents = async (count: number, cats: any[]) => {
+        const types = ['react', 'vue', 'html', 'figma'];
+        
+        for (let i = 1; i <= count; i++) {
+            const cat = cats[Math.floor(Math.random() * cats.length)];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const isPro = i % 4 === 0;
 
-    // C. Konten Design (Milik Admin Staff)
-    await db.insert(contentDesigns).values({
-      title: 'Figma Community Kit',
-      slug: { current: 'figma-kit' },
-      description: 'Kit desain dikelola staff',
-      imageUrl: 'https://example.com/figma.png',
-      linkDownload: 'https://figma.com/community/file/123',
-      tier: 'free',
-      number: 1,
-      statusContent: 'published',
-      userId: adminStaff.id, // <--- Dibuat oleh Admin Staff
-      categoryDesignsId: catCommunity.id,
-    });
+            await db.insert(contentComponents).values({
+                title: `Modern ${cat.name} ${i}`,
+                slug: { current: `component-${i}-${Date.now()}` },
+                imageUrl: `https://placehold.co/800x600/png?text=Component+${i}`,
+                typeContent: type,
+                copyComponentTextHTML: { code: `<div class="p-4 bg-white shadow rounded">Component ${i}</div>` },
+                copyComponentTextPlain: { code: `// Component ${i} Source Code` },
+                codeSnippets: {
+                    react: `export default function Component${i}() { return <div>Component ${i}</div> }`,
+                    vue: `<template><div>Component ${i}</div></template>`,
+                    angular: `@Component({ template: '<div>Component ${i}</div>' }) class Component${i} {}`,
+                    html: `<div>Component ${i}</div>`
+                },
+                urlBuyOneTime: isPro ? 'https://lemonsqueezy.com/checkout/buy/123' : null,
+                tier: isPro ? 'pro' : 'free',
+                statusContent: 'published',
+                userId: admin.id,
+                categoryComponentsId: cat.id,
+                number: i,
+                viewCount: Math.floor(Math.random() * 10000),
+                copyCount: Math.floor(Math.random() * 2000),
+                createdAt: new Date(Date.now() - Math.floor(Math.random() * 10000000000)),
+            });
+        }
+    };
 
-    console.log('✅ Konten selesai.');
+    // Helper: Designs
+    const createDesigns = async (count: number, cats: any[]) => {
+        for (let i = 1; i <= count; i++) {
+            const cat = cats[Math.floor(Math.random() * cats.length)];
+            const isPro = i % 2 === 0;
+
+            await db.insert(contentDesigns).values({
+                title: `UI Kit Volume ${i} - ${cat.name}`,
+                slug: { current: `design-kit-${i}-${Date.now()}` },
+                description: `Comprehensive UI Kit for ${cat.name} with over 100+ elements.`,
+                imagesUrl: [{ url: `https://placehold.co/1000x600/png?text=UI+Kit+${i}` }], // JSONB
+                linkDownload: 'https://moonui.com/downloads/design-kit.fig',
+                urlBuyOneTime: isPro ? 'https://gumroad.com/l/ui-kit-pro' : null,
+                tier: isPro ? 'pro_plus' : 'free',
+                statusContent: 'published',
+                userId: admin.id,
+                categoryDesignsId: cat.id,
+                number: i,
+                viewCount: Math.floor(Math.random() * 8000),
+                downloadCount: Math.floor(Math.random() * 1000),
+                createdAt: new Date(Date.now() - Math.floor(Math.random() * 10000000000)),
+            });
+        }
+    };
+
+    // Helper: Gradients
+    const createGradients = async (count: number, cats: any[]) => {
+        const types = ['linear', 'radial', 'conic'];
+        for (let i = 1; i <= count; i++) {
+            const cat = cats[Math.floor(Math.random() * cats.length)];
+            const gType = types[Math.floor(Math.random() * types.length)];
+            const isPro = i % 5 === 0;
+            const c1 = Math.floor(Math.random()*16777215).toString(16);
+            const c2 = Math.floor(Math.random()*16777215).toString(16);
+
+            await db.insert(contentGradients).values({
+                name: `${cat.name} Mesh Gradient ${i}`,
+                slug: { current: `gradient-${i}-${Date.now()}` },
+                colors: [{ value: `#${c1}` }, { value: `#${c2}` }], // JSONB array of objects
+                typeGradient: gType as any,
+                image: `https://placehold.co/600x400/${c1}/${c2}?text=Gradient+${i}`,
+                linkDownload: `https://moonui.com/download/gradient-${i}.png`,
+                urlBuyOneTime: isPro ? 'https://moonui.com/buy/gradient-pack' : null,
+                tier: isPro ? 'pro' : 'free',
+                userId: superAdmin.id,
+                categoryGradientsId: cat.id,
+                number: i,
+                downloadCount: Math.floor(Math.random() * 5000),
+                createdAt: new Date(Date.now() - Math.floor(Math.random() * 10000000000)),
+            });
+        }
+    };
+
+    // Execute Generation
+    // 50 Templates (Mixed Figma/Framer)
+    await createTemplates(50, createdTemplateCats);
+
+    // 50 Components (React, Vue, etc)
+    await createComponents(50, createdComponentCats);
+
+    // 30 Designs (UI Kits)
+    await createDesigns(30, createdDesignCats);
+
+    // 40 Gradients
+    await createGradients(40, createdGradientCats);
+
+    console.log('✅ Content assets created.');
 
     // =================================================================
-    // 5. SIMULASI TRANSAKSI & LISENSI (Hanya User Customer)
+    // 5. LICENSES & TRANSACTIONS
     // =================================================================
-    console.log('💳 Menyiapkan Data User Customer (Lisensi)...');
-
-    // Skenario 1: User Pro MEMBELI Lisensi
-    const [licensePro] = await db
+    console.log('💳 Creating Licenses...');
+    const [license] = await db
       .insert(licenses)
       .values({
-        userId: userPro.id, // Lisensi milik Sarah (User Pro)
-        licenseKey: 'MOON-PRO-USER-SARAH-2025',
+        userId: userPro.id,
+        licenseKey: 'LICENSE-PRO-123',
         status: 'active',
         planType: 'subscribe',
         tier: 'pro_plus',
         activatedAt: new Date(),
-        expiresAt: new Date(
-          new Date().setFullYear(new Date().getFullYear() + 1),
-        ),
+        expiresAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
       })
       .returning();
 
-    // Mencatat Transaksi Pembelian Sarah
     await db.insert(licenseTransactions).values({
       userId: userPro.id,
-      licenseId: licensePro.id,
-      transactionType: 'activation', // Transaksi Pembelian
-      amount: 299000, // Rp 299.000
+      licenseId: license.id,
+      transactionType: 'activation',
+      amount: 49000,
       status: 'success',
-      metadata: { method: 'credit_card', last4: '4242' },
+      metadata: { method: 'stripe' },
     });
 
-    // Skenario 2: User Free (John) - Tidak punya lisensi aktif
-    // Kita tidak insert data ke tabel licenses untuk John,
-    // atau bisa insert status 'expired' jika dia mantan user pro.
+    // =================================================================
+    // 6. NEWSLETTER
+    // =================================================================
+    await db.insert(newsletterSubscribers).values([
+        { email: 'fan@moonui.com', isActive: true },
+        { email: 'subscriber@test.com', isActive: true },
+        { email: 'earlyaccess@moonui.com', isActive: false },
+    ]);
 
-    console.log('✅ Lisensi & Transaksi User selesai.');
-    console.log('🎉 SEEDING LENGKAP SELESAI!');
-  } catch (error) {
-    console.error('❌ FATAL ERROR:', error);
-    process.exit(1);
-  } finally {
+    console.log('✅ Seeding Complete!');
     process.exit(0);
+  } catch (error) {
+    console.error('❌ Seeding Failed:', error);
+    process.exit(1);
   }
 }
 

@@ -240,3 +240,87 @@ export async function verifyLicenseSignature(signatureString: string): Promise<{
     return { valid: false, expired: false, payload: undefined };
   }
 }
+
+// ==================================================================
+// === BAGIAN BARU: KHUSUS UNTUK UNDANGAN USER ===
+// ==================================================================
+
+export interface InvitePayload {
+  email: string;
+  role: string;
+  otp: string;
+  expiresAt: number;
+}
+
+/**
+ * Menghasilkan signature untuk undangan user.
+ */
+export async function generateInviteSignature(
+  email: string,
+  role: string,
+  otp: string,
+  expiresAt: Date,
+): Promise<string> {
+  const payload: InvitePayload = {
+    email,
+    role,
+    otp,
+    expiresAt: expiresAt.getTime(),
+  };
+
+  const payloadString = JSON.stringify(payload);
+  const encodedPayload = base64UrlEncode(payloadString);
+
+  const key = await getHmacKey(SECRET_KEY);
+  const dataBuffer = new TextEncoder().encode(encodedPayload);
+  const signatureBuffer = await crypto.subtle.sign('HMAC', key, dataBuffer);
+  const signature = bufferToHex(signatureBuffer);
+
+  return `${encodedPayload}.${signature}`;
+}
+
+/**
+ * Memverifikasi signature undangan user.
+ */
+export async function verifyInviteSignature(signatureString: string): Promise<{
+  valid: boolean;
+  expired: boolean;
+  payload?: InvitePayload;
+}> {
+  try {
+    const [encodedPayload, signatureHex] = signatureString.split('.');
+    if (!encodedPayload || !signatureHex) {
+      return { valid: false, expired: false };
+    }
+
+    const key = await getHmacKey(SECRET_KEY);
+    const dataBuffer = new TextEncoder().encode(encodedPayload);
+
+    const signatureBuffer = new Uint8Array(
+      (signatureHex.match(/.{1,2}/g) || []).map((byte) => parseInt(byte, 16)),
+    );
+
+    const isValid = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      signatureBuffer,
+      dataBuffer,
+    );
+
+    if (!isValid) {
+      return { valid: false, expired: false, payload: undefined };
+    }
+
+    const payloadString = base64UrlDecode(encodedPayload);
+    const payload = JSON.parse(payloadString) as InvitePayload;
+
+    if (Date.now() > payload.expiresAt) {
+      return { valid: true, expired: true, payload };
+    }
+
+    return { valid: true, expired: false, payload };
+  } catch (error) {
+    console.error('Error verifying invite signature:', error);
+    return { valid: false, expired: false, payload: undefined };
+  }
+}

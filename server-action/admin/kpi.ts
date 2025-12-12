@@ -1,10 +1,9 @@
 'use server';
 
 import { db } from '@/libs/drizzle';
-import { licenseTransactions, users } from '@/db/migration/schema';
+import { licenseTransactions, users } from '@/db/migration';
 import { and, between, eq, sql } from 'drizzle-orm';
 import { auth } from '@/libs/auth';
-import { redirect } from 'next/navigation';
 
 export interface RevenueStats {
   totalRevenue: number;

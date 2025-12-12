@@ -1,4 +1,4 @@
-import BroadcastForm from './BroadcastForm';
+import BroadcastForm from '../../../../../components/dashboard/broadcast/broadcast-form';
 
 export default function BroadcastPage() {
   return (

@@ -1,16 +1,4 @@
-import React, {
-  Children,
-  cloneElement,
-  ReactElement,
-  ReactNode,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useCallback,
-  isValidElement,
-} from 'react';
-import gsap from 'gsap';
+import React, { useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar,
@@ -22,18 +10,21 @@ import {
   Wallet,
 } from 'iconsax-reactjs';
 import { Bot } from 'lucide-react';
-import Image from 'next/image';
+import { MobileTopNav } from './mobile-top-nav';
+import { MockDashboardContent } from './mock-dashboard-content';
+import { CardSwap } from './card-swaps';
+import { MobileCardView } from './mobile-card-view';
 
 export type Category = 'hr' | 'finance' | 'marketing' | 'crypto' | 'ai';
 
-interface TabConfig {
+export interface TabConfig {
   id: string;
   label: string;
   icon: React.ReactNode;
   image: string;
 }
 
-interface CategoryConfig {
+export interface CategoryConfig {
   id: Category;
   title: string;
   subtitle: string;
@@ -42,7 +33,7 @@ interface CategoryConfig {
   tabs: TabConfig[];
 }
 
-const CATEGORIES_CONFIG: CategoryConfig[] = [
+export const CATEGORIES_CONFIG: CategoryConfig[] = [
   {
     id: 'hr',
     title: 'HR Management',
@@ -199,7 +190,7 @@ const CATEGORIES_CONFIG: CategoryConfig[] = [
 // 2. ICONS (Consolidated)
 // ==========================================
 
-const Icons = {
+export const Icons = {
   Check: () => (
     <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
       <path
@@ -314,535 +305,17 @@ const Icons = {
 // 3. DESKTOP COMPONENTS (Card Swap Logic)
 // ==========================================
 
-interface Slot {
+export interface Slot {
   x: number;
   y: number;
   z: number;
   scale: number;
   zIndex: number;
   opacity: number;
+  backgroundColor?: string;
 }
 
-const CardSwap = ({
-  width = 800,
-  height = 500,
-  verticalDistance = 40,
-  delay = 5000,
-  children,
-}: {
-  width?: number;
-  height?: number;
-  verticalDistance?: number;
-  delay?: number;
-  children: ReactNode;
-}) => {
-  const childArr = useMemo(
-    () => Children.toArray(children) as ReactElement[],
-    [children],
-  );
-  const elementsRef = useRef<Map<number, HTMLDivElement>>(new Map());
-  const order = useRef<number[]>(
-    Array.from({ length: childArr.length }, (_, i) => i),
-  );
-  const tlRef = useRef<gsap.core.Timeline | null>(null);
-  const intervalRef = useRef<number>(0);
-
-  const makeSlot = useCallback(
-    (i: number, total: number): Slot => ({
-      x: 0,
-      y: -i * verticalDistance,
-      z: -i * 50,
-      scale: 1 - i * 0.05,
-      zIndex: total - i,
-      opacity: i === 0 ? 1 : 1 - i * 0.15,
-    }),
-    [verticalDistance],
-  );
-
-  const placeNow = useCallback((el: HTMLElement, slot: Slot) => {
-    gsap.set(el, {
-      x: slot.x,
-      y: slot.y,
-      z: slot.z,
-      scale: slot.scale,
-      opacity: slot.opacity,
-      zIndex: slot.zIndex,
-      transformOrigin: 'center top',
-    });
-  }, []);
-
-  const animateToSlots = useCallback(
-    (
-      currentOrder: number[],
-      duration: number = 0.5,
-      ease: string = 'power3.out',
-    ) => {
-      currentOrder.forEach((originalIndex, slotIndex) => {
-        const el = elementsRef.current.get(originalIndex);
-        if (!el) return;
-        const slot = makeSlot(slotIndex, childArr.length);
-        gsap.to(el, { ...slot, duration, ease, overwrite: true });
-      });
-    },
-    [childArr.length, makeSlot],
-  );
-
-  const swap = useCallback(() => {
-    if (order.current.length < 2) return;
-    const [front, ...rest] = order.current;
-    const elFront = elementsRef.current.get(front);
-    if (!elFront) return;
-
-    const tl = gsap.timeline();
-    tlRef.current = tl;
-
-    tl.to(elFront, {
-      y: '+=150',
-      opacity: 0,
-      scale: 0.9,
-      duration: 0.4,
-      ease: 'power2.in',
-    });
-    tl.addLabel('moveForward', '-=0.1');
-
-    rest.forEach((idx, i) => {
-      const el = elementsRef.current.get(idx);
-      if (el) {
-        const slot = makeSlot(i, childArr.length);
-        tl.set(el, { zIndex: slot.zIndex }, 'moveForward');
-        tl.to(
-          el,
-          { ...slot, duration: 0.6, ease: 'elastic.out(1, 0.8)' },
-          'moveForward',
-        );
-      }
-    });
-
-    const backSlot = makeSlot(childArr.length - 1, childArr.length);
-
-    tl.call(() => {
-      gsap.set(elFront, { zIndex: backSlot.zIndex });
-    });
-    tl.to(elFront, { ...backSlot, duration: 0.5, ease: 'power2.out' });
-    tl.call(() => {
-      order.current = [...rest, front];
-    });
-  }, [childArr.length, makeSlot]);
-
-  const handleCardClick = useCallback(
-    (clickedOriginalIndex: number) => {
-      const currentPosition = order.current.indexOf(clickedOriginalIndex);
-      if (currentPosition === 0) return;
-
-      if (tlRef.current) tlRef.current.kill();
-      clearInterval(intervalRef.current);
-
-      const newOrder = [...order.current];
-      // Move the clicked item to the front
-      const [item] = newOrder.splice(currentPosition, 1);
-      newOrder.unshift(item);
-
-      order.current = newOrder;
-      animateToSlots(newOrder, 0.6, 'power3.inOut');
-      intervalRef.current = window.setInterval(swap, delay);
-    },
-    [animateToSlots, delay, swap],
-  );
-
-  useEffect(() => {
-    childArr.forEach((_, i) => {
-      const el = elementsRef.current.get(i);
-      if (el) placeNow(el, makeSlot(i, childArr.length));
-    });
-    intervalRef.current = window.setInterval(swap, delay);
-
-    return () => {
-      clearInterval(intervalRef.current);
-      if (tlRef.current) tlRef.current.kill();
-    };
-  }, [childArr, delay, makeSlot, placeNow, swap]);
-
-  return (
-    <div
-      className="relative flex items-center justify-center perspective-[1200px]"
-      style={{ width, height }}
-    >
-      {childArr.map((child, i) =>
-        isValidElement(child)
-          ? cloneElement(
-              child as ReactElement,
-              {
-                key: i,
-                ref: (el: HTMLDivElement | null) => {
-                  if (el) elementsRef.current.set(i, el);
-                  else elementsRef.current.delete(i);
-                },
-                onClick: () => handleCardClick(i),
-              } as React.HTMLAttributes<HTMLDivElement>,
-            )
-          : null,
-      )}
-    </div>
-  );
-};
-
-// Konten Dashboard Desktop
-const MockDashboardContent = ({ type }: { type: string }) => {
-  return (
-    <div className="w-full h-full bg-white p-6 grid grid-cols-12 gap-6 overflow-hidden">
-      <div className="col-span-3 lg:col-span-2 space-y-4 border-r border-gray-100 pr-4">
-        <div className="h-8 w-8 bg-purple-600 rounded-lg mb-6"></div>
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="flex items-center gap-3">
-            <div className="w-5 h-5 bg-gray-100 rounded"></div>
-            <div
-              className={`h-2.5 bg-gray-100 rounded ${
-                i === 2 ? 'w-12 bg-purple-100' : 'w-16'
-              }`}
-            ></div>
-          </div>
-        ))}
-      </div>
-      <div className="col-span-9 lg:col-span-10 flex flex-col gap-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="h-4 w-32 bg-gray-100 rounded mb-2"></div>
-            <div className="h-3 w-20 bg-gray-50 rounded"></div>
-          </div>
-          <div className="flex gap-3">
-            <div className="h-9 w-24 bg-white border border-gray-200 rounded-lg"></div>
-            <div className="h-9 w-32 bg-[#7D52F4] rounded-lg shadow-md shadow-purple-200"></div>
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-4 h-full">
-          <div className="col-span-1 bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex flex-col items-center justify-center">
-            <div className="w-24 h-24 rounded-full border-[10px] border-gray-50 border-t-purple-500 mb-3"></div>
-            <div className="h-3 w-12 bg-gray-100 rounded"></div>
-          </div>
-          <div className="col-span-2 grid grid-rows-2 gap-4">
-            <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex justify-between items-center">
-              <div className="w-12 h-12 bg-green-50 rounded-full"></div>
-            </div>
-            <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex gap-3"></div>
-          </div>
-          <div className="col-span-3 h-24 bg-gray-50 rounded-xl border border-gray-100 mt-2"></div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ==========================================
-// 4. MOBILE COMPONENTS (Navigasi & Widget)
-// ==========================================
-
-const MobileTopNav = ({
-  activeCategory,
-  setActiveCategory,
-}: {
-  activeCategory: string;
-  setActiveCategory: (c: Category) => void;
-}) => {
-  const categories = useMemo(
-    () => [
-      {
-        id: 'hr',
-        label: 'HR Management',
-        icon: (
-          <Icons.User
-            width="14"
-            height="14"
-            style={{
-              fill: 'url(#gradient-gray)',
-              stroke: 'url(#gradient-gray)',
-            }}
-          />
-        ),
-        themeColor: '#7D52F4',
-      },
-      {
-        id: 'finance',
-        label: 'Finance',
-        icon: (
-          <Icons.Finance width="14" height="14" style={{ stroke: '#E0E0E0' }} />
-        ),
-        themeColor: '#335CFF',
-      },
-      {
-        id: 'marketing',
-        label: 'Marketing',
-        icon: (
-          <Icons.Analytics
-            width="14"
-            height="14"
-            style={{ stroke: '#E0E0E0' }}
-          />
-        ),
-        themeColor: '#FB6B23',
-      },
-      {
-        id: 'crypto',
-        label: 'Crypto',
-        icon: (
-          <Icons.Wallet width="14" height="14" style={{ stroke: '#E0E0E0' }} />
-        ),
-        themeColor: '#10B981',
-      },
-      {
-        id: 'ai',
-        label: 'AI',
-        icon: (
-          <Icons.Bot width="14" height="14" style={{ stroke: '#E0E0E0' }} />
-        ),
-        themeColor: '#EC4899',
-      },
-    ],
-    [],
-  );
-
-  const isButtonDisabled = (id: string) => {
-    const category = CATEGORIES_CONFIG?.find((c) => c.id === id);
-    if (!category || category.tabs.length === 0) return true;
-    return false;
-  };
-
-  return (
-    <div className="flex items-center rounded-full gap-0 shadow-[0_0_0_1px_rgba(61,61,61,.12),inset_0_0.75px_0.75px_hsla(0,0%,100%,.64)]  p-1 w-full bg-[#F2F2F2]/50 backdrop-blur-sm overflow-hidden">
-      <svg width="0" height="0" className="absolute invisible">
-        <defs>
-          <linearGradient id="gradient-gray" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#E0E0E0" stopOpacity="1" />
-            <stop offset="100%" stopColor="#E0E0E0" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-      </svg>
-
-      {categories.map((cat, index) => {
-        const isActive = activeCategory === cat.id;
-        const isDisabled = isButtonDisabled(cat.id);
-        const isNextActive = categories[index + 1]?.id === activeCategory;
-        const hideSeparator = isActive || isNextActive;
-        const isLast = index === categories.length - 1;
-
-        return (
-          <React.Fragment key={cat.id}>
-            <motion.button
-              layout
-              onClick={() => setActiveCategory(cat.id as Category)}
-              disabled={isDisabled}
-              animate={{
-                backgroundColor: isActive ? '#FFFFFF' : 'transparent',
-                boxShadow: isActive
-                  ? '0 4px 8px rgba(41,41,41,0.06), 0 2px 4px rgba(41,41,41,0.04), 0 1px 2px rgba(41,41,41,0.04), inset 0 -0.5px 0.5px rgba(41,41,41,0.08)'
-                  : 'none',
-                flex: isActive ? 'initial' : 1,
-              }}
-              transition={{
-                type: 'spring',
-                stiffness: 500,
-                damping: 30,
-              }}
-              className={`
-                relative flex  items-center justify-center rounded-full py-[7px] px-[7px] cursor-pointer
-                ${!isActive ? 'hover:bg-black/5' : ''}
-              `}
-              style={{
-                WebkitTapHighlightColor: 'transparent',
-              }}
-            >
-              <motion.div
-                layout="position"
-                className="p-1 rounded-full flex items-center  justify-center shrink-0 z-10"
-                style={{
-                  backgroundColor: cat.themeColor,
-                }}
-              >
-                {cat.icon}
-              </motion.div>
-
-              <motion.div
-                initial={false}
-                animate={{
-                  width: isActive ? 'auto' : 0,
-                  opacity: isActive ? 1 : 0,
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 500,
-                  damping: 30,
-                }}
-                className="overflow-hidden whitespace-nowrap"
-              >
-                <motion.span className="text-[13px] pr-4 font-semibold text-[#333] pl-2 block">
-                  {cat.label}
-                </motion.span>
-              </motion.div>
-            </motion.button>
-
-            {!isLast && (
-              <motion.div
-                initial={false}
-                animate={{
-                  opacity: hideSeparator ? 0 : 1,
-                  scaleY: hideSeparator ? 0 : 1,
-                }}
-                transition={{ duration: 0.2 }}
-                className="h-4 w-[1px] bg-[rgba(61,61,61,0.12)] shrink-0 rounded-full mx-1"
-              />
-            )}
-          </React.Fragment>
-        );
-      })}
-    </div>
-  );
-};
-
-const MobileCardView = ({ activeCategory }: { activeCategory: Category }) => {
-  // 1. Get configuration
-  const config = useMemo(
-    () => CATEGORIES_CONFIG.find((c) => c.id === activeCategory),
-    [activeCategory],
-  );
-
-  // 2. Initialize state at top level
-  const [activeTab, setActiveTab] = useState<string>('');
-
-  // 3. Update activeTab when config changes
-  useEffect(() => {
-    if (config && config.tabs.length > 0) {
-      setActiveTab(config.tabs[0].id);
-    }
-  }, [config]);
-
-  if (!config) return null;
-
-  const { tabs } = config;
-  const currentTab = tabs.find((t) => t.id === activeTab) || tabs[0];
-
-  return (
-    <div className="w-full max-w-[360px] relative mx-auto flex flex-col gap-5">
-      <motion.div
-        key={activeCategory}
-        initial={{ opacity: 0, filter: 'blur(10px)' }}
-        animate={{ opacity: 1, filter: 'blur(0px)' }}
-        exit={{ opacity: 0, filter: 'blur(10px)' }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="shadow-[inset_0px_0px_0px_1px_rgba(211,211,211,1.00)] shadow-[inset_0px_0px_0px_0px_rgba(255,255,255,1.00)]  rounded-[20px]"
-      >
-        <div className="rounded-[28px] px-4 overflow-hidden flex flex-col min-h-[500px] relative transition-colors duration-500">
-          <div className="flex items-start h-fit justify-between pt-5 pb-0 border-b relative">
-            {tabs.map((tab, index) => {
-              const isActive = activeTab === tab.id;
-              const isFirst = index === 0;
-              const isLast = index === tabs.length - 1; // Cek apakah ini elemen terakhir
-
-              return (
-                <React.Fragment key={tab.id}>
-                  <button
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`relative pb-4 flex flex-col flex-1 ${
-                      isLast
-                        ? 'justify-end items-end'
-                        : isFirst
-                        ? 'justify-start items-start'
-                        : 'justify-center items-center'
-                    }`}
-                  >
-                    <div className="flex flex-row items-center gap-1.5">
-                      {/* Logika Ganti Warna Icon */}
-                      {isValidElement(tab.icon)
-                        ? cloneElement(tab.icon as React.ReactElement, {
-                            color: isActive ? config.themeColor : '#9CA3AF',
-                            variant: isActive ? 'Bold' : 'Linear',
-                          })
-                        : tab.icon}
-
-                      <span
-                        className={`text-[14px] transition-colors duration-300 ${
-                          isActive
-                            ? 'text-[#2E2E2E] font-medium'
-                            : 'text-gray-400/80'
-                        }`}
-                      >
-                        {tab.label}
-                      </span>
-                    </div>
-
-                    {/* Indikator Garis Bawah (Underline) */}
-                    {isActive && (
-                      <motion.div
-                        layoutId="tab-underline"
-                        className={`absolute bottom-0 h-[3px] rounded-full ${
-                          // Menyesuaikan panjang garis agar pas dengan alignment text
-                          isLast
-                            ? 'w-full pl-8'
-                            : isFirst
-                            ? 'w-full pr-8'
-                            : 'w-full px-2'
-                        }`}
-                      >
-                        <div
-                          className="w-full h-full rounded-full"
-                          style={{ backgroundColor: config.themeColor }}
-                        />
-                      </motion.div>
-                    )}
-                  </button>
-                  {!isLast && (
-                    <div className="w-[1px] h-[24px] flex bg-[#D3D3D3]" />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
-
-          <div className="py-6 px-8 text-center">
-            <p className="font-medium text-[#666] text-sm leading-relaxed min-h-[40px] flex items-center justify-center">
-              {config.subtitle}
-            </p>
-          </div>
-
-          <div className="flex-1 pb-5 shadow-[0_8px_30px_-10px_rgba(0,0,0,0.08)]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="w-full rounded-[24px] border-[1.5px] border-gray-100 overflow-hidden flex flex-col h-full min-h-[380px] relative"
-              >
-                {currentTab && (
-                  <Image
-                    src={currentTab.image}
-                    alt={`${currentTab.label} view`}
-                    fill
-                    className="object-cover w-full h-full"
-                    unoptimized
-                  />
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-      </motion.div>
-
-      <button className="flex -bottom-10 items-center z-[110] absolute justify-between w-full bg-[#1A1A1A] text-white h-14 px-6 rounded-[20px] shadow-xl active:scale-[0.98] transition-all">
-        <span className="text-[15px] font-semibold font-sans">
-          Explore Template
-        </span>
-        <div className="flex items-center gap-2 opacity-60">
-          <span className="text-[12px] font-medium capitalize">
-            {config.title}
-          </span>
-          <Icons.ArrowRight />
-        </div>
-      </button>
-    </div>
-  );
-};
-
-export default function Index() {
+export default function Bennefits() {
   const [activeCategory, setActiveCategory] = useState<Category>('hr');
   const getDesktopCards = useCallback((category: Category) => {
     const config = CATEGORIES_CONFIG.find((c) => c.id === category);
@@ -881,7 +354,7 @@ export default function Index() {
           activeCategory={activeCategory}
           setActiveCategory={setActiveCategory}
         />
-        <MobileCardView activeCategory={activeCategory} />
+        <MobileCardView key={activeCategory} activeCategory={activeCategory} />
       </div>
 
       <div className="hidden md:flex   flex-col items-center w-full max-w-[1440px] px-4">

@@ -1,221 +1,186 @@
-// context/FilterContext.tsx
 'use client';
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-} from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { ReactNode } from 'react';
 
 export type ToolType = 'figma' | 'framer';
 export type ContentType = 'components' | 'templates' | 'gradients' | 'designs';
-export type PlatformType =
-  | 'web'
-  | 'ios'
-  | 'android'
-  | 'desktop'
-  | 'cross_platform'
-  | 'all';
-export type TierType = 'free' | 'pro' | 'pro_plus';
+export type TierType = 'free' | 'pro';
 export type GradientType = 'linear' | 'radial' | 'conic';
 
 interface FilterState {
   tool: ToolType;
-  platform: PlatformType;
+
   contentType: ContentType;
   categorySlugs: string[];
+  subCategorySlugs: string[];
   gradientTypes: GradientType[];
   selectedColors: string[];
   selectedTiers: TierType[];
   searchQuery: string;
 }
 
-interface FilterContextType extends FilterState {
+interface FilterActions {
   setTool: (t: ToolType) => void;
-  setPlatform: (p: PlatformType) => void;
+
   setContentType: (t: ContentType) => void;
 
   toggleCategory: (slug: string) => void;
+  setCategory: (slug: string) => void;
+
+  toggleSubCategory: (slug: string) => void;
+  setSubCategory: (slug: string) => void;
+
   toggleGradientType: (type: GradientType) => void;
   toggleColor: (color: string) => void;
   toggleTier: (t: TierType) => void;
 
   setSearchQuery: (q: string) => void;
+
+  applySearchFilter: (params: {
+    contentType?: ContentType;
+    categorySlug?: string | null;
+    subCategorySlug?: string | null;
+    searchQuery?: string;
+    clearOthers?: boolean;
+  }) => void;
+
   clearAllFilters: () => void;
 }
 
-const FilterContext = createContext<FilterContextType | undefined>(undefined);
+export const useFilterStore = create<FilterState & FilterActions>()(
+  persist(
+    (set) => ({
+      tool: 'figma',
 
-export const FilterProvider = ({ children }: { children: ReactNode }) => {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [tool, setTool] = useState<ToolType>('figma');
-  const [platform, setPlatform] = useState<PlatformType>('web');
-  const [contentType, setContentType] = useState<ContentType>('components');
-  const [categorySlugs, setCategorySlugs] = useState<string[]>([]);
-  const [gradientTypes, setGradientTypes] = useState<GradientType[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [selectedTiers, setSelectedTiers] = useState<TierType[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+      contentType: 'components',
+      categorySlugs: [],
+      subCategorySlugs: [],
+      gradientTypes: [],
+      selectedColors: [],
+      selectedTiers: [],
+      searchQuery: '',
 
-  // Actions
-  const handleSetContentType = (type: ContentType) => {
-    setContentType(type);
-    setCategorySlugs([]);
-    setGradientTypes([]);
-    setSelectedColors([]);
-  };
+      setTool: (tool) => set({ tool }),
 
-  const toggleCategory = (slug: string) => {
-    if (slug === 'all') {
-      setCategorySlugs([]);
-      return;
-    }
-    setCategorySlugs((prev) =>
-      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
-    );
-  };
+      setContentType: (contentType) =>
+        set({
+          contentType,
+          categorySlugs: [],
+          subCategorySlugs: [],
+          gradientTypes: [],
+          selectedColors: [],
+        }),
 
-  const toggleGradientType = (type: GradientType) => {
-    setGradientTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
-    );
-  };
+      toggleCategory: (slug) =>
+        set((state) => {
+          if (slug === 'all') return { categorySlugs: [] };
+          const exists = state.categorySlugs.includes(slug);
+          return {
+            categorySlugs: exists
+              ? state.categorySlugs.filter((s) => s !== slug)
+              : [...state.categorySlugs, slug],
+          };
+        }),
 
-  const toggleColor = (color: string) => {
-    setSelectedColors((prev) =>
-      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color],
-    );
-  };
+      setCategory: (slug) => set({ categorySlugs: [slug] }),
 
-  const toggleTier = (tier: TierType) => {
-    setSelectedTiers((prev) =>
-      prev.includes(tier) ? prev.filter((t) => t !== tier) : [...prev, tier],
-    );
-  };
+      toggleSubCategory: (slug) =>
+        set((state) => {
+          const exists = state.subCategorySlugs.includes(slug);
+          return {
+            subCategorySlugs: exists
+              ? state.subCategorySlugs.filter((s) => s !== slug)
+              : [...state.subCategorySlugs, slug],
+          };
+        }),
 
-  const clearAllFilters = () => {
-    setCategorySlugs([]);
-    setGradientTypes([]);
-    setSelectedColors([]);
-    setSelectedTiers([]);
-    setSearchQuery('');
+      setSubCategory: (slug) => set({ subCategorySlugs: [slug] }),
 
-    // Clear URL params
-    const newParams = new URLSearchParams(searchParams.toString());
-    newParams.delete('type');
-    newParams.delete('category');
-    newParams.delete('q');
-    router.push(`?${newParams.toString()}`, { scroll: false });
-  };
+      toggleGradientType: (type) =>
+        set((state) => {
+          const exists = state.gradientTypes.includes(type);
+          return {
+            gradientTypes: exists
+              ? state.gradientTypes.filter((t) => t !== type)
+              : [...state.gradientTypes, type],
+          };
+        }),
 
-  // --- INITIALIZATION & EVENTS ---
-  useEffect(() => {
-    // 1. Priority: Check URL Search Params
-    const typeParam = searchParams.get('type') as ContentType;
-    const categoryParam = searchParams.get('category');
-    const searchParam = searchParams.get('q');
+      toggleColor: (color) =>
+        set((state) => {
+          const exists = state.selectedColors.includes(color);
+          return {
+            selectedColors: exists
+              ? state.selectedColors.filter((c) => c !== color)
+              : [...state.selectedColors, color],
+          };
+        }),
 
-    let initializedFromUrl = false;
+      toggleTier: (tier) =>
+        set((state) => {
+          const exists = state.selectedTiers.includes(tier);
+          return {
+            selectedTiers: exists
+              ? state.selectedTiers.filter((t) => t !== tier)
+              : [...state.selectedTiers, tier],
+          };
+        }),
 
-    if (
-      typeParam &&
-      ['components', 'templates', 'gradients', 'designs'].includes(typeParam)
-    ) {
-      setContentType(typeParam);
-      initializedFromUrl = true;
-    }
+      setSearchQuery: (searchQuery) => set({ searchQuery }),
 
-    if (categoryParam) {
-      setCategorySlugs([categoryParam]); // Support single category via URL for now
-      initializedFromUrl = true;
-    }
-
-    if (searchParam) {
-      setSearchQuery(searchParam);
-      initializedFromUrl = true;
-    }
-
-    // 2. If no URL params, check Local Storage (fallback)
-    if (!initializedFromUrl) {
-      try {
-        const savedFilters = localStorage.getItem('ASSET_FILTERS');
-        if (savedFilters) {
-          const parsed = JSON.parse(savedFilters);
-          if (parsed.contentType) setContentType(parsed.contentType);
-          if (parsed.categorySlugs) setCategorySlugs(parsed.categorySlugs);
-          if (parsed.searchQuery) setSearchQuery(parsed.searchQuery);
-
-          // Clear storage after applying to avoid sticking
-          localStorage.removeItem('ASSET_FILTERS');
-        }
-      } catch (error) {
-        console.error('Failed to parse filters from local storage:', error);
-      }
-    }
-
-    // 3. Listen for Custom Event (from SearchCommand)
-    const handleFilterUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const { contentType, categorySlug, searchQuery, clearOthers } =
-        customEvent.detail || {};
-
-      if (clearOthers) {
-        setCategorySlugs([]);
-        setGradientTypes([]);
-        setSelectedColors([]);
-        setSelectedTiers([]);
-      }
-
-      if (contentType) setContentType(contentType);
-
-      if (categorySlug) {
-        setCategorySlugs([categorySlug]);
-      }
-
-      if (typeof searchQuery === 'string') {
-        setSearchQuery(searchQuery);
-      }
-    };
-
-    window.addEventListener('TRIGGER_FILTER_UPDATE', handleFilterUpdate);
-    return () => {
-      window.removeEventListener('TRIGGER_FILTER_UPDATE', handleFilterUpdate);
-    };
-  }, [searchParams]); // Re-run if URL changes
-
-  return (
-    <FilterContext.Provider
-      value={{
-        tool,
-        platform,
+      applySearchFilter: ({
         contentType,
-        categorySlugs,
-        gradientTypes,
-        selectedColors,
-        selectedTiers,
+        categorySlug,
+        subCategorySlug,
         searchQuery,
-        setTool,
-        setPlatform,
-        setContentType: handleSetContentType,
-        toggleCategory,
-        toggleGradientType,
-        toggleColor,
-        toggleTier,
-        setSearchQuery,
-        clearAllFilters,
-      }}
-    >
-      {children}
-    </FilterContext.Provider>
-  );
-};
+        clearOthers,
+      }) =>
+        set((state) => {
+          const newState: Partial<FilterState> = {};
 
-export const useFilter = () => {
-  const context = useContext(FilterContext);
-  if (!context) throw new Error('useFilter error');
-  return context;
+          if (clearOthers) {
+            newState.categorySlugs = [];
+            newState.subCategorySlugs = [];
+            newState.gradientTypes = [];
+            newState.selectedColors = [];
+            newState.selectedTiers = [];
+          }
+
+          if (contentType) newState.contentType = contentType;
+          if (categorySlug !== undefined)
+            newState.categorySlugs = categorySlug ? [categorySlug] : [];
+          if (subCategorySlug !== undefined)
+            newState.subCategorySlugs = subCategorySlug
+              ? [subCategorySlug]
+              : [];
+          if (searchQuery !== undefined) newState.searchQuery = searchQuery;
+
+          return newState;
+        }),
+
+      clearAllFilters: () =>
+        set({
+          categorySlugs: [],
+          subCategorySlugs: [],
+          gradientTypes: [],
+          selectedColors: [],
+          selectedTiers: [],
+          searchQuery: '',
+        }),
+    }),
+    {
+      name: 'assets-filter-storage',
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);
+
+// Backward compatibility hook
+export const useFilter = useFilterStore;
+
+// Dummy Provider for backward compatibility (in case it's used elsewhere)
+export const FilterProvider = ({ children }: { children: ReactNode }) => {
+  return <>{children}</>;
 };

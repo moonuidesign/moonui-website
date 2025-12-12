@@ -1,4 +1,5 @@
-import { users } from '@/db/migration/schema';
+'use server';
+import { users } from '@/db/migration';
 import { db } from '@/libs/drizzle';
 import { sendPasswordResetEmail } from '@/libs/mail';
 import redis from '@/libs/redis-local';

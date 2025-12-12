@@ -28,15 +28,11 @@ export const ContentComponentSchema = z
 
     tier: z.enum(TIER_OPTIONS, { error: 'Pilih Tier' }),
 
-    platform: z.enum(PLATFORM_OPTIONS, {
-      error: 'Pilih Platform',
-    }),
-
     statusContent: z.enum(STATUS_OPTIONS, {
       error: 'Pilih Status',
     }),
-    
-    // Slug / Tags (Label)
+    description: z.any().optional(),
+    urlBuyOneTime: z.string().optional(),
     slug: z.array(z.string()).min(1, 'Minimal satu tag/label wajib diisi'),
 
     copyComponentTextHTML: z.string().min(1, 'Data Clipboard kosong'),

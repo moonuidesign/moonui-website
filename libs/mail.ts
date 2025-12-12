@@ -677,3 +677,68 @@ export async function sendExpirationNoticeEmail(
     return null;
   }
 }
+
+export async function sendInviteEmail(
+  email: string,
+  otp: string,
+  inviteUrl: string,
+  role: string,
+) {
+  try {
+    const data = await resend.emails.send({
+      from: SENDER,
+      to: email,
+      subject: 'You have been invited to join MoonUI',
+      html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: ${BG_COLOR}; padding: 20px;">
+        <div style="background-color: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+          <!-- Header with Logo -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="${LOGO_URL}" alt="MoonUI Logo" style="width: 120px; height: auto;">
+          </div>
+
+          <h2 style="color: ${PRIMARY_COLOR}; text-align: center; font-size: 24px; margin-bottom: 20px;">You've been invited!</h2>
+          
+          <p style="color: #666; line-height: 1.5; margin-bottom: 25px; text-align: center;">
+            You have been invited to join MoonUI as a <strong>${role}</strong>.
+          </p>
+          
+          <p style="color: #666; line-height: 1.5; margin-bottom: 15px; text-align: center;">
+             To accept the invitation, please use the OTP below and click the button to set up your account.
+          </p>
+
+          <div style="background-color: #f8fafc; border: 2px dashed ${PRIMARY_COLOR}; padding: 20px; font-size: 32px; font-weight: bold; text-align: center; letter-spacing: 8px; margin: 30px 0; color: ${PRIMARY_COLOR}; border-radius: 8px;">
+            ${otp}
+          </div>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${inviteUrl}" 
+               style="background-color: ${PRIMARY_COLOR}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 500; display: inline-block; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+              Accept Invitation
+            </a>
+          </div>
+
+          <p style="color: #666; line-height: 1.5; margin-bottom: 15px; text-align: center;">
+            This invitation will expire in <strong>24 hours</strong>.
+          </p>
+
+          <div style="border-top: 1px solid #eee; margin-top: 30px; padding-top: 20px;">
+            <p style="color: #999; font-size: 12px; text-align: center;">
+              If you didn't expect this invitation, please ignore this email.
+            </p>
+          </div>
+        </div>
+      </div>
+    `,
+    });
+    console.log('Invite email sent successfully:', data);
+    return data;
+  } catch (error) {
+    if (isResendError(error)) {
+      console.error('Error sending invite email:', error);
+    } else {
+      console.error('An unexpected error occurred:', error);
+    }
+    throw error;
+  }
+}

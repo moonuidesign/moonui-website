@@ -417,3 +417,5 @@ const AboutSection = () => {
 };
 
 export default AboutSection;
+export * from './floating-cursor';
+export * from './team-card';

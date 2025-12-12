@@ -3,7 +3,7 @@ import {
   contentComponents,
   contentGradients,
   contentTemplates,
-} from '@/db/migration/schema';
+} from '@/db/migration';
 import { InferSelectModel } from 'drizzle-orm';
 
 // Mengambil tipe langsung dari Drizzle Schema

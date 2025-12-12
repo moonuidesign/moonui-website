@@ -1,0 +1,537 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { Command } from 'cmdk';
+import { useRouter, usePathname } from 'next/navigation';
+import {
+  Search,
+  Monitor,
+  LayoutTemplate,
+  Palette,
+  Loader2,
+  Folder,
+  File,
+  ChevronRight,
+  Layers,
+} from 'lucide-react';
+import {
+  getGlobalSearchData,
+  type SearchResultItem,
+  type GlobalSearchResponse,
+} from '@/server-action/Search';
+import { useDebounce } from '@/hooks/use-debounce';
+import { useFilterStore } from '@/contexts';
+
+interface SearchCommandProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+const STATIC_PAGES = [
+  { title: 'Home', url: '/', keywords: ['home', 'landing', 'main'] },
+  {
+    title: 'Assets',
+    url: '/assets',
+    keywords: ['assets', 'resources', 'library', 'components', 'templates'],
+  },
+  { title: 'About', url: '/about', keywords: ['about', 'team', 'company'] },
+  {
+    title: 'Contact',
+    url: '/contact',
+    keywords: ['contact', 'support', 'help'],
+  },
+  {
+    title: 'Verify License',
+    url: '/verify-license',
+    keywords: ['license', 'verify', 'check'],
+  },
+];
+
+export function SearchCommand({ open, setOpen }: SearchCommandProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [loading, setLoading] = useState(false);
+
+  const [data, setData] = useState<GlobalSearchResponse>({
+    templates: [],
+    templateCategories: [],
+    templateSubCategories: [],
+    components: [],
+    componentCategories: [],
+    componentSubCategories: [],
+    designs: [],
+    designCategories: [],
+    designSubCategories: [],
+    gradients: [],
+    gradientCategories: [],
+    gradientSubCategories: [],
+  });
+
+  const [staticData, setStaticData] = useState<typeof STATIC_PAGES>([]);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
+
+  const applySearchFilter = useFilterStore((state) => state.applySearchFilter);
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen(!open);
+      }
+    };
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
+  }, [open, setOpen]);
+
+  useEffect(() => {
+    if (!open) {
+      setSearch('');
+      return;
+    }
+
+    // Static pages filtering
+    if (debouncedSearch) {
+      const lower = debouncedSearch.toLowerCase();
+      setStaticData(
+        STATIC_PAGES.filter(
+          (p) =>
+            p.title.toLowerCase().includes(lower) ||
+            p.keywords.some((k) => k.includes(lower)),
+        ),
+      );
+    } else {
+      setStaticData([]);
+    }
+
+    setLoading(true);
+    getGlobalSearchData(debouncedSearch)
+      .then((res) => setData(res))
+      .catch((err) => console.error('Global Search Error:', err))
+      .finally(() => setLoading(false));
+  }, [open, debouncedSearch]);
+
+  const handleNavigate = (url: string) => {
+    setOpen(false);
+    router.push(url);
+  };
+
+  const handleSelectAsset = (item: SearchResultItem) => {
+    setOpen(false);
+    if (item.url) router.push(item.url);
+  };
+
+  // --- Filter Navigation Logic ---
+
+  const handleSelectCategory = (item: SearchResultItem) => {
+    setOpen(false);
+    applySearchFilter({
+      searchQuery: search,
+      contentType: item.contentType as any,
+      categorySlug: item.slug,
+      clearOthers: true,
+    });
+    router.push('/assets');
+  };
+
+  const handleSelectSubCategory = (item: SearchResultItem) => {
+    setOpen(false);
+    // Logic: Save parent category (if known) and sub-category.
+    // Since we might not have parent slug directly if it's not passed,
+    // we assume we just set sub-category filter or if the system supports it.
+    // For now, setting subCategorySlug.
+    applySearchFilter({
+      searchQuery: search,
+      contentType: item.contentType as any,
+      subCategorySlug: item.slug,
+      // If we knew parent, we'd set it too.
+      clearOthers: true,
+    });
+    router.push('/assets');
+  };
+
+  const handleViewAll = (
+    type: string,
+    isCategory = false,
+    isSubCategory = false,
+  ) => {
+    setOpen(false);
+
+    if (isSubCategory) {
+      // "more sub category all and category main and filter and search will be saved"
+      // This implies keeping main category if selected?
+      // Or just showing all subcategories for the type.
+      applySearchFilter({
+        searchQuery: search,
+        contentType: type as any,
+        // clearOthers: true implies resetting everything else.
+        // We probably want to keep the search.
+        clearOthers: true,
+      });
+    } else if (isCategory) {
+      // "more maka data disimpan all category dan filter template"
+      applySearchFilter({
+        searchQuery: search,
+        contentType: type as any,
+        categorySlug: null, // Clear specific category
+        clearOthers: true,
+      });
+    } else {
+      // General view all (items)
+      applySearchFilter({
+        searchQuery: search,
+        contentType: type as any,
+        clearOthers: true,
+      });
+    }
+    router.push('/assets');
+  };
+
+  const handleGlobalSearchEnter = () => {
+    setOpen(false);
+    applySearchFilter({
+      searchQuery: search,
+      clearOthers: true, // New search usually resets filters?
+    });
+    router.push('/assets');
+  };
+
+  // Check if any results exist
+  const hasResults =
+    Object.values(data).some((arr) => arr.length > 0) || staticData.length > 0;
+
+  return (
+    <Command.Dialog
+      open={open}
+      onOpenChange={setOpen}
+      shouldFilter={false}
+      label="Global Search"
+      className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-black/60 backdrop-blur-sm transition-all"
+    >
+      <div className="w-full max-w-[700px] overflow-hidden rounded-xl bg-white shadow-2xl animate-in fade-in zoom-in-95 border border-gray-200 mx-4 font-['Inter']">
+        <div className="flex items-center border-b px-4 py-4 gap-3">
+          <Search className="h-5 w-5 text-gray-400" />
+          <Command.Input
+            value={search}
+            onValueChange={setSearch}
+            className="flex-1 border-none bg-transparent text-lg outline-none placeholder:text-gray-400"
+            placeholder="Search resources, components, templates..."
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleGlobalSearchEnter();
+            }}
+          />
+          <button
+            onClick={() => setOpen(false)}
+            className="text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500 font-mono hover:bg-gray-200"
+          >
+            ESC
+          </button>
+        </div>
+
+        <Command.List className="max-h-[65vh] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-200">
+          {loading && (
+            <div className="py-12 text-center text-sm text-gray-500 flex items-center justify-center gap-2">
+              <Loader2 className="animate-spin h-4 w-4" /> Loading...
+            </div>
+          )}
+
+          {!loading && !hasResults && (
+            <Command.Empty className="py-12 text-center text-sm text-gray-500">
+              No results found for "{debouncedSearch}".
+            </Command.Empty>
+          )}
+
+          {!loading && (
+            <>
+              {/* --- STATIC PAGES --- */}
+              {staticData.length > 0 && (
+                <Command.Group heading="Pages">
+                  {staticData.map((page) => (
+                    <Command.Item
+                      key={page.url}
+                      onSelect={() => handleNavigate(page.url)}
+                      className="group flex cursor-pointer items-center gap-4 rounded-lg px-4 py-3 text-sm transition-all hover:bg-gray-100 aria-selected:bg-gray-100"
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-gray-50">
+                        <File className="h-5 w-5 text-gray-500" />
+                      </div>
+                      <span className="font-semibold text-gray-900">
+                        {page.title}
+                      </span>
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              )}
+
+              {/* --- TEMPLATES SECTION --- */}
+              <SectionGroup
+                title="Templates"
+                items={data.templates}
+                categories={data.templateCategories}
+                subCategories={data.templateSubCategories}
+                type="templates"
+                onSelectAsset={handleSelectAsset}
+                onSelectCategory={handleSelectCategory}
+                onSelectSubCategory={handleSelectSubCategory}
+                onViewAll={handleViewAll}
+              />
+
+              {/* --- COMPONENTS SECTION --- */}
+              <SectionGroup
+                title="Components"
+                items={data.components}
+                categories={data.componentCategories}
+                subCategories={data.componentSubCategories}
+                type="components"
+                onSelectAsset={handleSelectAsset}
+                onSelectCategory={handleSelectCategory}
+                onSelectSubCategory={handleSelectSubCategory}
+                onViewAll={handleViewAll}
+              />
+
+              {/* --- DESIGNS SECTION --- */}
+              <SectionGroup
+                title="Designs"
+                items={data.designs}
+                categories={data.designCategories}
+                subCategories={data.designSubCategories}
+                type="designs"
+                onSelectAsset={handleSelectAsset}
+                onSelectCategory={handleSelectCategory}
+                onSelectSubCategory={handleSelectSubCategory}
+                onViewAll={handleViewAll}
+              />
+
+              {/* --- GRADIENTS SECTION --- */}
+              <SectionGroup
+                title="Gradients"
+                items={data.gradients}
+                categories={data.gradientCategories}
+                subCategories={data.gradientSubCategories}
+                type="gradients"
+                onSelectAsset={handleSelectAsset}
+                onSelectCategory={handleSelectCategory}
+                onSelectSubCategory={handleSelectSubCategory}
+                onViewAll={handleViewAll}
+              />
+
+              {/* Global Search Fallback */}
+              {search.length > 0 && (
+                <Command.Group heading="Search">
+                  <Command.Item
+                    onSelect={handleGlobalSearchEnter}
+                    className="group flex cursor-pointer items-center gap-4 rounded-lg px-4 py-3 text-sm transition-all hover:bg-gray-100 aria-selected:bg-gray-100"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-gray-50">
+                      <Search className="h-5 w-5 text-gray-500" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-gray-900">
+                        Search for "{search}"
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        View all results in Assets
+                      </span>
+                    </div>
+                  </Command.Item>
+                </Command.Group>
+              )}
+            </>
+          )}
+        </Command.List>
+
+        <div className="bg-gray-50 px-4 py-2 text-xs text-gray-400 border-t flex justify-between">
+          <span>Navigate with arrows</span>
+          <span>↵ to select</span>
+        </div>
+      </div>
+    </Command.Dialog>
+  );
+}
+
+// --- SUB-COMPONENTS ---
+
+interface SectionGroupProps {
+  title: string;
+  items: SearchResultItem[];
+  categories: SearchResultItem[];
+  subCategories: SearchResultItem[];
+  type: string;
+  onSelectAsset: (item: SearchResultItem) => void;
+  onSelectCategory: (item: SearchResultItem) => void;
+  onSelectSubCategory: (item: SearchResultItem) => void;
+  onViewAll: (type: string, isCat?: boolean, isSub?: boolean) => void;
+}
+
+function SectionGroup({
+  title,
+  items,
+  categories,
+  subCategories,
+  type,
+  onSelectAsset,
+  onSelectCategory,
+  onSelectSubCategory,
+  onViewAll,
+}: SectionGroupProps) {
+  if (
+    items.length === 0 &&
+    categories.length === 0 &&
+    subCategories.length === 0
+  )
+    return null;
+
+  return (
+    <>
+      {/* Items */}
+      {items.length > 0 && (
+        <Command.Group heading={title}>
+          {items.map((item) => (
+            <ItemRow
+              key={item.id}
+              item={item}
+              onSelect={() => onSelectAsset(item)}
+            />
+          ))}
+          <ViewAllItem
+            label={`View all ${title}`}
+            onSelect={() => onViewAll(type)}
+          />
+        </Command.Group>
+      )}
+
+      {/* Categories (Flex Wrap) */}
+      {categories.length > 0 && (
+        <Command.Group heading={`${title} Categories`}>
+          <div className="flex flex-wrap gap-2 px-2 pb-2">
+            {categories.map((item) => (
+              <CategoryTag
+                key={item.id}
+                item={item}
+                onSelect={() => onSelectCategory(item)}
+              />
+            ))}
+          </div>
+          <ViewAllItem
+            label={`View all ${title} Categories`}
+            onSelect={() => onViewAll(type, true)}
+          />
+        </Command.Group>
+      )}
+
+      {/* Sub-Categories (Flex Wrap) */}
+      {subCategories.length > 0 && (
+        <Command.Group heading={`${title} Sub-Categories`}>
+          <div className="flex flex-wrap gap-2 px-2 pb-2">
+            {subCategories.map((item) => (
+              <CategoryTag
+                key={item.id}
+                item={item}
+                onSelect={() => onSelectSubCategory(item)}
+                isSub
+              />
+            ))}
+          </div>
+          <ViewAllItem
+            label={`View all ${title} Sub-Categories`}
+            onSelect={() => onViewAll(type, false, true)}
+          />
+        </Command.Group>
+      )}
+    </>
+  );
+}
+
+function ItemRow({
+  item,
+  onSelect,
+}: {
+  item: SearchResultItem;
+  onSelect: () => void;
+}) {
+  let Icon = Monitor;
+  if (item.type === 'Template') Icon = LayoutTemplate;
+  if (item.type === 'Design' || item.type === 'Gradient') Icon = Palette;
+  if (item.type === 'Category' || item.type === 'SubCategory') Icon = Folder;
+
+  let badgeColor = 'bg-gray-100 text-gray-600';
+  let badgeText = 'Free';
+  if (item.tier === 'pro') {
+    badgeColor = 'bg-blue-100 text-blue-700';
+    badgeText = 'Pro';
+  } else if (item.tier === 'pro_plus') {
+    badgeColor = 'bg-orange-100 text-orange-700';
+    badgeText = 'Pro+';
+  }
+
+  return (
+    <Command.Item
+      value={`${item.title} ${item.id}`} // Unique value for filtering
+      onSelect={onSelect}
+      className="group flex cursor-pointer items-center gap-4 rounded-lg px-4 py-3 text-sm transition-all hover:bg-gray-100 aria-selected:bg-gray-100"
+    >
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-gray-50">
+        <Icon className="h-5 w-5 text-gray-500" />
+      </div>
+      <div className="flex flex-col flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-gray-900 truncate">
+            {item.title}
+          </span>
+          <span
+            className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${badgeColor}`}
+          >
+            {badgeText}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-xs text-gray-500 capitalize">{item.type}</span>
+          {item.category && <span className="text-xs text-gray-300">•</span>}
+          <span className="text-xs text-gray-500">{item.category}</span>
+        </div>
+      </div>
+    </Command.Item>
+  );
+}
+
+function CategoryTag({
+  item,
+  onSelect,
+  isSub,
+}: {
+  item: SearchResultItem;
+  onSelect: () => void;
+  isSub?: boolean;
+}) {
+  return (
+    <Command.Item
+      value={`${item.title} ${item.id}`}
+      onSelect={onSelect}
+      className="cursor-pointer inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 aria-selected:bg-gray-100 aria-selected:border-gray-300 transition-colors"
+    >
+      {isSub ? (
+        <Layers className="h-3 w-3 text-gray-400" />
+      ) : (
+        <Folder className="h-3 w-3 text-gray-400" />
+      )}
+      {item.title}
+    </Command.Item>
+  );
+}
+
+function ViewAllItem({
+  label,
+  onSelect,
+}: {
+  label: string;
+  onSelect: () => void;
+}) {
+  return (
+    <Command.Item
+      onSelect={onSelect}
+      className="group flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs text-gray-500 transition-all hover:bg-gray-100 aria-selected:bg-gray-100 mt-1"
+    >
+      {label} <ChevronRight className="h-3 w-3" />
+    </Command.Item>
+  );
+}

@@ -15,9 +15,6 @@ import {
 import { ResponseAction } from '@/types/response-action';
 import redis from '@/libs/redis-local';
 import { auth } from '@/libs/auth'; // Import auth
-import { db } from '@/libs/drizzle';
-import { licenses, licenseTransactions } from '@/db/migration/schema';
-import { eq } from 'drizzle-orm';
 import { activateLicense } from '../Activate/activate'; // Import activateLicense
 
 const getOtpKey = (licenseKey: string) => `otp:${licenseKey}`;
@@ -107,7 +104,8 @@ export async function verifyOtpAction(
       return {
         code: 500,
         success: false,
-        message: 'Failed to activate license. Please try again or contact support.',
+        message:
+          'Failed to activate license. Please try again or contact support.',
       };
     }
   }

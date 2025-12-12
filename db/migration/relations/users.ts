@@ -2,8 +2,6 @@ import { relations } from 'drizzle-orm';
 
 import {
   users,
-  accounts,
-  sessions,
   licenses,
   licenseTransactions,
   contentTemplates,
@@ -17,8 +15,6 @@ import {
 } from '@tables';
 
 export const usersRelations = relations(users, ({ many }) => ({
-  accounts: many(accounts),
-  sessions: many(sessions),
   licenses: many(licenses),
   licenseTransactions: many(licenseTransactions),
   contentTemplates: many(contentTemplates),

@@ -33,7 +33,6 @@ declare module 'next-auth/jwt' {
     emailVerified: Date | null;
     rememberMe?: boolean;
     tier?: string;
-
     roleUser: 'admin' | 'user' | 'superadmin';
   }
 }

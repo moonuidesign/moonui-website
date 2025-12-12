@@ -1,3 +1,4 @@
+'use server';
 import redis from '@/libs/redis-local';
 import { verifyResetPasswordSignature } from '@/libs/signature';
 import { ResponseAction } from '@/types/response-action';

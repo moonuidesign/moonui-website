@@ -1,10 +1,6 @@
+import { TierType } from '@/contexts';
 import React from 'react';
-import {
-  TierType,
-  NewBadge,
-  TierIndicator,
-  ActionButton,
-} from './ui/card-elements';
+import { ActionButton, NewBadge, TierIndicator } from './card-element';
 
 interface ComponentCardProps {
   title: string;

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/libs/auth'; // Sesuaikan path
 import { db } from '@/libs/drizzle'; // Sesuaikan path
 import { s3Client } from '@/libs/getR2 copy'; // Sesuaikan path
-import { contentComponents } from '@/db/migration/schema'; // Import schema
+import { contentComponents } from '@/db/migration'; // Import schema
 import { eq } from 'drizzle-orm';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import OpenAI from 'openai';
@@ -186,9 +186,11 @@ export async function updateContentComponent(
   values: ContentComponentFormValues,
   imageFile?: File | null,
 ): Promise<ActionResponse> {
+  console.log('[UpdateComponent] Started for ID:', id);
   // 1. Auth Check
   const session = await auth();
   if (!session?.user?.id) {
+    console.error('[UpdateComponent] Unauthorized');
     return {
       success: false,
       error: 'Unauthorized: Harap login terlebih dahulu.',
@@ -199,7 +201,7 @@ export async function updateContentComponent(
   const validated = ContentComponentSchema.safeParse(values);
   if (!validated.success) {
     const errorDetails = validated.error.flatten().fieldErrors;
-    console.error('Validation Failed:', errorDetails);
+    console.error('[UpdateComponent] Validation Failed:', errorDetails);
     return {
       success: false,
       error: 'Validasi data gagal.',
@@ -214,11 +216,14 @@ export async function updateContentComponent(
     categoryComponentsId,
     subCategoryComponentsId, // Ambil field Sub Category
     tier,
-    platform,
+    // platform, // Removed
     statusContent,
+    urlBuyOneTime,
+    description,
     copyComponentTextHTML,
     copyComponentTextPlain,
   } = validated.data;
+  console.log('[UpdateComponent] Validated Values:', validated.data);
 
   // 3. Logic Penentuan Kategori (Parent vs Sub)
   // Jika subCategory dipilih, gunakan itu sebagai ID yang disimpan
@@ -226,11 +231,13 @@ export async function updateContentComponent(
     subCategoryComponentsId && subCategoryComponentsId.trim() !== ''
       ? subCategoryComponentsId
       : categoryComponentsId;
+  console.log('[UpdateComponent] Final Category ID:', finalCategoryId);
 
   // 4. AI Code Generation Logic
   let newCodeSnippets: CodeSnippets | undefined = undefined;
 
   if (rawHtmlInput && rawHtmlInput.trim().length >= 10) {
+    console.log('[UpdateComponent] Generating AI Code...');
     try {
       // Jalankan AI secara parallel
       const [react, vue, angular, html] = await Promise.all([
@@ -241,18 +248,22 @@ export async function updateContentComponent(
       ]);
 
       newCodeSnippets = { react, vue, angular, html };
+      console.log('[UpdateComponent] AI Generation Complete');
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error('AI Update Generation Error:', errorMsg);
+      console.error('[UpdateComponent] AI Update Generation Error:', errorMsg);
     }
   } else {
-    console.log('Skipping AI Update: No new/valid Raw HTML provided.');
+    console.log(
+      '[UpdateComponent] Skipping AI Update: No new/valid Raw HTML provided.',
+    );
   }
 
   // 5. Image Upload Logic
   let newImageUrl: string | undefined = undefined;
   if (imageFile && imageFile.size > 0) {
     try {
+      console.log('[UpdateComponent] Uploading New Image:', imageFile.name);
       const ext = imageFile.name.split('.').pop();
       const fileName = `components/${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const buffer = Buffer.from(await imageFile.arrayBuffer());
@@ -268,38 +279,44 @@ export async function updateContentComponent(
         }),
       );
 
-      newImageUrl = `https://${process.env.ACCOUNT_CLOUDFLARE}.r2.dev/${fileName}`;
+      newImageUrl = `${fileName}`;
+      console.log('[UpdateComponent] New Image Uploaded:', newImageUrl);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Unknown upload error';
-      console.error('Upload Failed:', msg);
+      console.error('[UpdateComponent] Upload Failed:', msg);
       return { success: false, error: 'Gagal mengupload gambar baru.' };
     }
   }
 
   // 6. Database Update
   try {
+    const updateData = {
+      title,
+      slug: validated.data.slug, // New Field
+      typeContent: type,
+      categoryComponentsId: finalCategoryId, // Gunakan ID hasil logika di atas
+      tier,
+      description,
+      // platform, // Removed
+      statusContent,
+      urlBuyOneTime,
+      updatedAt: new Date(),
+      copyComponentTextHTML: { content: copyComponentTextHTML },
+      ...(newImageUrl ? { imageUrl: newImageUrl } : {}),
+      ...(newCodeSnippets
+        ? {
+            codeSnippets: newCodeSnippets,
+            copyComponentTextPlain: { content: newCodeSnippets.react },
+          }
+        : {
+            copyComponentTextPlain: { content: copyComponentTextPlain },
+          }),
+    };
+    console.log('[UpdateComponent] Updating DB with:', updateData);
+
     await db
       .update(contentComponents)
-      .set({
-        title,
-        slug: validated.data.slug, // New Field
-        typeContent: type,
-        categoryComponentsId: finalCategoryId, // Gunakan ID hasil logika di atas
-        tier,
-        platform,
-        statusContent,
-        updatedAt: new Date(),
-        copyComponentTextHTML: { content: copyComponentTextHTML },
-        ...(newImageUrl ? { imageUrl: newImageUrl } : {}),
-        ...(newCodeSnippets
-          ? {
-              codeSnippets: newCodeSnippets,
-              copyComponentTextPlain: { content: newCodeSnippets.react },
-            }
-          : {
-              copyComponentTextPlain: { content: copyComponentTextPlain },
-            }),
-      })
+      .set(updateData)
       .where(eq(contentComponents.id, id));
 
     revalidatePath('/dashboard/components');
@@ -307,10 +324,11 @@ export async function updateContentComponent(
       ? 'Komponen berhasil diperbarui & Code AI digenerate ulang!'
       : 'Data komponen berhasil diperbarui.';
 
+    console.log('[UpdateComponent] DB Update Success');
     return { success: true, message: msg };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error('DB Update Error:', errorMsg);
+    console.error('[UpdateComponent] DB Update Error:', errorMsg);
     return { success: false, error: 'Gagal mengupdate database.' };
   }
 }

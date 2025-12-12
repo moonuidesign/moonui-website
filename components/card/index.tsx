@@ -4,14 +4,19 @@ import Image from 'next/image';
 import { cn } from '@/libs/utils';
 import { ProIcon } from './tier-icons'; // Pastikan path ini benar sesuai struktur projectmu
 import { motion } from 'framer-motion';
-
+export * from './card-component';
+export * from './card-element';
+export * from './gradient-card';
+export * from './tier-icons';
 interface ResourceCardProps {
   id: string;
   title: string;
   imageUrl: string | null;
   tier: 'free' | 'pro' | 'pro_plus' | string;
   createdAt?: Date | null;
+  author?: string;
   onCopy?: (id: string) => void;
+  onDownload?: (id: string) => void;
   className?: string;
 }
 
@@ -21,7 +26,9 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
   imageUrl,
   tier,
   createdAt,
+  author,
   onCopy,
+  onDownload,
   className,
 }) => {
   const isNew = createdAt
@@ -66,33 +73,51 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
           </div>
         )}
 
-        <div className="absolute inset-0 bg-zinc-300/80 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center z-10">
-          <button
-            onClick={() => onCopy?.(id)}
-            className="py-1 px-3 bg-white rounded-2xl shadow-sm flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer"
-          >
-            <div className="w-3 h-3 relative">
-              <div className="w-2 h-3 bg-zinc-800 rounded-sm" />
-            </div>
-            <span className="text-zinc-800 text-xs font-medium font-['Inter'] leading-6">
-              Copy to Figma
-            </span>
-          </button>
+        <div className="absolute inset-0 bg-zinc-300/80 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center z-10 gap-2">
+          {onCopy && (
+            <button
+              onClick={() => onCopy(id)}
+              className="py-1 px-3 bg-white rounded-2xl shadow-sm flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer"
+            >
+              <div className="w-3 h-3 relative">
+                <div className="w-2 h-3 bg-zinc-800 rounded-sm" />
+              </div>
+              <span className="text-zinc-800 text-xs font-medium font-['Inter'] leading-6">
+                Copy
+              </span>
+            </button>
+          )}
+          {onDownload && (
+            <button
+              onClick={() => onDownload(id)}
+              className="py-1 px-3 bg-white rounded-2xl shadow-sm flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer"
+            >
+              <span className="text-zinc-800 text-xs font-medium font-['Inter'] leading-6">
+                Download
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Meta Info */}
       <div className="self-stretch px-2 inline-flex justify-between items-center">
-        <div className="flex justify-start items-center gap-2">
-          <div className="text-center text-zinc-800 text-sm font-medium font-['Inter'] leading-6 truncate max-w-[200px]">
-            {title}
-          </div>
-
-          {isNew && (
-            <div className="px-1.5 py-1 bg-orange-600 rounded-md shadow-sm flex flex-col justify-start items-start">
-              <div className="text-white text-[10px] font-semibold font-['Inter'] leading-[10px]">
-                New
+        <div className="flex flex-col justify-start items-start gap-0.5">
+          <div className="flex items-center gap-2">
+            <div className="text-center text-zinc-800 text-sm font-medium font-['Inter'] leading-6 truncate max-w-[200px]">
+              {title}
+            </div>
+            {isNew && (
+              <div className="px-1.5 py-1 bg-orange-600 rounded-md shadow-sm flex flex-col justify-start items-start">
+                <div className="text-white text-[10px] font-semibold font-['Inter'] leading-[10px]">
+                  New
+                </div>
               </div>
+            )}
+          </div>
+          {author && (
+            <div className="text-zinc-500 text-xs font-normal font-['Inter']">
+              by {author}
             </div>
           )}
         </div>
