@@ -4,6 +4,7 @@
 import React from 'react';
 import { cn } from '@/libs/utils';
 import { ToolType } from '@/contexts';
+import Image from 'next/image';
 
 interface PlatformSwitcherProps {
   currentTool: ToolType;
@@ -15,7 +16,7 @@ export const PlatformSwitcher: React.FC<PlatformSwitcherProps> = ({
   onChange,
 }) => {
   const activeClass = 'bg-zinc-800 text-white shadow-md';
-  const inactiveClass = 'bg-transparent text-zinc-800 hover:bg-gray-50';
+  const inactiveClass = 'bg-transparent text-[#3D3D3D] hover:bg-gray-50';
 
   return (
     <div className="w-full p-1 bg-white rounded-2xl shadow-card-sm inline-flex justify-between items-center overflow-hidden">
@@ -28,14 +29,15 @@ export const PlatformSwitcher: React.FC<PlatformSwitcherProps> = ({
         )}
       >
         {/* Icon Figma Simple CSS */}
-        <div className="w-3 h-3 relative">
-          <div
-            className={cn(
-              'w-2 h-3 left-[2px] top-0 absolute rounded-sm',
-              currentTool === 'figma' ? 'bg-white' : 'bg-zinc-800',
-            )}
-          />
-        </div>
+
+        <Image
+          alt="Logo Figma"
+          width={100}
+          height={100}
+          src="/ic-figma.svg"
+          className="w-[20px] h-[20px]"
+        />
+
         <span className="text-xs font-medium font-['Inter']">Figma</span>
       </button>
 
@@ -47,15 +49,14 @@ export const PlatformSwitcher: React.FC<PlatformSwitcherProps> = ({
           currentTool === 'framer' ? activeClass : inactiveClass,
         )}
       >
-        {/* Icon Framer Simple CSS */}
-        <div className="w-3 h-3 relative">
-          <div
-            className={cn(
-              'w-2 h-3 left-[2px] top-0 absolute rounded-sm',
-              currentTool === 'framer' ? 'bg-white' : 'bg-zinc-800',
-            )}
-          />
-        </div>
+        <Image
+          alt="Logo Framer"
+          width={100}
+          height={100}
+          src="/ic-framer.svg"
+          className="w-[20px] h-[20px]"
+        />
+
         <span className="text-xs font-medium font-['Inter']">Framer</span>
       </button>
     </div>

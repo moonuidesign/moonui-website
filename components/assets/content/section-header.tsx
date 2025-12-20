@@ -24,7 +24,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
 }) => {
   return (
     <div className={cn('w-full flex items-center gap-4 mb-6 mt-2', className)}>
-      <h2 className="text-zinc-800 text-2xl font-bold font-['Plus_Jakarta_Sans'] whitespace-nowrap capitalize">
+      <h2 className="text-[#3D3D3D] text-2xl font-bold font-['Plus_Jakarta_Sans'] whitespace-nowrap capitalize">
         {title}
       </h2>
       <div className="flex-1 h-px bg-gray-200" />
@@ -33,7 +33,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
           Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of{' '}
           {totalItems}
         </div>
-        <ChevronRight className="w-3 h-3 text-zinc-800 group-hover:translate-x-0.5 transition-transform" />
+        <ChevronRight className="w-3 h-3 text-[#3D3D3D] group-hover:translate-x-0.5 transition-transform" />
       </div>
     </div>
   );

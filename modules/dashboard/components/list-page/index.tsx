@@ -36,9 +36,7 @@ export default async function ListComponent({
       ? searchParams.sort
       : 'createdAt.desc';
   const page =
-    typeof searchParams?.page === 'string'
-      ? parseInt(searchParams.page)
-      : 1;
+    typeof searchParams?.page === 'string' ? parseInt(searchParams.page) : 1;
 
   const limit = ITEMS_PER_PAGE;
   const offset = (page - 1) * limit;
@@ -52,7 +50,7 @@ export default async function ListComponent({
     filters.push(eq(contentComponents.tier, tier as any));
   if (status && status !== 'all')
     filters.push(eq(contentComponents.statusContent, status));
-  
+
   // Admin-specific filter: Only show own items
   if (role === 'admin' && userId) {
     filters.push(eq(contentComponents.userId, userId));
@@ -63,8 +61,10 @@ export default async function ListComponent({
   if (sort === 'createdAt.asc') orderBy = asc(contentComponents.createdAt);
   else if (sort === 'title.asc') orderBy = asc(contentComponents.title);
   else if (sort === 'title.desc') orderBy = desc(contentComponents.title);
-  else if (sort === 'viewCount.desc') orderBy = desc(contentComponents.viewCount);
-  else if (sort === 'copyCount.desc') orderBy = desc(contentComponents.copyCount);
+  else if (sort === 'viewCount.desc')
+    orderBy = desc(contentComponents.viewCount);
+  else if (sort === 'copyCount.desc')
+    orderBy = desc(contentComponents.copyCount);
 
   // Fetch paginated data
   const data = await db
@@ -110,7 +110,9 @@ export default async function ListComponent({
     id: item.id,
     title: item.title,
     typeContent: item.typeContent,
-    imageUrl: item.imageUrl ?? undefined,
+    imageUrl: item.imageUrl
+      ? `https://${process.env.R2_PUBLIC_DOMAIN}/${item.imageUrl}`
+      : undefined,
     viewCount: item.viewCount,
     copyCount: item.copyCount,
     tier: item.tier,

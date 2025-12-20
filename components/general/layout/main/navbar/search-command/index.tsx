@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Command } from 'cmdk';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   Search,
   Monitor,
@@ -50,6 +50,7 @@ const STATIC_PAGES = [
 export function SearchCommand({ open, setOpen }: SearchCommandProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
 
   const [data, setData] = useState<GlobalSearchResponse>({
@@ -68,10 +69,24 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
   });
 
   const [staticData, setStaticData] = useState<typeof STATIC_PAGES>([]);
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 300);
 
+  const globalSearchQuery = useFilterStore((state) => state.searchQuery);
+  const initialSearch = searchParams.get('q') || globalSearchQuery || '';
+  const [search, setSearch] = useState(initialSearch);
+
+  const debouncedSearch = useDebounce(search, 300);
   const applySearchFilter = useFilterStore((state) => state.applySearchFilter);
+
+  // Sync local search with URL query when on /assets to ensure persistence on refresh
+  useEffect(() => {
+    if (pathname === '/assets') {
+      const q = searchParams.get('q') || '';
+      // Only update if different to avoid infinite loops or typing interference
+      if (search !== q) {
+        setSearch(q);
+      }
+    }
+  }, [pathname, searchParams]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -84,11 +99,19 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
     return () => document.removeEventListener('keydown', down);
   }, [open, setOpen]);
 
+  // Removed auto-clear useEffect to prevent input stuttering/resetting issues
+  // useEffect(() => {
+  //   if (open) {
+  //      // Optional: Auto-focus or other logic when opened
+  //   } else {
+  //      // Delay clearing to avoid UI flicker during close animation
+  //      const t = setTimeout(() => setSearch(''), 300);
+  //      return () => clearTimeout(t);
+  //   }
+  // }, [open]);
+
   useEffect(() => {
-    if (!open) {
-      setSearch('');
-      return;
-    }
+    if (!open) return;
 
     // Static pages filtering
     if (debouncedSearch) {
@@ -109,7 +132,7 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
       .then((res) => setData(res))
       .catch((err) => console.error('Global Search Error:', err))
       .finally(() => setLoading(false));
-  }, [open, debouncedSearch]);
+  }, [debouncedSearch, open]);
 
   const handleNavigate = (url: string) => {
     setOpen(false);
@@ -158,18 +181,12 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
     setOpen(false);
 
     if (isSubCategory) {
-      // "more sub category all and category main and filter and search will be saved"
-      // This implies keeping main category if selected?
-      // Or just showing all subcategories for the type.
       applySearchFilter({
         searchQuery: search,
         contentType: type as any,
-        // clearOthers: true implies resetting everything else.
-        // We probably want to keep the search.
         clearOthers: true,
       });
     } else if (isCategory) {
-      // "more maka data disimpan all category dan filter template"
       applySearchFilter({
         searchQuery: search,
         contentType: type as any,
@@ -184,16 +201,25 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
         clearOthers: true,
       });
     }
-    router.push('/assets');
+
+    const params = new URLSearchParams();
+    if (search) params.set('q', search);
+    router.push(`/assets?${params.toString()}`);
   };
 
   const handleGlobalSearchEnter = () => {
     setOpen(false);
     applySearchFilter({
       searchQuery: search,
-      clearOthers: true, // New search usually resets filters?
+      clearOthers: true,
     });
-    router.push('/assets');
+    
+    // Always navigate to assets with the query param
+    const params = new URLSearchParams();
+    if (search) {
+      params.set('q', search);
+    }
+    router.push(`/assets?${params.toString()}`);
   };
 
   // Check if any results exist

@@ -8,6 +8,7 @@ import { auth } from '@/libs/auth';
 import { s3Client } from '@/libs/getR2 copy';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { ContentDesignSchema } from './validator';
+import { AssetItem } from '../templates/validator';
 
 type ActionResponse = { success: string } | { error: string };
 
@@ -48,32 +49,47 @@ export async function updateContentDesign(
   const values = validated.data;
   console.log('[UpdateDesign] Validated Values:', values);
 
-  // Handle Image Update
-  const imageFile = formData.get('image');
-  let imageUrl: string | undefined = undefined;
+  // Handle Multiple Image Upload (New Files)
+  const imageFiles = formData.getAll('images');
+  const newImageUrls: AssetItem[] = [];
 
-  if (imageFile instanceof File && imageFile.size > 0) {
-    try {
-      console.log('[UpdateDesign] Uploading New Image:', imageFile.name);
-      const ext = imageFile.name.split('.').pop();
-      const fileName = `designs/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+  if (imageFiles && imageFiles.length > 0) {
+    for (const imageFile of imageFiles) {
+      if (imageFile instanceof File && imageFile.size > 0) {
+        try {
+          console.log('[UpdateDesign] Uploading New Image:', imageFile.name);
+          const ext = imageFile.name.split('.').pop();
+          const fileName = `designs/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME!,
-          Key: fileName,
-          Body: Buffer.from(await imageFile.arrayBuffer()),
-          ContentType: imageFile.type,
-        }),
-      );
+          await s3Client.send(
+            new PutObjectCommand({
+              Bucket: process.env.BUCKET_NAME!,
+              Key: fileName,
+              Body: Buffer.from(await imageFile.arrayBuffer()),
+              ContentType: imageFile.type,
+            }),
+          );
 
-      imageUrl = `${fileName}`;
-      console.log('[UpdateDesign] New Image URL:', imageUrl);
-    } catch (e) {
-      console.error('[UpdateDesign] Image Upload Failed:', e);
-      return { error: 'Gagal upload gambar baru.' };
+          const assetUrl = `${fileName}`;
+          newImageUrls.push({
+            url: assetUrl,
+          });
+          console.log('[UpdateDesign] New Image URL:', assetUrl);
+        } catch (e) {
+          console.error(
+            '[UpdateDesign] Image Upload Failed for:',
+            imageFile.name,
+            e,
+          );
+        }
+      }
     }
   }
+
+  // Combine existing images (from values.imagesUrl) with new uploaded images
+  // values.imagesUrl comes from the client, containing URLs of images that were NOT deleted.
+  const existingImages = values.imagesUrl || [];
+  const finalImagesUrl = [...existingImages, ...newImageUrls];
 
   // Handle Source File Update
   const sourceFile = formData.get('sourceFile');
@@ -116,7 +132,7 @@ export async function updateContentDesign(
       statusContent: values.statusContent,
       urlBuyOneTime: values.urlBuyOneTime,
       updatedAt: new Date(),
-      ...(imageUrl ? { imagesUrl: [imageUrl] } : {}),
+      imagesUrl: finalImagesUrl, // Always update imagesUrl with the final list
       ...(linkDownload
         ? { linkDownload, size: fileSize, format: fileFormat }
         : {}),

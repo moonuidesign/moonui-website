@@ -15,7 +15,6 @@ import {
   Heading3,
   List,
   ListOrdered,
-  Text,
   Image as ImageIcon,
   Quote,
   Code,
@@ -34,7 +33,7 @@ const executeCommand = (
   editor: Editor,
   range: Range,
   blockFn: (chain: any) => any,
-  inlineFn?: (chain: any) => any
+  inlineFn?: (chain: any) => any,
 ) => {
   const $from = editor.state.doc.resolve(range.from);
   const isRoot = $from.parentOffset === 0;
@@ -74,7 +73,8 @@ export const getSuggestionItems = ({ query }: { query: string }) => {
           editor,
           range,
           (chain) => chain.setNode('paragraph'), // Block: Reset to P
-          (chain) => chain.unsetMark('textStyle').unsetMark('bold').unsetMark('italic') // Inline: Clear marks
+          (chain) =>
+            chain.unsetMark('textStyle').unsetMark('bold').unsetMark('italic'), // Inline: Clear marks
         );
       },
     },
@@ -88,7 +88,8 @@ export const getSuggestionItems = ({ query }: { query: string }) => {
           range,
           (chain) => chain.setNode('heading', { level: 1 }), // Block H1
           // Inline H1 Simulation: Big Font + Bold
-          (chain) => chain.setMark('textStyle', { fontSize: '2.25em' }).setMark('bold')
+          (chain) =>
+            chain.setMark('textStyle', { fontSize: '2.25em' }).setMark('bold'),
         );
       },
     },
@@ -102,7 +103,8 @@ export const getSuggestionItems = ({ query }: { query: string }) => {
           range,
           (chain) => chain.setNode('heading', { level: 2 }), // Block H2
           // Inline H2 Simulation
-          (chain) => chain.setMark('textStyle', { fontSize: '1.875em' }).setMark('bold')
+          (chain) =>
+            chain.setMark('textStyle', { fontSize: '1.875em' }).setMark('bold'),
         );
       },
     },
@@ -116,7 +118,8 @@ export const getSuggestionItems = ({ query }: { query: string }) => {
           range,
           (chain) => chain.setNode('heading', { level: 3 }), // Block H3
           // Inline H3 Simulation
-          (chain) => chain.setMark('textStyle', { fontSize: '1.5em' }).setMark('bold')
+          (chain) =>
+            chain.setMark('textStyle', { fontSize: '1.5em' }).setMark('bold'),
         );
       },
     },
@@ -163,13 +166,13 @@ export const getSuggestionItems = ({ query }: { query: string }) => {
         // Standard Image extension is block-ish.
         const $from = editor.state.doc.resolve(range.from);
         const isRoot = $from.parentOffset === 0;
-        
+
         editor.chain().focus().deleteRange(range).run();
-        
+
         if (!isRoot) {
-            editor.chain().focus().enter().run();
+          editor.chain().focus().enter().run();
         }
-        
+
         const url = window.prompt('Enter Image URL:');
         if (url) {
           editor.chain().focus().setImage({ src: url }).run();
@@ -177,90 +180,97 @@ export const getSuggestionItems = ({ query }: { query: string }) => {
       },
     },
   ]
-    .filter((item) =>
-      item.title.toLowerCase().includes(query.toLowerCase())
-    )
+    .filter((item) => item.title.toLowerCase().includes(query.toLowerCase()))
     .slice(0, 10);
 };
 
 // 2. The Menu Component
-export const CommandList = forwardRef((props: {
-  items: CommandItemProps[];
-  command: any;
-}, ref) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const selectItem = useCallback(
-    (index: number) => {
-      const item = props.items[index];
-      if (item) {
-        props.command(item);
-      }
+export const CommandList = forwardRef(
+  (
+    props: {
+      items: CommandItemProps[];
+      command: any;
     },
-    [props]
-  );
+    ref,
+  ) => {
+    const [selectedIndex, setSelectedIndex] = useState(0);
 
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [props.items]);
+    const selectItem = useCallback(
+      (index: number) => {
+        const item = props.items[index];
+        if (item) {
+          props.command(item);
+        }
+      },
+      [props],
+    );
 
-  useImperativeHandle(ref, () => ({
-    onKeyDown: ({ event }: { event: KeyboardEvent }) => {
-      if (event.key === 'ArrowUp') {
-        setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
-        return true;
-      }
-      if (event.key === 'ArrowDown') {
-        setSelectedIndex((selectedIndex + 1) % props.items.length);
-        return true;
-      }
-      if (event.key === 'Enter') {
-        selectItem(selectedIndex);
-        return true;
-      }
-      return false;
-    },
-  }));
+    useEffect(() => {
+      setSelectedIndex(0);
+    }, [props.items]);
 
-  return (
-    <div className="z-50 min-w-[300px] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95">
-      <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
-        {props.items.length === 0 ? (
-          <div className="p-2 text-sm text-muted-foreground text-center">
-            No results
-          </div>
-        ) : (
-          props.items.map((item, index) => (
-            <button
-              key={index}
-              className={`flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none ${
-                index === selectedIndex
-                  ? 'bg-accent text-accent-foreground'
-                  : 'hover:bg-accent hover:text-accent-foreground'
-              }`}
-              onClick={() => selectItem(index)}
-            >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border bg-background">
-                <item.icon className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col items-start">
-                <span className="font-medium text-xs">{item.title}</span>
-                <span className="text-[10px] text-muted-foreground">
-                  {item.description}
-                </span>
-              </div>
-            </button>
-          ))
-        )}
+    useImperativeHandle(ref, () => ({
+      onKeyDown: ({ event }: { event: KeyboardEvent }) => {
+        if (event.key === 'ArrowUp') {
+          setSelectedIndex(
+            (selectedIndex + props.items.length - 1) % props.items.length,
+          );
+          return true;
+        }
+        if (event.key === 'ArrowDown') {
+          setSelectedIndex((selectedIndex + 1) % props.items.length);
+          return true;
+        }
+        if (event.key === 'Enter') {
+          selectItem(selectedIndex);
+          return true;
+        }
+        return false;
+      },
+    }));
+
+    return (
+      <div className="z-50 min-w-[300px] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95">
+        <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+          {props.items.length === 0 ? (
+            <div className="p-2 text-sm text-muted-foreground text-center">
+              No results
+            </div>
+          ) : (
+            props.items.map((item, index) => (
+              <button
+                key={index}
+                className={`flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none ${
+                  index === selectedIndex
+                    ? 'bg-accent text-accent-foreground'
+                    : 'hover:bg-accent hover:text-accent-foreground'
+                }`}
+                onClick={() => selectItem(index)}
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border bg-background">
+                  <item.icon className="h-4 w-4" />
+                </div>
+                <div className="flex flex-col items-start">
+                  <span className="font-medium text-xs">{item.title}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {item.description}
+                  </span>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 CommandList.displayName = 'CommandList';
 
 // 3. Render function for Tippy
 const renderItems = () => {
+  // Kita bisa tambahkan tipe generic ke ReactRenderer jika didukung,
+  // atau biarkan null dan cast nanti.
   let component: ReactRenderer | null = null;
   let popup: any | null = null;
 
@@ -301,7 +311,10 @@ const renderItems = () => {
         popup?.[0].hide();
         return true;
       }
-      return component?.ref?.onKeyDown(props);
+
+      // PERBAIKAN DI SINI:
+      // Kita memberitahu TypeScript bahwa component.ref memiliki tipe CommandListRef
+      return (component?.ref as any)?.onKeyDown?.(props);
     },
     onExit: () => {
       popup?.[0].destroy();

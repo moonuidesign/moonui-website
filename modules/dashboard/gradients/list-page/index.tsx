@@ -3,9 +3,9 @@ import { contentGradients, categoryGradients, users } from '@/db/migration';
 import { desc, asc, eq, ilike, and, sql } from 'drizzle-orm';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { GradientsClient } from '@/components';
 import { SearchParamsProps } from '../../components';
 import { auth } from '@/libs/auth';
+import GradientsClient from '@/components/dashboard/gradient/client';
 
 export default async function ListGradient({
   searchParams,
@@ -29,9 +29,7 @@ export default async function ListGradient({
       ? searchParams.sort
       : 'createdAt.desc';
   const page =
-    typeof searchParams?.page === 'string'
-      ? parseInt(searchParams.page)
-      : 1;
+    typeof searchParams?.page === 'string' ? parseInt(searchParams.page) : 1;
 
   const ITEMS_PER_PAGE = 10;
   const limit = ITEMS_PER_PAGE;
@@ -44,7 +42,7 @@ export default async function ListGradient({
     filters.push(eq(contentGradients.categoryGradientsId, categoryId));
   if (tier && tier !== 'all')
     filters.push(eq(contentGradients.tier, tier as any));
-  
+
   if (role === 'admin' && userId) {
     filters.push(eq(contentGradients.userId, userId));
   }
@@ -55,7 +53,8 @@ export default async function ListGradient({
   else if (sort === 'title.asc')
     orderBy = asc(contentGradients.name); // Using name for gradients
   else if (sort === 'title.desc') orderBy = desc(contentGradients.name);
-  else if (sort === 'downloadCount.desc') orderBy = desc(contentGradients.downloadCount);
+  else if (sort === 'downloadCount.desc')
+    orderBy = desc(contentGradients.downloadCount);
 
   // Fetch paginated data
   const data = await db
@@ -103,10 +102,15 @@ export default async function ListGradient({
     })
     .from(categoryGradients);
 
+  // --- PERBAIKAN DI SINI ---
   const gradients = data.map((item) => ({
     id: item.id,
     name: item.name,
-    image: item.image,
+    // Cek apakah image sudah berupa URL lengkap (dimulai dengan http/https)
+    // Jika ya, pakai as-is. Jika tidak, tambahkan domain R2.
+    image: item.image?.startsWith('http')
+      ? item.image
+      : `https://${process.env.R2_PUBLIC_DOMAIN}/${item.image}`,
     typeGradient: item.typeGradient,
     tier: item.tier,
     downloadCount: item.downloadCount,
@@ -114,6 +118,9 @@ export default async function ListGradient({
     categoryName: item.categoryName || undefined,
     authorName: item.authorName || 'Unknown',
   }));
+  // -------------------------
+
+  console.log(gradients);
 
   return (
     <div className="space-y-6">

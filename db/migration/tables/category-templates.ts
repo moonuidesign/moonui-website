@@ -6,7 +6,7 @@ export const categoryTemplates = pgTable('category_templates', {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar('name', { length: 100 }).notNull(),
-  description: text('description'),
+
   parentId: text('parent_id').references((): any => categoryTemplates.id, {
     onDelete: 'set null',
   }),

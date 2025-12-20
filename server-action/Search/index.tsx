@@ -30,9 +30,9 @@ export type SearchResultItem = {
   url: string;
   description?: string | null;
   number?: number | null;
-  contentType?: 'components' | 'templates' | 'gradients' | 'designs'; // For categories
+  contentType?: 'components' | 'templates' | 'gradients' | 'designs';
   slug?: string;
-  parentSlug?: string; // For subcategories
+  parentSlug?: string;
 };
 
 export type GlobalSearchResponse = {
@@ -62,31 +62,43 @@ export async function getGlobalSearchData(
     type: 'Component' | 'Template' | 'Gradient' | 'Design',
     limit: number,
     urlPrefix: string,
-  ) => {
+  ): Promise<SearchResultItem[]> => {
     // 1. Identify columns safely
     const titleCol = 'title' in table ? table.title : table.name;
-    const statusCol = 'statusContent' in table ? table.statusContent : undefined;
+    const statusCol =
+      'statusContent' in table ? table.statusContent : undefined;
     const slugCol = 'slug' in table ? table.slug : undefined;
-    
+    const formatCol = 'format' in table ? table.format : undefined;
+    const typeContentCol =
+      'typeContent' in table ? table.typeContent : undefined;
+
     // 2. Build Where Clause
     const conditions = [];
 
-    // Status Check (only if column exists)
     if (statusCol) {
       conditions.push(eq(statusCol, 'published'));
     }
 
-    // Search Query
     if (searchQuery) {
       const orConditions = [
-        ilike(titleCol, searchQuery), // Title/Name
-        ilike(users.name, searchQuery), // Author
-        ilike(catTable.name, searchQuery), // Category Name
+        ilike(titleCol, searchQuery),
+        ilike(users.name, searchQuery),
+        ilike(catTable.name, searchQuery),
+        sql`CAST(${table.number} AS TEXT) ILIKE ${searchQuery}`,
       ];
 
-      // Slug Search (only if JSONB slug exists)
       if (slugCol) {
+        // Handle JSONB slugs (all content tables use JSONB slug with 'current' key)
         orConditions.push(sql`${slugCol}->>'current' ILIKE ${searchQuery}`);
+        orConditions.push(sql`CAST(${slugCol} AS TEXT) ILIKE ${searchQuery}`);
+      }
+
+      if (formatCol) {
+        orConditions.push(ilike(formatCol, searchQuery));
+      }
+
+      if (typeContentCol) {
+        orConditions.push(ilike(typeContentCol, searchQuery));
       }
 
       conditions.push(or(...orConditions));
@@ -109,17 +121,20 @@ export async function getGlobalSearchData(
       .limit(limit);
 
     const res = await q;
-    
-    return res.map(({ item, category }: any) => ({
-      id: item.id,
-      title: item.title || item.name,
-      type,
-      tier: item.tier as any,
-      number: item.number,
-      category: category?.name || 'Uncategorized',
-      url: `/assets/${urlPrefix}/${(item.slug as any)?.current}`,
-      contentType: urlPrefix as any,
-    }));
+
+    // Explicitly return SearchResultItem[]
+    return res.map(
+      ({ item, category }: any): SearchResultItem => ({
+        id: item.id,
+        title: item.title || item.name,
+        type: type, // 'type' is strictly typed from argument
+        tier: item.tier as any,
+        number: item.number,
+        category: category?.name || 'Uncategorized',
+        url: `/assets/${item.id}`,
+        contentType: urlPrefix as any,
+      }),
+    );
   };
 
   // Helper to fetch categories (Main or Sub)
@@ -128,63 +143,39 @@ export async function getGlobalSearchData(
     contentType: 'components' | 'templates' | 'gradients' | 'designs',
     isSub: boolean,
     limit: number,
-  ) => {
-    // If we need subcategories, we join to get parent name?
-    // For now simple fetch.
-    // If isSub is true, parentId should be NOT NULL. If false, parentId should be NULL.
-
+  ): Promise<SearchResultItem[]> => {
     let whereClause = undefined;
 
+    // Determine conditions based on search query and hierarchy
     if (searchQuery) {
-      whereClause = ilike(table.name, searchQuery);
+      // If searching, check name AND verify hierarchy
+      const hierarchyClause = isSub
+        ? isNotNull(table.parentId)
+        : isNull(table.parentId);
+      whereClause = and(ilike(table.name, searchQuery), hierarchyClause);
     } else {
-      // Only apply strict parent/child logic if no search query,
-      // OR apply it always? Usually search should find any category.
-      // But the prompt implies distinct sections.
-      // Let's apply strict structure:
-      // Main Category: parentId IS NULL
-      // Sub Category: parentId IS NOT NULL
-      if (isSub) {
-        whereClause = isNotNull(table.parentId);
-      } else {
-        whereClause = isNull(table.parentId);
-      }
+      // If not searching, just strict hierarchy
+      whereClause = isSub ? isNotNull(table.parentId) : isNull(table.parentId);
     }
 
-    // If there is a search query, we should probably still respect the hierarchy
-    // OR just return matches.
-    // Let's respect hierarchy to keep them in their correct UI buckets.
-    const hierarchyClause = isSub
-      ? isNotNull(table.parentId)
-      : isNull(table.parentId);
-
-    const finalWhere = searchQuery
-      ? and(ilike(table.name, searchQuery), hierarchyClause)
-      : hierarchyClause;
-
-    // We might need to join to get parent slug for subcategories if we want to filter correctly later
-    // but the schema says parentId references id.
-
-    const q = db.select().from(table).where(finalWhere).limit(limit);
-
-    // For subcategories, we might want to know the parent slug.
-    // Let's do a join if it is sub
-    if (isSub) {
-      // This is a self-join scenario, might be complex with simple select.
-      // Let's just fetch for now, we can resolve parent slug if needed or just use ID.
-      // But for filtering we usually need slugs.
-      // Let's assume for now we use the subcategory's own slug/name.
-    }
+    const q = db.select().from(table).where(whereClause).limit(limit);
 
     const res = await q;
-    return res.map((c: any) => ({
-      id: c.id,
-      title: c.name,
-      type: isSub ? 'SubCategory' : 'Category',
-      contentType,
-      slug: c.name, // Using name as slug based on previous context
-      url: `/assets?type=${contentType}&category=${c.name}`,
-    }));
+
+    // PERBAIKAN UTAMA ADA DI SINI:
+    // 1. Menambahkan return type : SearchResultItem pada map
+    // 2. Menggunakan 'as const' atau casting pada properti 'type'
+    return res.map(
+      (c: any): SearchResultItem => ({
+        id: c.id,
+        title: c.name,
+        // TypeScript akan menganggap ini 'string' jika tidak di-cast
+        type: isSub ? ('SubCategory' as const) : ('Category' as const),
+        contentType,
+        slug: c.name,
+        url: `/assets?type=${contentType}&category=${c.name}`,
+      }),
+    );
   };
 
   try {
@@ -202,59 +193,44 @@ export async function getGlobalSearchData(
       gradientCategories,
       gradientSubCategories,
     ] = await Promise.all([
-      // Templates (3 items)
+      // Templates
       fetchItems(
         contentTemplates,
         categoryTemplates,
         'Template',
-        3,
+        100,
         'templates',
       ),
-      // Template Cats (5)
-      fetchCats(categoryTemplates, 'templates', false, 5),
-      // Template SubCats (5)
-      fetchCats(categoryTemplates, 'templates', true, 5),
+      fetchCats(categoryTemplates, 'templates', false, 20),
+      fetchCats(categoryTemplates, 'templates', true, 20),
 
-      // Components (3 items)
+      // Components
       fetchItems(
         contentComponents,
         categoryComponents,
         'Component',
-        3,
+        100,
         'components',
       ),
-      // Component Cats (5)
-      fetchCats(categoryComponents, 'components', false, 5),
-      // Component SubCats (5)
-      fetchCats(categoryComponents, 'components', true, 5),
+      fetchCats(categoryComponents, 'components', false, 20),
+      fetchCats(categoryComponents, 'components', true, 20),
 
-      // Designs (3 items)
-      fetchItems(contentDesigns, categoryDesigns, 'Design', 3, 'designs'),
-      // Design Cats (5)
-      fetchCats(categoryDesigns, 'designs', false, 5),
-      // Design SubCats (5)
-      fetchCats(categoryDesigns, 'designs', true, 5),
+      // Designs
+      fetchItems(contentDesigns, categoryDesigns, 'Design', 100, 'designs'),
+      fetchCats(categoryDesigns, 'designs', false, 20),
+      fetchCats(categoryDesigns, 'designs', true, 20),
 
-      // Gradients (5 items - per prompt)
+      // Gradients
       fetchItems(
         contentGradients,
         categoryGradients,
         'Gradient',
-        5,
+        100,
         'gradients',
       ),
-      // Gradient Cats (5)
-      fetchCats(categoryGradients, 'gradients', false, 5),
-      // Gradient SubCats (5)
-      fetchCats(categoryGradients, 'gradients', true, 5),
+      fetchCats(categoryGradients, 'gradients', false, 20),
+      fetchCats(categoryGradients, 'gradients', true, 20),
     ]);
-
-    // For subcategories, we ideally need the parent slug to filter correctly.
-    // However, the current simple fetch doesn't get it.
-    // If the frontend logic for "more" subcategory requires "parent category + sub category",
-    // we might need to update this to fetch parent info.
-    // Given the constraints and current schema (parentId), I'll stick to basic fetch.
-    // The "slug" property is currently just the name.
 
     return {
       templates,

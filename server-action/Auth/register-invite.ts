@@ -2,56 +2,115 @@
 
 import { z } from 'zod';
 import { db } from '@/libs/drizzle';
-import { users, verificationTokens } from '@/db/migration';
+import { users, verificationTokens, invites } from '@/db/migration';
 import { eq, and } from 'drizzle-orm';
-import { verifyInviteSignature } from '@/libs/signature';
 import { generatePasswordHash } from '@/libs/credentials';
+import { sendVerificationEmail } from '@/libs/mail';
+import crypto from 'crypto';
 
-const registerSchema = z
-  .object({
-    password: z.string().min(6),
-    confirmPassword: z.string().min(6),
-    otp: z.string().length(6),
-    signature: z.string(),
-    email: z.string().email(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+// 1. Validate Invite Token (Initial Page Load)
+export async function validateInviteToken(token: string) {
+  try {
+    console.log(`[validateInviteToken] Validating token: ${token}`);
+    
+    const inviteRecord = await db.query.invites.findFirst({
+      where: eq(invites.token, token),
+    });
 
-export async function registerInvite(prevState: unknown, formData: FormData) {
-  const validatedFields = registerSchema.safeParse({
-    password: formData.get('password'),
-    confirmPassword: formData.get('confirmPassword'),
+    if (!inviteRecord) {
+      console.log(`[validateInviteToken] Record NOT FOUND for token: ${token}`);
+      return { valid: false, error: 'Invalid invitation link' };
+    }
+
+    console.log(`[validateInviteToken] Record FOUND:`, inviteRecord);
+
+    if (inviteRecord.expires < new Date()) {
+      console.log(`[validateInviteToken] Token EXPIRED. Expires: ${inviteRecord.expires}, Now: ${new Date()}`);
+      return { valid: false, error: 'Invitation link expired' };
+    }
+
+    if (inviteRecord.status !== 'pending') {
+      console.log(`[validateInviteToken] Invalid Status: ${inviteRecord.status}`);
+      return { valid: false, error: 'Invitation already accepted or invalid' };
+    }
+
+    return { valid: true, email: inviteRecord.email };
+  } catch (error) {
+    console.error('Validate token error:', error);
+    return { valid: false, error: 'Failed to validate invitation' };
+  }
+}
+
+// 2. Send Invite OTP (User requests OTP after landing on page)
+export async function sendInviteOTP(token: string) {
+  try {
+    // Re-validate token
+    const inviteRecord = await db.query.invites.findFirst({
+      where: eq(invites.token, token),
+    });
+
+    if (!inviteRecord || inviteRecord.expires < new Date() || inviteRecord.status !== 'pending') {
+      return { error: 'Invalid or expired invitation token' };
+    }
+
+    const email = inviteRecord.email;
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Store/Update OTP in verificationTokens
+    await db
+      .delete(verificationTokens)
+      .where(eq(verificationTokens.identifier, email));
+
+    await db.insert(verificationTokens).values({
+      identifier: email,
+      token: otp,
+      expires: expiresAt,
+    });
+
+    // Send OTP Email
+    await sendVerificationEmail(email, otp);
+
+    return { success: 'OTP sent to your email' };
+  } catch (error) {
+    console.error('Send OTP error:', error);
+    return { error: 'Failed to send OTP' };
+  }
+}
+
+// 3. Complete Registration (Verify OTP + Set Password)
+const completeRegistrationSchema = z.object({
+  token: z.string(),
+  otp: z.string().length(6),
+  password: z.string().min(6),
+});
+
+export async function completeRegistration(prevState: unknown, formData: FormData) {
+  const validatedFields = completeRegistrationSchema.safeParse({
+    token: formData.get('token'),
     otp: formData.get('otp'),
-    signature: formData.get('signature'),
-    email: formData.get('email'),
+    password: formData.get('password'),
   });
 
   if (!validatedFields.success) {
     return { error: 'Invalid input fields' };
   }
 
-  const { password, otp, signature, email } = validatedFields.data;
+  const { token, otp, password } = validatedFields.data;
 
   try {
-    // 1. Verify Signature
-    const { valid, expired, payload } = await verifyInviteSignature(signature);
+    // A. Validate Invite Token
+    const inviteRecord = await db.query.invites.findFirst({
+      where: eq(invites.token, token),
+    });
 
-    if (!valid) {
-      return { error: 'Invalid invitation link' };
+    if (!inviteRecord || inviteRecord.expires < new Date() || inviteRecord.status !== 'pending') {
+      return { error: 'Invalid or expired invitation token' };
     }
 
-    if (expired) {
-      return { error: 'Invitation link expired' };
-    }
+    const email = inviteRecord.email;
 
-    if (payload?.email !== email) {
-      return { error: 'Invalid email for this invitation' };
-    }
-
-    // 2. Verify OTP in DB
+    // B. Validate OTP
     const tokenRecord = await db.query.verificationTokens.findFirst({
       where: and(
         eq(verificationTokens.identifier, email),
@@ -67,7 +126,7 @@ export async function registerInvite(prevState: unknown, formData: FormData) {
       return { error: 'OTP expired' };
     }
 
-    // 3. Update User
+    // C. Update User (Password + Verified)
     const hashedPassword = await generatePasswordHash(password);
 
     await db
@@ -75,10 +134,17 @@ export async function registerInvite(prevState: unknown, formData: FormData) {
       .set({
         password: hashedPassword,
         emailVerified: new Date(),
+        // roleUser is already set during invite, but we can confirm it here if needed
       })
       .where(eq(users.email, email));
 
-    // 4. Delete Token
+    // D. Update Invite Status
+    await db
+        .update(invites)
+        .set({ status: 'accepted' })
+        .where(eq(invites.id, inviteRecord.id));
+
+    // E. Cleanup OTP
     await db
       .delete(verificationTokens)
       .where(
@@ -88,69 +154,9 @@ export async function registerInvite(prevState: unknown, formData: FormData) {
         ),
       );
 
-    return { success: 'Registration successful. You can now login.' };
+    return { success: 'Registration successful. Redirecting...' };
   } catch (error) {
-    console.error('Register invite error:', error);
+    console.error('Complete registration error:', error);
     return { error: 'Failed to complete registration' };
-  }
-}
-
-// Resend OTP Action
-export async function resendInviteOtp(email: string, signature: string) {
-  try {
-    // Verify signature to get role and validity
-    // We ignore 'expired' here because we want to allow resending even if the *link* (signature) expired,
-    // as long as the intention is valid. However, strictly speaking, if the signature is invalid (tampered), we stop.
-    const { valid } = await verifyInviteSignature(signature);
-
-    if (!valid) {
-      // For security, if signature is completely invalid (tampered), do not resend.
-      // If it's just expired, we might proceed if we check the user state.
-      // But verifyInviteSignature returns valid=false if signature verification fails.
-      // It returns expired=true (and valid=true) if only time check failed.
-      // So checking !valid covers tampering.
-      return { error: 'Invalid invitation signature' };
-    }
-
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, email),
-    });
-
-    if (!user || user.emailVerified) {
-      return { error: 'User not found or already verified' };
-    }
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-    // Update Token
-    await db
-      .delete(verificationTokens)
-      .where(eq(verificationTokens.identifier, email));
-    await db.insert(verificationTokens).values({
-      identifier: email,
-      token: otp,
-      expires: expiresAt,
-    });
-
-    // Use existing role from user record
-    const role = user.roleUser;
-
-    // Re-generate signature to extend validity
-    const newSignature = await import('@/libs/signature').then((m) =>
-      m.generateInviteSignature(email, role, otp, expiresAt),
-    );
-
-    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite?signature=${newSignature}&email=${encodeURIComponent(
-      email,
-    )}`;
-
-    const { sendInviteEmail } = await import('@/libs/mail');
-    await sendInviteEmail(email, otp, inviteUrl, role);
-
-    return { success: 'OTP resent successfully', newSignature };
-  } catch (error) {
-    console.error('Resend OTP error:', error);
-    return { error: 'Failed to resend OTP' };
   }
 }

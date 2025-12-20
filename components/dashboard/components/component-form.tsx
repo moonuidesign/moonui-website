@@ -17,7 +17,7 @@ import {
   PlusCircle,
   Crown,
   Info,
-  Image as ImageIcon,
+  Upload,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -56,7 +56,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'react-toastify';
 import Image from 'next/image';
 import { TagInput } from '@/components/ui/tag-input';
-import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import DescriptionEditor from '@/components/text-editor/description-editor';
 
 // --- IMPORTS SERVER ACTION ---
 import {
@@ -128,11 +128,25 @@ export default function ComponentForm({
 
   const isEditMode = !!component;
 
-  // Setup Default Values
-  // Logic: Jika edit mode, kita perlu tahu mana parent mana child.
-  // Asumsi: component.categoryComponentsId di DB menyimpan ID yang paling spesifik (bisa parent, bisa child).
-  // Kita perlu mencari parent-nya jika ID tersebut adalah child.
+  // --- HELPER: Parse Description ---
+  const parseDescription = (desc: any) => {
+    if (!desc) return undefined;
+    if (typeof desc === 'object') return desc;
+    if (typeof desc === 'string') {
+      try {
+        const parsed = JSON.parse(desc);
+        if (parsed && typeof parsed === 'object' && parsed.type === 'doc') {
+          return parsed;
+        }
+      } catch (e) {
+        // Not JSON, assume HTML string
+      }
+      return desc;
+    }
+    return undefined;
+  };
 
+  // Setup Default Values
   let defaultParentId = '';
   let defaultChildId = '';
 
@@ -142,16 +156,13 @@ export default function ComponentForm({
     );
     if (selectedCat) {
       if (selectedCat.parentId) {
-        // Jika yang tersimpan adalah child
         defaultParentId = selectedCat.parentId;
         defaultChildId = selectedCat.id;
       } else {
-        // Jika yang tersimpan adalah parent
         defaultParentId = selectedCat.id;
       }
     }
   }
-  // Override if explicitly provided by subCategoryComponentsId (if DB supports it)
   if (component?.subCategoryComponentsId) {
     defaultChildId = component.subCategoryComponentsId;
   }
@@ -166,17 +177,14 @@ export default function ComponentForm({
       urlBuyOneTime: component?.urlBuyOneTime ?? '',
       categoryComponentsId: defaultParentId,
       subCategoryComponentsId: defaultChildId,
-
       rawHtmlInput: component?.rawHTMLInput ?? '',
       statusContent: component?.statusContent ?? 'draft',
-
       tier: component?.tier ?? 'free',
       slug: Array.isArray(component?.slug) ? (component?.slug as string[]) : [],
-      description: component?.description ?? '',
+      description: parseDescription(component?.description),
     },
   });
 
-  // Watchers
   const watchedHTML = useWatch({
     control: form.control,
     name: 'copyComponentTextHTML',
@@ -194,13 +202,11 @@ export default function ComponentForm({
     ? uploadedImagePreview
     : component?.imageUrl;
 
-  // Filter Parent & Child Categories
   const parentCategories = localCategories.filter((c) => !c.parentId);
   const subCategories = localCategories.filter(
     (c) => c.parentId === watchedParentCategoryId,
   );
 
-  // --- LOGIC: STRICT CLIPBOARD PROCESSOR ---
   const validateClipboardSource = (
     htmlString: string,
   ): ValidClipboardSource => {
@@ -260,10 +266,6 @@ export default function ComponentForm({
       } else {
         toast.error('⛔ Format Ditolak! Hanya menerima Figma/Framer.', {
           autoClose: 4000,
-        });
-        toast.info("Gunakan kolom 'Source Engine' di bawah untuk HTML biasa.", {
-          delay: 1000,
-          autoClose: 5000,
         });
       }
     } catch (e) {
@@ -359,7 +361,7 @@ export default function ComponentForm({
           {/* Header Section */}
           <div className="mb-16">
             <h1 className="text-5xl font-bold tracking-tight text-foreground mb-4 text-balance">
-              {isEditMode ? 'Edit Component' : 'Create Component'}
+              {isEditMode ? 'Edit Component' : 'Create New Component'}
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
               Import design (Figma/Framer), configure metadata, and generate AI
@@ -381,7 +383,7 @@ export default function ComponentForm({
 
                 <div className="space-y-8">
                   {/* Category & Sub Category */}
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid gap-6">
                     <FormField
                       control={form.control}
                       name="categoryComponentsId"
@@ -399,13 +401,12 @@ export default function ComponentForm({
                               className="h-8 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5"
                             >
                               <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
-                              Add
+                              Add New
                             </Button>
                           </div>
                           <Select
                             onValueChange={(value) => {
                               field.onChange(value);
-                              // Reset sub category when parent changes
                               form.setValue('subCategoryComponentsId', '');
                             }}
                             value={field.value || ''}
@@ -837,11 +838,9 @@ export default function ComponentForm({
                         </FormLabel>
                         <FormControl>
                           <div className="rounded-lg border border-border/60 bg-muted/30 p-4 hover:border-border transition-colors">
-                            <RichTextEditor
-                              content={field.value}
+                            <DescriptionEditor
+                              initialContent={field.value}
                               onChange={(value) => field.onChange(value)}
-                              placeholder="Add a description..."
-                              className="min-h-[150px]"
                             />
                           </div>
                         </FormControl>
@@ -896,7 +895,7 @@ export default function ComponentForm({
                 </div>
               </section>
 
-              {/* SECTION 5: THUMBNAIL */}
+              {/* SECTION 5: THUMBNAIL (UPDATED TO MATCH TEMPLATE-FORM STYLE) */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -913,55 +912,56 @@ export default function ComponentForm({
                     type="file"
                     accept="image/*"
                     className="hidden"
+                    id="image-upload"
                     onChange={handleImageUpload}
                   />
-                  <div
-                    className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-8 text-center transition-all hover:border-primary/40 hover:bg-muted/30"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {activeImagePreview ? (
-                      <div className="relative aspect-video w-full max-w-md mx-auto overflow-hidden rounded-lg shadow-sm">
-                        <Image
-                          src={activeImagePreview}
-                          alt="Thumb"
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <p className="text-white font-medium flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4" /> Change Image
+                  <label htmlFor="image-upload">
+                    <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
+                          <Upload className="h-8 w-8 text-primary" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-base font-medium text-foreground">
+                            Click to upload thumbnail
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            PNG, JPG, WEBP up to 5MB
                           </p>
                         </div>
                       </div>
-                    ) : (
-                      <div className="py-8">
-                        <div className="mx-auto rounded-full bg-primary/10 p-4 w-fit mb-4">
-                          <ImageIcon className="h-8 w-8 text-primary" />
-                        </div>
-                        <p className="text-base font-medium text-foreground">
-                          Upload Thumbnail
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          PNG/JPG (Max 5MB)
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  </label>
+
+                  {/* Preview Image */}
                   {activeImagePreview && (
-                    <div className="mt-4 flex justify-center">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setUploadedImagePreview(null);
-                          setSelectedFile(null);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" /> Remove Image
-                      </Button>
+                    <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30">
+                        <div className="absolute top-2 left-2 z-10 bg-green-500/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                          Thumbnail
+                        </div>
+                        <Image
+                          src={activeImagePreview}
+                          alt="Thumbnail Preview"
+                          fill
+                          className="object-cover transition-transform group-hover:scale-105"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setUploadedImagePreview(null);
+                            setSelectedFile(null);
+                            if (fileInputRef.current)
+                              fileInputRef.current.value = '';
+                          }}
+                          className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1022,7 +1022,6 @@ export default function ComponentForm({
                       shouldValidate: true,
                     });
                   } else {
-                    // If sub category created, and parent matches selected, auto select it
                     const currentParent = form.getValues(
                       'categoryComponentsId',
                     );

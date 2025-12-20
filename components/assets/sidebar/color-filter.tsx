@@ -34,7 +34,7 @@ export const ColorFilter = () => {
   return (
     <div className="w-full pt-1 pb-4 bg-white rounded-2xl shadow-card-sm flex flex-col gap-2 overflow-hidden mb-4 animate-in fade-in zoom-in duration-300">
       <div className="w-full h-8 px-3 flex justify-between items-center">
-        <span className="text-zinc-800 text-xs font-medium font-['Inter']">
+        <span className="text-[#3D3D3D] text-xs font-medium font-['Inter']">
           Filter by Color
         </span>
       </div>

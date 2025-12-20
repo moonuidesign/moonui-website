@@ -1,17 +1,29 @@
 export const ComponentBadge = () => (
   // Menggunakan shadow dan border yang lebih halus agar cocok di background putih/abu
-  <div className="h-7 md:h-8 pl-1.5 pr-2.5 py-1 bg-white rounded-lg shadow-sm border border-gray-200 inline-flex items-center gap-1.5">
-    <div className="w-4 h-4 relative">
-      {/* Icon kotak simple */}
-      <div className="w-3.5 h-3 left-[1.8px] top-[3.3px] absolute bg-gray-400 rounded-[1px]"></div>
-      <div className="w-px h-3 left-[8.5px] top-[3.3px] absolute bg-white"></div>
+  <div className="h-7 md:h-8 pl-1.5 pr-2.5 py-1 bg-[#FD4F12] rounded-lg shadow-sm border border-gray-200 inline-flex items-center gap-1.5">
+    <div className="w-4 h-4 relative flex justify-center items-center">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 21 20"
+        className="size-[18px] text-white"
+      >
+        <path
+          fill="currentColor"
+          d="M3.417 14.375v-8.75h-1.25v8.75zm14.166-8.75v8.75h1.25v-8.75zm-1.041 9.792H4.458v1.25h12.084zM4.458 4.583h12.084v-1.25H4.458zm13.125 9.792c0 .575-.466 1.042-1.041 1.042v1.25a2.29 2.29 0 0 0 2.291-2.292zm1.25-8.75a2.29 2.29 0 0 0-2.291-2.292v1.25c.575 0 1.041.467 1.041 1.042zm-15.416 0c0-.575.466-1.042 1.041-1.042v-1.25a2.29 2.29 0 0 0-2.291 2.292zm-1.25 8.75a2.29 2.29 0 0 0 2.291 2.292v-1.25a1.04 1.04 0 0 1-1.041-1.042z"
+        ></path>
+        <path
+          fill="currentColor"
+          d="M9.875 16.042v.625h1.25v-.625zm1.25-12.084v-.625h-1.25v.625zm0 12.084V3.958h-1.25v12.084z"
+        ></path>
+      </svg>
     </div>
 
-    <span className="text-gray-700 text-sm font-medium font-sans leading-5">
+    <span className="text-white text-sm font-medium font-sans leading-5">
       Components & Blocks
     </span>
 
-    <div className="px-[5px] py-[3px] bg-orange-50 rounded-[5px] border border-orange-200 ml-1">
+    <div className="px-[5px] py-[3px] flex justify-center items-center bg-orange-100 rounded-[5px]  ml-1">
       <span className="text-orange-600 text-[10px] font-bold font-sans leading-none block">
         PRO
       </span>

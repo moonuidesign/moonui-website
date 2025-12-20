@@ -1,23 +1,71 @@
-import React from 'react';
+'use client';
+import React, { Suspense } from 'react';
 import Navbar from './navbar';
 import Footer from './footer';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { useFilter } from '@/contexts';
+import { NavbarSkeleton } from '@/components/skeletons/navbar-skeleton';
+
 export * from './footer';
 export * from './navbar';
+
 export default function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { isFilterOpen, setFilterOpen } = useFilter();
+
   return (
-    <>
-      <Navbar />
-      {children}
-      <Footer
-        socials={{
-          twitter: 'https://twitter.com/moonui',
-          github: 'https://github.com/moonui',
-        }}
-      />
-    </>
+    <div className="min-h-screen bg-zinc-950">
+      <motion.div
+        animate={
+          isFilterOpen
+            ? { scale: 0.92, borderRadius: '24px', opacity: 0.8 }
+            : { scale: 1, borderRadius: '0px', opacity: 1 }
+        }
+        transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+        onClick={() => isFilterOpen && setFilterOpen(false)}
+        className={`min-h-screen w-full bg-[#E7E7E7] origin-top ${
+          isFilterOpen ? 'cursor-pointer pointer-events-none' : ''
+        }`}
+      >
+        <div className="pb-20 md:py-4 pt-4 md:mb-10 bg-black h-fit w-full px-4  md:rounded-lg flex justify-center">
+          <div className="flex items-center gap-2 text-[#B8B8B8]">
+            {/* Icon tetap sebagai flex item pertama */}
+            <Image
+              alt="Rocket"
+              src="/Vector.svg"
+              width={100}
+              height={100}
+              className="size-4 md:size-6 shrink-0" // shrink-0 agar icon tidak gepeng
+            />
+
+            {/* Gabungkan SEMUA teks dalam satu tag <p> atau <div> */}
+            <p className="text-sm md:text-base">
+              Built faster websites with{' '}
+              <span className="text-white font-medium">MoonUI</span> components!{' '}
+              {/* Gunakan span/link untuk Learn more di SINI, bukan dipisah */}
+              <span className="text-white underline font-medium cursor-pointer hover:text-gray-200 transition-colors">
+                Learn more
+              </span>
+            </p>
+          </div>
+        </div>
+        <div className="rounded-t-2xl md:rounded-0 md:m-0  -mt-[150px] h-fit w-full">
+          <Suspense fallback={<NavbarSkeleton />}>
+            <Navbar />
+          </Suspense>
+          {children}
+          <Footer
+            socials={{
+              twitter: 'https://twitter.com/moonui',
+              github: 'https://github.com/moonui',
+            }}
+          />
+        </div>
+      </motion.div>
+    </div>
   );
 }

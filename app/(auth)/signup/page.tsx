@@ -3,11 +3,29 @@
 import { verifyLicenseSignature } from '@/libs/signature';
 import { RegisterForm } from '@/components/signup/formSignUp';
 import { redirect } from 'next/navigation'; // Import redirect
+import { Suspense } from 'react';
+import { FormSkeleton } from '@/components/skeletons/form-skeleton';
 
-export default async function RegisterPage({
+export default function RegisterPage({
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | undefined };
+  searchParams?: Promise<{ [key: string]: string | undefined }>;
+}) {
+  return (
+    <div className="dark:bg-black w-screen container mx-auto h-screen max-w-[1440px] max-h-[1024px] flex justify-center items-center">
+      <div className="w-full flex h-[80%] min-h-[650px] justify-center item-center backdrop-blur-xs bg-opacity-40 rounded-xl p-5 ">
+        <Suspense fallback={<FormSkeleton />}>
+          <RegisterContent searchParams={searchParams} />
+        </Suspense>
+      </div>
+    </div>
+  );
+}
+
+async function RegisterContent({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | undefined }>;
 }) {
   const params = await searchParams;
   const signature = params?.signature ?? '';
@@ -36,14 +54,10 @@ export default async function RegisterPage({
   const { email, licenseKey } = verificationResult.payload!;
 
   return (
-    <div className="dark:bg-black w-screen container mx-auto h-screen max-w-[1440px] max-h-[1024px] flex justify-center items-center">
-      <div className="w-full flex h-[80%] min-h-[650px] justify-center item-center backdrop-blur-xs bg-opacity-40 rounded-xl p-5 ">
-        <RegisterForm
-          signature={signature}
-          email={email}
-          licenseKey={licenseKey}
-        />
-      </div>
-    </div>
+    <RegisterForm
+      signature={signature}
+      email={email}
+      licenseKey={licenseKey}
+    />
   );
 }

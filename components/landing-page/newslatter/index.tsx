@@ -28,7 +28,7 @@ const FeatureItem = ({ text }: { text: string }) => (
     <div className="w-4 h-4 flex items-center justify-center rounded-full border border-green-600/30">
       <Check className="w-2.5 h-2.5 text-green-600" strokeWidth={4} />
     </div>
-    <span className="text-zinc-800 text-sm font-medium font-sans leading-5">
+    <span className="text-[#3D3D3D] text-sm font-medium font-sans leading-5">
       {text}
     </span>
   </div>
@@ -72,28 +72,28 @@ const NewsletterSection: React.FC<NewsletterProps> = ({
   };
 
   return (
-    <section className="w-full bg-gray-200 py-20 px-4 flex justify-center items-center overflow-hidden relative">
-      <div className="hidden xl:block absolute inset-0 pointer-events-none border-x border-neutral-300 w-full max-w-[1280px] mx-auto opacity-50" />
+    <section className="w-full mx-auto container md:border-t md:border-x rounded-t-2xl border-[#D3D3D3] lg:w-7xl py-10 md:py-10 mt-0 md:mt-10 px-4 flex justify-center items-center overflow-hidden relative">
+      <div className="hidden xl:block absolute inset-0 pointer-events-none border-t rounded-t-2xl border-x border-[#D8D8D8] w-full md:max-w-[1280px] mx-auto opacity-50" />
 
       <div className="w-full max-w-2xl relative z-10 flex flex-col items-center gap-8">
         <div className="flex flex-col md:items-center gap-4 md:text-center items-start text-start">
           <Badge text={badgeText} />
 
           <div className="flex flex-col gap-2">
-            <h2 className="text-zinc-800 text-3xl md:text-4xl font-semibold font-sans leading-tight">
+            <h2 className="text-[#3D3D3D] text-[28px] md:text-[30px] md:text-4xl font-semibold font-sans leading-tight">
               {title}
             </h2>
             <div className="text-base leading-7 max-w-lg mx-auto">
               {description || (
                 <p>
                   <span className="text-neutral-500 font-normal">Get the </span>
-                  <span className="text-zinc-800 font-medium">
+                  <span className="text-[#3D3D3D] font-medium">
                     latest updates
                   </span>
                   <span className="text-neutral-500 font-normal">, </span>
-                  <span className="text-zinc-800 font-medium">tips</span>
+                  <span className="text-[#3D3D3D] font-medium">tips</span>
                   <span className="text-neutral-500 font-normal">, and </span>
-                  <span className="text-zinc-800 font-medium">exclusive</span>
+                  <span className="text-[#3D3D3D] font-medium">exclusive</span>
                   <span className="text-neutral-500 font-normal">
                     {' '}
                     offers from MoonUI.
@@ -116,14 +116,14 @@ const NewsletterSection: React.FC<NewsletterProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 bg-transparent border-none outline-none text-zinc-800 placeholder:text-neutral-400 text-base font-sans"
+              className="flex-1 bg-transparent border-none outline-none text-[#3D3D3D] placeholder:text-neutral-400 text-base font-sans"
               required
               disabled={isPending}
             />
             <button
               type="submit"
               disabled={isPending}
-              className="group w-8 h-8 bg-white hover:bg-zinc-50 rounded-[5px] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] border border-neutral-200 flex justify-center items-center cursor-pointer active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group w-8 h-6 bg-white hover:bg-zinc-50 rounded-[5px] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] border border-neutral-200 flex justify-center items-center cursor-pointer active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Submit"
             >
               {isPending ? (

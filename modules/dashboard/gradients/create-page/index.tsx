@@ -1,4 +1,4 @@
-import { GradientForm } from '@/components';
+import GradientForm from '@/components/dashboard/gradient/gradient-form';
 import { getCategoryGradients } from '@/server-action/getCategoryComponent';
 
 export default async function CreateGradient() {

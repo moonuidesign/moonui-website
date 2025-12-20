@@ -26,7 +26,7 @@ const FAQSection: React.FC<FAQSectionProps> = ({
   categories,
 }) => {
   return (
-    <section className="w-full lg:w-max-7xl mx-auto container py-20 bg-[E8E8E8] flex justify-center items-center px-1 md:p-4">
+    <section className="w-full lg:w-max-7xl mx-auto container py-5 flex justify-center items-center px-1">
       {/* Container Utama (Dark Card) */}
       <div className="w-full rounded-4xl bg-zinc-900  lg:rounded-[40px] shadow-xl p-8 md:p-16 flex flex-col lg:flex-row gap-10 lg:gap-20">
         {/* Bagian Kiri: Header Text */}

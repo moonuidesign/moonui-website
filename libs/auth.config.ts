@@ -7,8 +7,8 @@ export const authConfig = {
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        token.roleUser = user.roleUser;
-        token.tier = user.tier;
+        token.roleUser = user.roleUser ?? 'user';
+        token.tier = user.tier ?? 'free'; // Ensure tier is always defined
       }
       if (trigger === 'update' && session) {
         token = { ...token, ...session };
@@ -17,7 +17,10 @@ export const authConfig = {
     },
     async session({ session, token }) {
       if (session.user && token) {
-        session.user.roleUser = token.roleUser as 'admin' | 'user' | 'superadmin';
+        session.user.roleUser = token.roleUser as
+          | 'admin'
+          | 'user'
+          | 'superadmin';
         session.user.tier = token.tier as string;
       }
       return session;

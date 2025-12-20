@@ -1,10 +1,13 @@
 import EditComponent from '@/modules/dashboard/components/edit-page';
-interface EditComponentPageProps {
-  params: {
-    id: string;
-  };
-}
+import { Suspense } from 'react';
+import { FormSkeleton } from '@/components/skeletons/form-skeleton';
+import { EditComponentPageProps } from '../../../templates/edit/[id]/page';
 
 export default async function Page({ params }: EditComponentPageProps) {
-  return <EditComponent id={params.id} />;
+  const { id } = await params;
+  return (
+    <Suspense fallback={<FormSkeleton />}>
+      <EditComponent id={id} />
+    </Suspense>
+  );
 }

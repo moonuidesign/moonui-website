@@ -5,6 +5,7 @@ import {
   timestamp,
   integer,
   jsonb,
+  serial,
 } from 'drizzle-orm/pg-core';
 import { categoryGradients, users } from '@tables';
 
@@ -16,7 +17,7 @@ export const contentGradients = pgTable('content_gradients', {
   slug: jsonb('slug').notNull(),
   description: jsonb('description'),
   colors: jsonb('colors').notNull(),
-  number: integer('number').notNull(),
+  number: serial('number').notNull(),
   typeGradient: varchar('type_gradient', {
     length: 50,
     enum: ['linear', 'radial', 'conic'],

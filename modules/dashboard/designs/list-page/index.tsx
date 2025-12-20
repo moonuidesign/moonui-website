@@ -42,7 +42,7 @@ export default async function ListDesign({
     filters.push(eq(contentDesigns.tier, tier as any));
   if (status && status !== 'all')
     filters.push(eq(contentDesigns.statusContent, status));
-  
+
   if (role === 'admin' && userId) {
     filters.push(eq(contentDesigns.userId, userId));
   }
@@ -53,7 +53,8 @@ export default async function ListDesign({
   else if (sort === 'title.asc') orderBy = asc(contentDesigns.title);
   else if (sort === 'title.desc') orderBy = desc(contentDesigns.title);
   else if (sort === 'viewCount.desc') orderBy = desc(contentDesigns.viewCount);
-  else if (sort === 'downloadCount.desc') orderBy = desc(contentDesigns.downloadCount);
+  else if (sort === 'downloadCount.desc')
+    orderBy = desc(contentDesigns.downloadCount);
 
   // --- 3. Fetch Data ---
   const data = await db
@@ -103,18 +104,39 @@ export default async function ListDesign({
 
   // --- 6. Data Mapping & Cleaning (CRITICAL STEP) ---
   const designs = data.map((item) => {
-    // Casting JSONB ke string array
-    const images = (item.imagesUrl as string[]) || [];
-    // Ambil gambar pertama untuk thumbnail, atau null jika kosong
-    const firstImage = images.length > 0 ? images[0] : null;
+    // Pastikan rawImages adalah array
+    const rawImages = Array.isArray(item.imagesUrl) ? item.imagesUrl : [];
+
+    const formattedImages = rawImages.map((img: any) => {
+      // 1. NORMALISASI: Cek apakah item ini string atau object
+      let rawUrl = '';
+
+      if (typeof img === 'string') {
+        // Jika formatnya ['designs/abc.png'], ambil langsung stringnya
+        rawUrl = img;
+      } else if (typeof img === 'object' && img !== null && img.url) {
+        // Jika formatnya [{ url: '...' }], ambil properti .url
+        rawUrl = img.url;
+      }
+
+      // 2. LOGIC URL
+      if (!rawUrl) return { url: '' }; // Safety check jika kosong
+
+      // Case A: External Link (http/https) atau Local Public Asset (diawali /)
+      if (rawUrl.startsWith('http') || rawUrl.startsWith('/')) {
+        return { url: rawUrl };
+      }
+
+      // Case B: Path R2/S3 (misal: "designs/abc.png"), tambahkan domain
+      return {
+        url: `https://${process.env.R2_PUBLIC_DOMAIN}/${rawUrl}`,
+      };
+    });
 
     return {
       id: item.id,
       title: item.title,
-      // Kirim 'imageUrl' string tunggal untuk ditampilkan di Table/Card
-      imageUrl: firstImage,
-      // Kirim array asli jika Client butuh (misal untuk carousel)
-      imagesUrl: images,
+      imagesUrl: formattedImages, // Gunakan hasil formatting yang baru
       tier: item.tier,
       statusContent: item.statusContent,
       createdAt: item.createdAt ? item.createdAt.toISOString() : null,
@@ -128,7 +150,9 @@ export default async function ListDesign({
       {/* Header Section yang Lebih Menarik */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Design Library</h1>
+          <h1 className="text-[28px] md:text-[30px] font-bold tracking-tight">
+            Design Library
+          </h1>
           <p className="text-muted-foreground mt-1">
             Manage your design assets, figma files, and templates here.
           </p>

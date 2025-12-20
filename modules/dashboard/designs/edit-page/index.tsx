@@ -3,7 +3,7 @@ import { db } from '@/libs/drizzle';
 import { contentDesigns, categoryDesigns } from '@/db/migration';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
-import { DesignForm } from '@/components';
+import DesignForm from '@/components/dashboard/design/design-form';
 
 export default async function EditDesign({ id }: { id: string }) {
   const design = await db
@@ -37,12 +37,14 @@ export default async function EditDesign({ id }: { id: string }) {
   const designData = design[0];
   const formattedDesign = {
     ...designData,
-    imageUrl:
-      Array.isArray(designData.imagesUrl) && designData.imagesUrl.length > 0
-        ? `https://${process.env.R2_PUBLIC_DOMAIN}/${
-            (designData.imagesUrl as string[])[0]
-          }`
-        : null,
+    imagesUrl:
+      Array.isArray(designData.imagesUrl)
+        ? (designData.imagesUrl as string[]).map((url) =>
+            url.startsWith('http')
+              ? url
+              : `https://${process.env.R2_PUBLIC_DOMAIN}/${url}`,
+          )
+        : [],
     linkDownload:
       designData.linkDownload && !designData.linkDownload.startsWith('http')
         ? `https://${process.env.R2_PUBLIC_DOMAIN}/${designData.linkDownload}`

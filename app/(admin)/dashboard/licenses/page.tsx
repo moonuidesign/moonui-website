@@ -1,5 +1,6 @@
 import ListLicenses, { SearchParamsProps } from '@/modules/dashboard/licenses/list-page';
 import { Suspense } from 'react';
+import { DashboardListSkeleton } from '@/components/skeletons/dashboard-list-skeleton';
 
 export default function Page({
   searchParams,
@@ -7,7 +8,7 @@ export default function Page({
   searchParams: Promise<SearchParamsProps>;
 }) {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<DashboardListSkeleton />}>
       <ListLicensesWrapper searchParams={searchParams} />
     </Suspense>
   );

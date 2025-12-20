@@ -37,7 +37,7 @@ export const TierIndicator = ({ tier }: { tier: TierType }) => {
 
       <div
         className={`text-right justify-center text-sm font-semibold font-['Inter'] leading-6 ${
-          isProPlus ? 'text-indigo-600' : 'text-zinc-800'
+          isProPlus ? 'text-indigo-600' : 'text-[#3D3D3D]'
         }`}
       >
         {isProPlus ? 'Pro+' : 'Pro'}
@@ -65,10 +65,10 @@ export const ActionButton: React.FC<ActionBtnProps> = ({
     }}
     className="h-8 px-3 bg-white rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-1.5 border border-zinc-100 cursor-pointer"
   >
-    <span className="flex items-center justify-center text-zinc-800">
+    <span className="flex items-center justify-center text-[#3D3D3D]">
       {icon}
     </span>
-    <span className="text-zinc-800 text-xs font-medium font-['Inter']">
+    <span className="text-[#3D3D3D] text-xs font-medium font-['Inter']">
       {label}
     </span>
   </button>

@@ -4,7 +4,7 @@ import type React from 'react';
 
 import { useState, useTransition, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import {
   PlusCircle,
   Upload,
@@ -14,6 +14,7 @@ import {
   Crown,
   FileUp,
   Sparkles,
+  FileText, // Icon baru untuk file existing
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -65,13 +66,14 @@ import DescriptionEditor from '@/components/text-editor/description-editor';
 interface TemplateEntity {
   id: string;
   title: string;
-  description: object;
+  description: object | unknown;
   typeContent: string;
-  linkTemplate?: string | null;
+  urlPreview?: string | null;
   categoryTemplatesId: string | null;
-  assetUrl: unknown;
+  imagesUrl: unknown; // Biasanya array of objects { url: string }
   tier: string;
-  platform: string;
+  size: string | null;
+  format: string | null;
   statusContent: string;
   urlBuyOneTime: string | null;
   slug: unknown;
@@ -91,22 +93,48 @@ export default function TemplateForm({
   const [localCategories, setLocalCategories] =
     useState<Category[]>(categories);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const isEditMode = !!template;
 
-  // State untuk File Upload
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [mainFile, setMainFile] = useState<File | null>(null);
+  // --- HELPER: Parse Description ---
+  const parseDescription = (desc: any) => {
+    if (!desc) return undefined;
+    if (typeof desc === 'object') return desc;
+    if (typeof desc === 'string') {
+      try {
+        const parsed = JSON.parse(desc);
+        if (parsed && typeof parsed === 'object' && parsed.type === 'doc') {
+          return parsed;
+        }
+      } catch (e) {
+        // Not JSON
+      }
+      return desc;
+    }
+    return undefined;
+  };
+
+  // --- STATE UNTUK EXISTING DATA (EDIT MODE) ---
+  // Menyimpan file utama yang sudah ada di server
+  const [existingMainFile, setExistingMainFile] = useState<string | null>(
+    template?.linkDonwload || null,
+  );
+
+  // Menyimpan gambar-gambar yang sudah ada di server
+  const [existingImages, setExistingImages] = useState<AssetItem[]>(
+    Array.isArray(template?.imagesUrl)
+      ? (template?.imagesUrl as AssetItem[])
+      : [],
+  );
+
+  // --- STATE UNTUK NEW UPLOAD ---
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]); // Preview Base64 untuk file baru
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // File object baru
+  const [mainFile, setMainFile] = useState<File | null>(null); // Main file object baru
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mainFileInputRef = useRef<HTMLInputElement>(null);
 
-  const isEditMode = !!template;
-
   // --- PREPARE DEFAULT VALUES ---
-  const initialAssetUrls: AssetItem[] = Array.isArray(template?.assetUrl)
-    ? (template?.assetUrl as AssetItem[])
-    : [{ url: '', type: 'image' }];
-
   const defaultTier: TemplateTierType =
     template?.tier &&
     TEMPLATE_TIER_OPTIONS.includes(template.tier as TemplateTierType)
@@ -126,25 +154,17 @@ export default function TemplateForm({
     resolver: zodResolver(ContentTemplateSchema),
     defaultValues: {
       title: template?.title ?? '',
-      description: template?.description ?? undefined,
+      description: parseDescription(template?.description),
       typeContent: template?.typeContent ?? '',
-      linkTemplate: template?.linkTemplate ?? '',
+      linkTemplate: template?.urlPreview ?? '',
       categoryTemplatesId: template?.categoryTemplatesId ?? '',
       tier: defaultTier,
       statusContent: defaultStatus,
       urlBuyOneTime: template?.urlBuyOneTime ?? '',
-      assetUrls: initialAssetUrls,
+      // Initial value form imageUrls diambil dari existingImages agar validasi lolos
+      imagesUrl: existingImages,
       slug: Array.isArray(template?.slug) ? (template?.slug as string[]) : [],
     },
-  });
-
-  const {
-    fields: assetUrlFields,
-    append: appendAssetUrl,
-    remove: removeAssetUrl,
-  } = useFieldArray({
-    control: form.control,
-    name: 'assetUrls',
   });
 
   // --- HANDLERS ---
@@ -158,6 +178,7 @@ export default function TemplateForm({
     toast.success('Kategori berhasil dibuat');
   };
 
+  // Handler Upload Gambar Baru
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     const validFiles: File[] = [];
@@ -187,20 +208,53 @@ export default function TemplateForm({
     });
   };
 
+  // Hapus Gambar Baru (yang belum di-submit)
   const handleRemoveNewImage = (index: number) => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Hapus Gambar Existing (yang sudah ada di DB)
+  const handleRemoveExistingImage = (index: number) => {
+    setExistingImages((prev) => {
+      const updated = prev.filter((_, i) => i !== index);
+      // Penting: Update nilai form agar saat submit, gambar yang dihapus tidak dikirim lagi
+      form.setValue('imagesUrl', updated as any);
+      return updated;
+    });
+  };
+
+  // Hapus Main File Existing
+  const handleRemoveExistingMainFile = () => {
+    setExistingMainFile(null);
+  };
+
+  // Helper untuk mendapatkan nama file dari URL
+  const getFileNameFromUrl = (url: string) => {
+    try {
+      return url.split('/').pop() || 'Existing File';
+    } catch {
+      return 'Existing File';
+    }
   };
 
   const onSubmit = (values: ContentTemplateFormValues) => {
     startTransition(async () => {
       const formData = new FormData();
 
-      formData.append('data', JSON.stringify(values));
+      // Penting: Pastikan values.imagesUrl berisi list existingImages terkini
+      // Karena kita mungkin sudah menghapus beberapa lewat UI
+      const finalValues = {
+        ...values,
+        imagesUrl: existingImages, // Array ini memberi tahu server gambar mana yang dipertahankan
+      };
+
+      formData.append('data', JSON.stringify(finalValues));
 
       if (mainFile) {
         formData.append('mainFile', mainFile);
       }
+
       selectedFiles.forEach((file) => {
         formData.append('images', file);
       });
@@ -242,11 +296,12 @@ export default function TemplateForm({
             if (fileInputRef.current) fileInputRef.current.value = '';
             if (mainFileInputRef.current) mainFileInputRef.current.value = '';
           } else {
+            // Jika edit sukses, kita clear new uploads
             setImagePreviews([]);
             setSelectedFiles([]);
             setMainFile(null);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            if (mainFileInputRef.current) mainFileInputRef.current.value = '';
+            // Opsional: Anda bisa merefresh halaman di sini jika perlu
+            // window.location.reload();
           }
         })
         .catch(() => {});
@@ -277,6 +332,7 @@ export default function TemplateForm({
               onSubmit={(e) => form.handleSubmit(onSubmit)(e)}
               className="space-y-16"
             >
+              {/* --- BASIC INFORMATION --- */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -404,6 +460,7 @@ export default function TemplateForm({
                 </div>
               </section>
 
+              {/* --- DESCRIPTION --- */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -432,6 +489,7 @@ export default function TemplateForm({
                 />
               </section>
 
+              {/* --- TAGS --- */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -463,6 +521,7 @@ export default function TemplateForm({
                 />
               </section>
 
+              {/* --- LINKS --- */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -522,6 +581,7 @@ export default function TemplateForm({
                 </div>
               </section>
 
+              {/* --- PUBLISHING SETTINGS --- */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -603,6 +663,7 @@ export default function TemplateForm({
                 </div>
               </section>
 
+              {/* --- MAIN TEMPLATE FILE (UPDATED) --- */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -634,20 +695,44 @@ export default function TemplateForm({
                   <label htmlFor="main-file-upload">
                     <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
                       <div className="flex flex-col items-center justify-center gap-4">
-                        <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                          <Upload className="h-8 w-8 text-primary" />
-                        </div>
+                        {/* Logic Tampilan File */}
                         {mainFile ? (
-                          <div className="space-y-2">
-                            <p className="text-base font-medium text-foreground">
-                              {mainFile.name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {(mainFile.size / 1024 / 1024).toFixed(2)} MB
-                            </p>
+                          // KONDISI 1: User baru saja upload file baru
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="rounded-full bg-primary/10 p-4">
+                              <Upload className="h-8 w-8 text-primary" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-base font-medium text-foreground">
+                                {mainFile.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {(mainFile.size / 1024 / 1024).toFixed(2)} MB
+                              </p>
+                            </div>
+                          </div>
+                        ) : existingMainFile ? (
+                          // KONDISI 2: Sudah ada file dari server (Edit Mode)
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="rounded-full bg-emerald-500/10 p-4">
+                              <FileText className="h-8 w-8 text-emerald-600" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-base font-medium text-foreground">
+                                Existing File:{' '}
+                                {getFileNameFromUrl(existingMainFile)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Click to replace with a new file
+                              </p>
+                            </div>
                           </div>
                         ) : (
+                          // KONDISI 3: Kosong (Create Mode)
                           <>
+                            <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
+                              <Upload className="h-8 w-8 text-primary" />
+                            </div>
                             <div className="space-y-2">
                               <p className="text-base font-medium text-foreground">
                                 Click to upload main template file
@@ -661,25 +746,34 @@ export default function TemplateForm({
                       </div>
                     </div>
                   </label>
-                  {mainFile && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setMainFile(null);
-                        if (mainFileInputRef.current)
-                          mainFileInputRef.current.value = '';
-                      }}
-                      className="mt-3 h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                      Remove File
-                    </Button>
+
+                  {/* Tombol Hapus / Cancel Upload */}
+                  {(mainFile || existingMainFile) && (
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          if (mainFile) {
+                            setMainFile(null); // Cancel new upload
+                            if (mainFileInputRef.current)
+                              mainFileInputRef.current.value = '';
+                          } else if (existingMainFile) {
+                            handleRemoveExistingMainFile(); // Remove existing
+                          }
+                        }}
+                        className="mt-3 h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                        {mainFile ? 'Cancel Upload' : 'Remove Existing File'}
+                      </Button>
+                    </div>
                   )}
                 </div>
               </section>
 
+              {/* --- PREVIEW IMAGES (UPDATED) --- */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -718,16 +812,48 @@ export default function TemplateForm({
                     </div>
                   </label>
 
-                  {imagePreviews.length > 0 && (
+                  {/* Grid Container untuk Gambar */}
+                  {(imagePreviews.length > 0 || existingImages.length > 0) && (
                     <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {imagePreviews.map((preview, index) => (
+                      {/* 1. Loop Existing Images (dari Server) */}
+                      {existingImages.map((img, index) => (
                         <div
-                          key={index}
+                          key={`existing-${index}`}
                           className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30"
                         >
+                          <div className="absolute top-2 left-2 z-10 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                            Existing
+                          </div>
+                          <Image
+                            src={img.url || '/placeholder.svg'}
+                            alt={`Existing Preview ${index + 1}`}
+                            fill
+                            className="object-cover transition-transform group-hover:scale-105"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => handleRemoveExistingImage(index)}
+                            className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+
+                      {/* 2. Loop New Image Previews (Upload Baru) */}
+                      {imagePreviews.map((preview, index) => (
+                        <div
+                          key={`new-${index}`}
+                          className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30"
+                        >
+                          <div className="absolute top-2 left-2 z-10 bg-green-500/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                            New
+                          </div>
                           <Image
                             src={preview || '/placeholder.svg'}
-                            alt={`Preview ${index + 1}`}
+                            alt={`New Preview ${index + 1}`}
                             fill
                             className="object-cover transition-transform group-hover:scale-105"
                           />
@@ -747,87 +873,7 @@ export default function TemplateForm({
                 </div>
               </section>
 
-              <section className="space-y-8">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="h-px flex-1 bg-border/40" />
-                    <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                      Additional Asset URLs
-                    </h2>
-                    <div className="h-px flex-1 bg-border/40" />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => appendAssetUrl({ url: '', type: 'image' })}
-                    className="ml-4 h-8 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5"
-                  >
-                    <PlusCircle className="mr-1.5 h-3.5 w-3.5" />
-                    Add URL
-                  </Button>
-                </div>
-
-                <div className="space-y-6">
-                  {assetUrlFields.map((field, index) => (
-                    <div key={field.id} className="flex gap-3">
-                      <div className="flex-1 space-y-4">
-                        <FormField
-                          control={form.control}
-                          name={`assetUrls.${index}.url`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input
-                                  placeholder="https://example.com/asset.jpg"
-                                  className="h-12 bg-muted/30 border-border/60 hover:border-border transition-colors"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`assetUrls.${index}.type`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="h-12 bg-muted/30 border-border/60 hover:border-border transition-colors">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="image">Image</SelectItem>
-                                  <SelectItem value="video">Video</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeAssetUrl(index)}
-                        className="h-12 w-12 text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
+              {/* Submit Button */}
               <div className="pt-8">
                 <Button
                   type="submit"
@@ -837,6 +883,7 @@ export default function TemplateForm({
                 >
                   {isPending ? (
                     <span className="flex items-center gap-2">
+                      {/* Spinner SVG */}
                       <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                         <circle
                           className="opacity-25"
@@ -879,9 +926,9 @@ export default function TemplateForm({
             </DialogDescription>
           </DialogHeader>
           <AddCategoryCommand
-            categories={localCategories}
+            parentCategories={localCategories}
             onCategoryCreated={handleCategoryCreated}
-            onClose={() => setIsDialogOpen(false)}
+            closeDialog={() => setIsDialogOpen(false)}
           />
         </DialogContent>
       </Dialog>

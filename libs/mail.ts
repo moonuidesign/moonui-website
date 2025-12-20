@@ -704,12 +704,18 @@ export async function sendInviteEmail(
           </p>
           
           <p style="color: #666; line-height: 1.5; margin-bottom: 15px; text-align: center;">
-             To accept the invitation, please use the OTP below and click the button to set up your account.
+             To accept the invitation, please click the button below.
           </p>
 
+          ${
+            otp
+              ? `
           <div style="background-color: #f8fafc; border: 2px dashed ${PRIMARY_COLOR}; padding: 20px; font-size: 32px; font-weight: bold; text-align: center; letter-spacing: 8px; margin: 30px 0; color: ${PRIMARY_COLOR}; border-radius: 8px;">
             ${otp}
           </div>
+          `
+              : ''
+          }
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${inviteUrl}" 

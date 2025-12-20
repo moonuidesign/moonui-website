@@ -18,10 +18,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { DashboardPagination } from '@/components/dashboard/dashboard-pagination';
 
+interface images {
+  url: string;
+}
 export interface TemplateItem {
   id: string;
   title: string;
-  urlPreview: string | null;
+  images: images[];
   typeContent: string;
   tier: string;
   statusContent: string;
@@ -96,7 +99,10 @@ export default function TemplatesClient({
             <TableBody>
               {data.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isSuperAdmin ? 10 : 9} className="text-center h-24">
+                  <TableCell
+                    colSpan={isSuperAdmin ? 10 : 9}
+                    className="text-center h-24"
+                  >
                     No templates found.
                   </TableCell>
                 </TableRow>
@@ -104,10 +110,10 @@ export default function TemplatesClient({
                 data.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell>
-                      {item.urlPreview ? (
+                      {item.images ? (
                         <div className="relative w-12 h-12 rounded overflow-hidden bg-gray-100">
                           <Image
-                            src={item.urlPreview}
+                            src={item.images[0]?.url}
                             alt={item.title}
                             fill
                             className="object-cover"
@@ -183,7 +189,7 @@ export default function TemplatesClient({
                 <ResourceCard
                   id={item.id}
                   title={item.title}
-                  imageUrl={item.urlPreview}
+                  imageUrl={item.images[0].url}
                   tier={item.tier}
                   createdAt={new Date(item.createdAt)}
                   className="w-full"

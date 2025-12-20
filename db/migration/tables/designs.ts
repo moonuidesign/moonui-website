@@ -5,6 +5,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  serial,
 } from 'drizzle-orm/pg-core';
 import { categoryDesigns, users } from '@tables';
 
@@ -23,7 +24,7 @@ export const contentDesigns = pgTable('content_designs', {
   size: text('size'),
   format: text('format'),
   linkDownload: text('link_download').notNull(),
-  number: integer('number'),
+  number: serial('number').notNull(),
   statusContent: text('status_content').default('draft').notNull(),
   viewCount: integer('view_count').default(0).notNull(),
   downloadCount: integer('download_count').default(0),

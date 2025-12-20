@@ -139,3 +139,44 @@ export async function getSignedURL({
     return { error: 'Terjadi kesalahan internal saat membuat URL unggahan.' };
   }
 }
+
+/**
+ * Mengunggah file langsung dari Server Action ke R2
+ *
+ * @param {File} file - File yang akan diunggah
+ * @param {string} userId - ID User untuk metadata
+ * @returns {Promise<string>} - URL publik file
+ */
+export async function uploadFileToR2(file: File, userId: string): Promise<string> {
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    // Validasi tipe dan ukuran
+    if (!allowedFileTypes.includes(file.type)) {
+      throw new Error('Tipe file tidak diizinkan');
+    }
+    if (file.size > maxFileSizeInBytes) {
+      throw new Error('Ukuran file melebihi batas maksimal 5MB');
+    }
+  
+    const randomBytes = crypto.randomBytes(16);
+    const uniqueFileName = `${randomBytes.toString('hex')}-${Date.now()}`;
+    // Anda bisa menyesuaikan folder path di sini, misalnya 'categories/'
+    const fileKey = `categories/${uniqueFileName}`;
+  
+    await r2Client.send(
+      new PutObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: fileKey,
+        Body: buffer,
+        ContentType: file.type,
+        Metadata: {
+            userId: userId
+        }
+      })
+    );
+  
+    return R2_PUBLIC_DOMAIN
+      ? `https://${R2_PUBLIC_DOMAIN}/${fileKey}`
+      : `File uploaded to ${fileKey} (Public domain not configured)`;
+}

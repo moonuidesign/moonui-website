@@ -1,58 +1,37 @@
 import React from 'react';
-import Link from 'next/link'; // 1. Import Link
-import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 
-// Setup Font
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['400', '600', '700'],
-});
-const inter = Inter({ subsets: ['latin'], weight: ['400', '500'] });
-
-// --- Tipe Data ---
-type PricingTier = {
+// Tipe data untuk paket harga
+interface PricePlan {
   title: string;
-  subTitle: string;
+  subtitle: string;
   price: string;
-  period: string;
-  description?: string;
+  priceDetail: string;
   features: string[];
-  gradient: string;
-  cardBg: string;
-  textColor: string;
-  buttonColor: string;
   buttonText: string;
-  buttonTextColor: string;
-  href: string; // 2. Tambah properti href
-  isProPlus?: boolean;
-};
+  isDark?: boolean;
+  gradient: string;
+}
 
-// --- Data Harga ---
-const tiers: PricingTier[] = [
+const plans: PricePlan[] = [
   {
     title: 'MoonUI Free',
-    subTitle: 'Login—start Downloading',
+    subtitle: 'Login—start Downloading',
     price: '$0',
-    period: 'one—free forever',
+    priceDetail: 'one—free forever',
     features: [
       'Freebie Items Only',
       '5 Downloads / 24 Hours Limit',
       'Delete Anytime',
       '100% Commercial Use',
     ],
-    gradient: 'bg-gradient-to-br from-gray-500 to-zinc-900',
-    cardBg: 'bg-white',
-    textColor: 'text-zinc-800',
-    buttonColor: 'bg-zinc-900',
     buttonText: 'Create Free Account',
-    buttonTextColor: 'text-white',
-    href: '/auth/register', // 3. Contoh Link
+    gradient: 'from-gray-500 to-zinc-900',
   },
   {
     title: 'MoonUI Pro',
-    subTitle: 'Subscribe—annual Plan',
+    subtitle: 'Subscribe—annual Plan',
     price: '$499',
-    period: 'one—annual payment',
+    priceDetail: 'one—annual payment',
     features: [
       'Time-Limited Offers',
       '200+ Selected Items',
@@ -61,19 +40,14 @@ const tiers: PricingTier[] = [
       'Unlimited Downloads',
       '100% Commercial Use',
     ],
-    gradient: 'bg-gradient-to-br from-gray-200 to-stone-300',
-    cardBg: 'bg-white',
-    textColor: 'text-zinc-800',
-    buttonColor: 'bg-zinc-900',
     buttonText: 'Become a Pro',
-    buttonTextColor: 'text-white',
-    href: '/checkout/pro', // 3. Contoh Link
+    gradient: 'from-gray-200 to-stone-300',
   },
   {
     title: 'MoonUI Pro Plus',
-    subTitle: 'Life—time Access',
+    subtitle: 'Life—time Access',
     price: '$2499',
-    period: 'one—time payment',
+    priceDetail: 'one—time payment',
     features: [
       'No Subscriptions',
       '200+ Selected Items',
@@ -82,213 +56,157 @@ const tiers: PricingTier[] = [
       'Unlimited Downloads',
       '100% Commercial Use',
     ],
-    gradient: 'bg-gradient-to-br from-yellow-500 to-orange-600',
-    cardBg: 'bg-zinc-900',
-    textColor: 'text-white',
-    buttonColor: 'bg-white',
     buttonText: 'Become a Pro Plus',
-    buttonTextColor: 'text-neutral-800',
-    href: '/checkout/pro-plus', // 3. Contoh Link
-    isProPlus: true,
+    isDark: true,
+    gradient: 'from-yellow-500 to-orange-600',
   },
 ];
 
-// --- Sub-Komponen ---
-
-const CheckIcon = ({ color }: { color: string }) => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect x="2" y="2" width="20" height="20" rx="6" className={color} />
-    <path
-      d="M17 9L10 16L7 13"
-      stroke="white"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const SparkleIcon = () => (
-  <div className="flex gap-1 items-center mr-2">
-    <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
-    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-    <div className="w-1.5 h-1.5 bg-amber-300 rounded-full"></div>
-  </div>
-);
-
-// --- Komponen Utama ---
-
-export default function PricingSection() {
+const PricingSection = () => {
   return (
-    <section
-      className={`w-full py-20 flex flex-col items-center gap-10 bg-gray-50 ${jakarta.className}`}
-    >
-      {/* Header Section */}
-      <div className="flex flex-col items-center px-4">
-        {/* Badge */}
-        <div className="h-8 pl-2 pr-3 py-1.5 bg-orange-600 rounded-lg shadow-sm inline-flex items-center gap-1.5 overflow-hidden mb-4">
-          <div className="w-4 h-4 relative flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path
-                d="M7 2V12M2 7H12"
-                stroke="white"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-          <span className={`text-white text-sm font-medium ${inter.className}`}>
-            Components & Templates
-          </span>
-          <div className="px-[5px] py-[3px] bg-white/50 rounded-[5px] flex items-center">
-            <span
-              className={`text-white text-[10px] font-semibold ${inter.className}`}
-            >
-              PRO
-            </span>
-          </div>
+    <section className="w-full py-16 px-4 md:px-8  flex flex-col gap-16 items-center">
+      {/* --- HEADER --- */}
+      <div className="flex flex-col items-center text-center gap-4">
+        <div className="px-4 py-1.5 bg-orange-600 rounded-lg shadow-md flex items-center gap-2">
+          <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+          <span className="text-white text-sm font-medium">Pricing</span>
         </div>
 
-        {/* Title */}
-        <h2 className="text-center text-zinc-800 text-4xl md:text-5xl font-semibold leading-tight mb-5">
-          Elevate your design with premium
-          <br className="hidden md:block" /> components & templates
+        <h2 className="max-w-3xl text-zinc-800 text-3xl md:text-5xl font-semibold leading-tight">
+          Elevate your business with premium <br className="hidden md:block" />{' '}
+          design assets library
         </h2>
 
-        {/* Subtitle */}
-        <p className={`text-center max-w-2xl ${inter.className}`}>
-          <span className="text-neutral-700 font-medium">Customizable</span>
-          <span className="text-neutral-500">
-            {' '}
-            components & templates that seamlessly{' '}
-          </span>
-          <span className="text-neutral-700 font-medium">adapt</span>
-          <span className="text-neutral-500"> to your project needs</span>
+        <p className="max-w-xl text-neutral-500 text-base md:text-lg">
+          <span className="text-neutral-700 font-medium">Customizable</span>{' '}
+          components & templates that seamlessly{' '}
+          <span className="text-neutral-700 font-medium">adapt</span> to your
+          project needs.
         </p>
-
-        {/* Link Browse All */}
-        <Link
-          href="/components"
-          className={`mt-5 text-zinc-900 font-medium hover:underline ${inter.className}`}
-        >
-          Browse all components →
-        </Link>
       </div>
 
-      {/* Pricing Cards Container */}
-      <div className="flex flex-col xl:flex-row justify-center items-start gap-10 px-4 w-full max-w-[1400px]">
-        {tiers.map((tier, index) => (
+      {/* --- PRICING CARDS --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
+        {plans.map((plan, index) => (
           <div
             key={index}
-            className="flex flex-col gap-3 w-full max-w-sm mx-auto xl:mx-0"
+            className={`flex flex-col rounded-[32px] overflow-hidden border border-zinc-100 shadow-xl transition-transform hover:scale-[1.02] 
+              ${
+                plan.isDark
+                  ? 'bg-zinc-900 text-white'
+                  : 'bg-white text-zinc-800'
+              }`}
           >
+            {/* Gradient Header */}
             <div
-              className={`relative h-[532px] w-full rounded-3xl shadow-xl overflow-hidden ${tier.cardBg} border border-zinc-100`}
+              className={`h-32 w-full p-6 bg-gradient-to-br ${plan.gradient} flex flex-col justify-end`}
             >
-              {/* Header Card yang Miring */}
-              <div
-                className={`absolute w-80 h-36 -right-16 top-28 origin-top-left rotate-180 rounded-2xl shadow-lg overflow-hidden ${tier.gradient}`}
+              <h3
+                className={`text-2xl font-bold ${
+                  plan.isDark || index === 0 ? 'text-white' : 'text-zinc-800'
+                }`}
               >
-                <div className="w-full h-full p-6 flex flex-col justify-end items-end rotate-180 transform translate-x-3 translate-y-3">
-                  <h3 className="text-white text-2xl font-bold">
-                    {tier.title}
-                  </h3>
-                  <p
-                    className={`text-white text-sm font-medium ${inter.className}`}
-                  >
-                    {tier.subTitle}
-                  </p>
-                </div>
-              </div>
+                {plan.title}
+              </h3>
+              <p
+                className={`text-sm opacity-80 ${
+                  plan.isDark || index === 0 ? 'text-white' : 'text-zinc-800'
+                }`}
+              >
+                {plan.subtitle}
+              </p>
+            </div>
 
-              {/* List Fitur */}
-              <div className="absolute left-6 top-44 flex flex-col gap-2">
-                {tier.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <CheckIcon
-                      color={tier.isProPlus ? 'fill-white' : 'fill-orange-600'}
-                    />
+            {/* Content */}
+            <div className="p-8 flex flex-col flex-1 gap-6">
+              <ul className="flex flex-col gap-3 flex-1">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <div className="w-5 h-5 bg-orange-600 rounded flex-shrink-0 flex items-center justify-center">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M10 3L4.5 8.5L2 6"
+                          stroke="white"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
                     <span
-                      className={`text-sm font-medium ${inter.className} ${
-                        tier.isProPlus ? 'text-neutral-300' : 'text-neutral-500'
+                      className={`text-sm font-medium ${
+                        plan.isDark ? 'text-neutral-300' : 'text-neutral-500'
                       }`}
                     >
                       {feature}
                     </span>
-                  </div>
+                  </li>
                 ))}
+              </ul>
+
+              <div className="mt-4">
+                <div className="text-4xl font-bold leading-none">
+                  {plan.price}
+                </div>
+                <div
+                  className={`text-sm mt-1 ${
+                    plan.isDark ? 'text-neutral-400' : 'text-neutral-500'
+                  }`}
+                >
+                  {plan.priceDetail}
+                </div>
               </div>
 
-              {/* Harga */}
-              <div className="absolute left-6 top-[388px] flex items-end gap-2">
-                <span
-                  className={`${tier.textColor} text-4xl font-bold leading-10`}
-                >
-                  {tier.price}
-                </span>
-                <span
-                  className={`${
-                    tier.isProPlus ? 'text-neutral-400' : 'text-neutral-500'
-                  } text-sm font-medium pb-1 ${inter.className}`}
-                >
-                  {tier.period}
-                </span>
-              </div>
-
-              {/* Tombol CTA dengan Link */}
-              <Link
-                href={tier.href}
-                className={`absolute left-6 right-6 bottom-9 h-14 ${tier.buttonColor} rounded-2xl flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer`}
+              <button
+                className={`w-full py-4 rounded-xl font-semibold transition-all shadow-lg active:scale-95
+                ${
+                  plan.isDark
+                    ? 'bg-white text-zinc-900 hover:bg-neutral-100'
+                    : 'bg-zinc-900 text-white hover:bg-zinc-800'
+                }`}
               >
-                {tier.isProPlus && <SparkleIcon />}
-                <span
-                  className={`${tier.buttonTextColor} text-base font-medium ${inter.className}`}
-                >
-                  {tier.buttonText}
-                </span>
-              </Link>
+                {plan.buttonText}
+              </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Banner Bottom (Custom Solution) */}
-      <div className="w-full px-4 max-w-[1400px]">
-        <div className="relative w-full bg-white rounded-[30px] shadow-xl overflow-hidden min-h-[140px] flex flex-col lg:flex-row items-center p-6 lg:p-0">
-          {/* Image Collage Area */}
-          <div className="relative w-36 h-28 hidden lg:block m-4 bg-gradient-to-br from-gray-200 to-stone-300 rounded-2xl overflow-hidden shrink-0">
-            <div className="absolute inset-0 bg-neutral-300 animate-pulse"></div>
-            {/* <Image src="/path-to-image.jpg" alt="Collage" fill className="object-cover" /> */}
+      {/* --- CUSTOM SOLUTION BANNER --- */}
+      <div className="w-full max-w-7xl">
+        <div className="w-full bg-white border border-zinc-100 rounded-[30px] p-6 md:p-8 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+            {/* Placeholder for images */}
+            <div className="w-24 h-16 bg-gradient-to-br from-gray-200 to-stone-300 rounded-xl overflow-hidden flex-shrink-0">
+              <img
+                src="https://placehold.co/150x100"
+                alt="Partner"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <h4 className="text-zinc-800 text-lg md:text-xl font-bold">
+                Need a custom solution for your business?
+              </h4>
+              <p className="text-neutral-500 text-sm max-w-lg">
+                We've partnered with dozens of companies to provide exclusive
+                licensing and custom-tailored access.
+              </p>
+            </div>
           </div>
-
-          {/* Text Content */}
-          <div className="flex-1 flex flex-col justify-center text-center lg:text-left gap-2 lg:ml-6 z-10">
-            <h3 className="text-zinc-800 text-xl font-bold">
-              Need a custom solution for your business? Get in touch!
-            </h3>
-            <p className={`text-neutral-500 text-sm ${inter.className}`}>
-              We've partnered with dozens of companies to provide exclusive
-              licensing and custom-tailored access to the Plus library.
-            </p>
-          </div>
-
-          {/* CTA Button Link */}
-          <div className="lg:mr-8 mt-4 lg:mt-0">
-            <Link
-              href="/contact"
-              className="h-14 px-6 bg-zinc-900 rounded-2xl flex items-center justify-center text-white font-medium hover:bg-zinc-800 transition-colors"
-            >
-              Let’s Talk <span className="ml-2">→</span>
-            </Link>
-          </div>
+          <button className="whitespace-nowrap bg-zinc-900 text-white px-8 py-4 rounded-2xl font-medium hover:bg-zinc-800 transition-all shadow-md active:scale-95">
+            Let’s Talk —&gt;
+          </button>
         </div>
       </div>
     </section>
   );
-}
+};
+
+export default PricingSection;

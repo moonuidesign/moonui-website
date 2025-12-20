@@ -56,33 +56,39 @@ export async function validateLicenseKey(
     }
 
     const { status } = data.license_key;
-
+    console.log(data);
     // --- Validation Logic for Store and Product ---
-    
+
     // 1. Validate Store ID (Baggy Studio)
-    // Replace with your actual Lemon Squeezy Store ID. 
+    // Replace with your actual Lemon Squeezy Store ID.
     // You can find this in your Lemon Squeezy Dashboard URL or API responses.
-    const EXPECTED_STORE_ID = 115386; 
-    
+    const EXPECTED_STORE_ID = 213520;
+
     if (data.meta.store_id !== EXPECTED_STORE_ID) {
       return {
         success: false,
         code: 403,
-        message: 'Invalid license: This license does not belong to Baggy Studio.',
+        message:
+          'Invalid license: This license does not belong to Baggy Studio.',
       };
     }
 
     // 2. Validate Product/Variant for "Pro" or "Pro Plus"
     const variantName = data.meta.variant_name?.toLowerCase() || '';
     const productName = data.meta.product_name?.toLowerCase() || '';
-    
+
     // Define valid keywords for your tiers
     const isPro = variantName.includes('pro') || productName.includes('pro');
-    const isProPlus = variantName.includes('pro plus') || variantName.includes('pro+') || variantName.includes('lifetime') || variantName.includes('unlimited') || productName.includes('pro plus');
+    const isProPlus =
+      variantName.includes('pro plus') ||
+      variantName.includes('pro+') ||
+      variantName.includes('lifetime') ||
+      variantName.includes('unlimited') ||
+      productName.includes('pro plus');
 
     // Check if it matches either valid tier
     if (!isPro && !isProPlus) {
-       return {
+      return {
         success: false,
         code: 403,
         message: `Invalid license tier: Your license is for '${data.meta.variant_name}', but only 'Pro' or 'Pro Plus' licenses are accepted.`,
@@ -96,7 +102,12 @@ export async function validateLicenseKey(
     let tier: 'pro' | 'pro_plus' = 'pro';
     let planType: 'subscribe' | 'one_time' = 'subscribe';
 
-    if (variantName.includes('lifetime') || variantName.includes('unlimited') || variantName.includes('pro plus') || variantName.includes('pro+')) {
+    if (
+      variantName.includes('lifetime') ||
+      variantName.includes('unlimited') ||
+      variantName.includes('pro plus') ||
+      variantName.includes('pro+')
+    ) {
       tier = 'pro_plus';
       planType = 'one_time';
     } else {
@@ -117,13 +128,13 @@ export async function validateLicenseKey(
     // For now we just return the standard response but we will use this logic in verify/activate too
     // Actually, validateLicenseKey returns LemonSqueezyValidationResponse.
     // We should probably extend the return type or just handle this logic in activateLicense.
-    // For simplicity, let's keep it here but we need to pass it out. 
-    // Since we can't easily change the return type without breaking other things, 
+    // For simplicity, let's keep it here but we need to pass it out.
+    // Since we can't easily change the return type without breaking other things,
     // let's just make sure we capture this logic in the activation step.
-    
-    // Correction: We will implement this logic in `activateLicense` instead 
+
+    // Correction: We will implement this logic in `activateLicense` instead
     // where we actually write to the DB.
-    
+
     console.log(data);
     return {
       success: true,

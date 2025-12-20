@@ -26,7 +26,10 @@ export default auth(async (req) => {
   // =================================================================
   if (nextUrl.pathname.startsWith('/dashboard') && !req.auth) {
     const url = new URL('/signin', nextUrl.origin);
-    url.searchParams.set('error', 'You must be logged in to access the dashboard.');
+    url.searchParams.set(
+      'error',
+      'You must be logged in to access the dashboard.',
+    );
     url.searchParams.set('callbackUrl', nextUrl.href);
     return NextResponse.redirect(url);
   }
@@ -34,7 +37,11 @@ export default auth(async (req) => {
   // =================================================================
   // 0.1 Redirect Logged-In Users from Auth Pages
   // =================================================================
-  if (req.auth && (nextUrl.pathname.startsWith('/signin') || nextUrl.pathname.startsWith('/signup'))) {
+  if (
+    req.auth &&
+    (nextUrl.pathname.startsWith('/signin') ||
+      nextUrl.pathname.startsWith('/signup'))
+  ) {
     return NextResponse.redirect(new URL('/dashboard', nextUrl.origin));
   }
 
@@ -62,7 +69,7 @@ export default auth(async (req) => {
     if (!signature) {
       return redirectError(
         'Please verify your license first.',
-        '/verify-license'
+        '/verify-license',
       );
     }
     // Note: We don't necessarily need to verify the signature strictly here
@@ -70,8 +77,10 @@ export default auth(async (req) => {
     // but the requirement is just to redirect if signature is MISSING.
     // If you want strict verification here too:
     const { valid, expired } = await verifyLicenseSignature(signature);
-    if (!valid) return redirectError('Invalid license signature.', '/verify-license');
-    if (expired) return redirectError('License signature expired.', '/verify-license');
+    if (!valid)
+      return redirectError('Invalid license signature.', '/verify-license');
+    if (expired)
+      return redirectError('License signature expired.', '/verify-license');
   }
 
   // 1b. Reset Password Page (@app/(main)/forgot-password/reset-password/**)

@@ -36,17 +36,9 @@ export function AddCategoryCommand({
       return;
     }
 
-    const slug = inputValue
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
-
     startTransition(async () => {
       const result = await createCategoryComponent({
         name: inputValue.trim(),
-        slug,
         parentId: selectedParent?.id || null,
       });
 

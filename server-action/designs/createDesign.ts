@@ -6,8 +6,8 @@ import { contentDesigns } from '@/db/migration';
 import { auth } from '@/libs/auth';
 import { s3Client } from '@/libs/getR2 copy';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { desc } from 'drizzle-orm';
 import { ContentDesignSchema } from './validator';
+import { AssetItem } from '../templates/validator';
 
 type ActionResponse = { success: string } | { error: string };
 
@@ -52,38 +52,45 @@ export async function createContentDesign(
   const values = validated.data;
   console.log('[CreateDesign] Validated Values:', values);
 
-  // Handle Single Image Upload
-  const imageFile = formData.get('image');
-  let imageUrl = '';
-  // let fileSize = ''; // We will use sourceFile size if available, or image size
-  // let fileFormat = '';
+  // Handle Multiple Image Upload
+  const imageFiles = formData.getAll('images');
+  const uploadedImageUrls: AssetItem[] = [];
 
-  if (imageFile instanceof File && imageFile.size > 0) {
-    try {
-      console.log('[CreateDesign] Uploading Image:', imageFile.name);
-      const ext = imageFile.name.split('.').pop();
-      const fileName = `designs/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+  if (imageFiles && imageFiles.length > 0) {
+    for (const imageFile of imageFiles) {
+      if (imageFile instanceof File && imageFile.size > 0) {
+        try {
+          console.log('[CreateDesign] Uploading Image:', imageFile.name);
+          const ext = imageFile.name.split('.').pop();
+          const fileName = `designs/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME!,
-          Key: fileName,
-          Body: Buffer.from(await imageFile.arrayBuffer()),
-          ContentType: imageFile.type,
-        }),
-      );
+          await s3Client.send(
+            new PutObjectCommand({
+              Bucket: process.env.BUCKET_NAME!,
+              Key: fileName,
+              Body: Buffer.from(await imageFile.arrayBuffer()),
+              ContentType: imageFile.type,
+            }),
+          );
 
-      imageUrl = `${fileName}`;
-      console.log('[CreateDesign] Image Uploaded:', imageUrl);
-    } catch (e) {
-      console.error('[CreateDesign] Upload Failed:', e);
-      return { error: 'Gagal mengupload gambar ke server.' };
+          const assetUrl = `${fileName}`;
+          uploadedImageUrls.push({ url: assetUrl });
+          console.log('[CreateDesign] Image Uploaded:', assetUrl);
+        } catch (e) {
+          console.error(
+            '[CreateDesign] Upload Failed for file:',
+            imageFile.name,
+            e,
+          );
+        }
+      }
     }
-  } else {
+  }
+
+  if (uploadedImageUrls.length === 0) {
     // Optional: if image is required, return error here.
-    // For now, let's say it's required for new design.
-    console.error('[CreateDesign] No Image File Provided');
-    return { error: 'Gambar design wajib diupload.' };
+    console.error('[CreateDesign] No Image Files Provided or Upload Failed');
+    return { error: 'Minimal satu gambar design wajib diupload.' };
   }
 
   // Handle Source File Upload (for linkDownload)
@@ -116,27 +123,17 @@ export async function createContentDesign(
       return { error: 'Gagal mengupload source file.' };
     }
   } else {
-    // Fallback to imageUrl if sourceFile not provided.
-    console.log('[CreateDesign] No Source File, using Image URL as fallback');
-    linkDownload = imageUrl;
+    // Fallback to first imageUrl if sourceFile not provided.
+    console.log(
+      '[CreateDesign] No Source File, using first Image URL as fallback',
+    );
+    const firstImage = imageFiles[0] instanceof File ? imageFiles[0] : null;
     fileSize =
-      (imageFile instanceof File ? imageFile.size / 1024 / 1024 : 0).toFixed(
-        2,
-      ) + ' MB';
+      (firstImage ? firstImage.size / 1024 / 1024 : 0).toFixed(2) + ' MB';
     fileFormat =
-      (imageFile instanceof File
-        ? imageFile.name.split('.').pop()?.toUpperCase()
-        : 'IMG') || 'IMG';
+      (firstImage ? firstImage.name.split('.').pop()?.toUpperCase() : 'IMG') ||
+      'IMG';
   }
-
-  const lastItem = await db
-    .select({ number: contentDesigns.number })
-    .from(contentDesigns)
-    .orderBy(desc(contentDesigns.number))
-    .limit(1);
-
-  const nextNumber = (lastItem[0]?.number ?? 0) + 1;
-  console.log('[CreateDesign] Next Number:', nextNumber);
 
   try {
     const insertData = {
@@ -144,7 +141,7 @@ export async function createContentDesign(
       title: values.title,
       slug: values.slug, // JSONB
       description: values.description,
-      imagesUrl: [imageUrl], // Store as JSON array
+      imagesUrl: uploadedImageUrls, // Store as JSON array
       linkDownload: linkDownload,
       urlBuyOneTime: values.urlBuyOneTime,
       size: fileSize,
@@ -152,12 +149,8 @@ export async function createContentDesign(
       categoryDesignsId: values.categoryDesignsId,
       tier: values.tier,
       statusContent: values.statusContent,
-      number: nextNumber,
-      viewCount: 0,
-      downloadCount: 0,
     };
     console.log('[CreateDesign] Inserting DB:', insertData);
-
     await db.insert(contentDesigns).values(insertData);
 
     console.log('[CreateDesign] DB Insert Success');

@@ -1,7 +1,15 @@
-import { Scaling, Type, Eraser, Palette } from 'lucide-react';
+import { Scaling, Type, Eraser, Palette, List } from 'lucide-react';
 
 export const getSuggestionItems = ({ query }: { query: string }) => {
   const items = [
+    {
+      title: 'Bullet List',
+      description: 'Daftar berbutir',
+      icon: List,
+      command: ({ editor, range }: any) => {
+        editor.chain().focus().deleteRange(range).toggleBulletList().run();
+      },
+    },
     // --- UKURAN FONT ---
     {
       title: 'Giant Text',

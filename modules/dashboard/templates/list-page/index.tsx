@@ -69,7 +69,7 @@ export default async function ListTemplate({
       title: contentTemplates.title,
       urlPreview: contentTemplates.urlPreview,
       typeContent: contentTemplates.typeContent,
-
+      imagesUrl: contentTemplates.imagesUrl,
       tier: contentTemplates.tier,
       statusContent: contentTemplates.statusContent,
       viewCount: contentTemplates.viewCount,
@@ -111,21 +111,33 @@ export default async function ListTemplate({
     })
     .from(categoryTemplates);
 
-  const templates = data.map((item) => ({
-    id: item.id,
-    title: item.title,
-    urlPreview: item.urlPreview,
-    typeContent: item.typeContent,
+  const templates = data.map((item) => {
+    // Helper untuk handle array gambar
+    const rawImages = Array.isArray(item.imagesUrl) ? item.imagesUrl : [];
 
-    tier: item.tier,
-    statusContent: item.statusContent,
-    viewCount: item.viewCount,
-    downloadCount: item.downloadCount,
-    createdAt: item.createdAt ? item.createdAt.toISOString() : '',
-    categoryName: item.categoryName || undefined,
-    authorName: item.authorName || 'Unknown',
-  }));
+    // Format URL (tambahkan domain R2 jika path relatif)
+    const formattedImages = rawImages.map((img: any) => ({
+      url:
+        img.url && !img.url.startsWith('http')
+          ? `https://${process.env.R2_PUBLIC_DOMAIN}/${img.url}`
+          : img.url,
+    }));
 
+    return {
+      id: item.id,
+      title: item.title,
+      urlPreview: item.urlPreview,
+      typeContent: item.typeContent,
+      images: formattedImages, // <--- MASUKKAN KE SINI
+      tier: item.tier,
+      statusContent: item.statusContent,
+      viewCount: item.viewCount,
+      downloadCount: item.downloadCount,
+      createdAt: item.createdAt ? item.createdAt.toISOString() : '',
+      categoryName: item.categoryName || undefined,
+      authorName: item.authorName || 'Unknown',
+    };
+  });
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">

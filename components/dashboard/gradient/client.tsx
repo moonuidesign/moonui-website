@@ -40,7 +40,7 @@ interface GradientsClientProps {
   isSuperAdmin?: boolean;
 }
 
-export function GradientsClient({
+export default function GradientsClient({
   data,
   categories,
   pagination,
@@ -85,7 +85,10 @@ export function GradientsClient({
             <TableBody>
               {data.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isSuperAdmin ? 8 : 7} className="text-center h-24">
+                  <TableCell
+                    colSpan={isSuperAdmin ? 8 : 7}
+                    className="text-center h-24"
+                  >
                     No gradients found.
                   </TableCell>
                 </TableRow>

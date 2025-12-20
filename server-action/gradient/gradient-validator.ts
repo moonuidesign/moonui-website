@@ -27,7 +27,12 @@ export const ContentGradientSchema = z.object({
 
   categoryGradientsId: z.string().min(1, 'Category required'),
 
-  description: z.any().optional(),
+  description: z
+    .any()
+    .refine(
+      (val) => val && val.content && val.content.length > 0,
+      'Deskripsi wajib diisi',
+    ),
 
   // Slug / Tags (Label)
   slug: z.array(z.string()).min(1, 'Minimal satu tag/label wajib diisi'),

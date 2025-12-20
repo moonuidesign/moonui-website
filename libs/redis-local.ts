@@ -1,23 +1,23 @@
 import IORedis from 'ioredis';
 
-const redisHost = process.env.REDIS_HOST || 'localhost';
-const redisPort = parseInt(process.env.REDIS_PORT || '6379', 10);
+// Debug: Check if variables are actually loaded
+console.log('Connecting to Redis Host:', process.env.REDIS_HOST);
 
 const redis = new IORedis({
-  host: redisHost,
-  port: redisPort,
+  host: process.env.REDIS_HOST, // Use the variable directly
+  port: parseInt(process.env.REDIS_PORT || '6379', 10),
   username: process.env.REDIS_USERNAME || 'default',
-  password: process.env.REDIS_PASSWORD || undefined,
+  password: process.env.REDIS_PASSWORD,
   lazyConnect: true,
   maxRetriesPerRequest: null,
 });
 
 redis.on('connect', () => {
-  console.log('Terhubung ke Redis!');
+  console.log('✅ Terhubung ke Redis!');
 });
 
 redis.on('error', (err) => {
-  console.error('Redis Client Error:', err);
+  console.error('❌ Redis Client Error:', err);
 });
 
 export default redis;

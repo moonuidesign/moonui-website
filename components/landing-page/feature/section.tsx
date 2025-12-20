@@ -10,7 +10,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
 }) => {
   return (
     <section
-      className={`w-full max-w-[1440px] h-fit mx-auto md:p-5 px-1 md:p-20  ${className}`}
+      className={`w-full md:w-3xl lg:w-full max-w-[1440px] mt-10 md:mt-0 h-fit mx-auto  px-1 lg:p-20  ${className}`}
     >
       {/* Main Container Card */}
       <div className="w-full bg-zinc-900 rounded-[28px] md:rounded-[40px]  shadow-sm py-8 px-6 lg:p-8 md:p-16 flex flex-col gap-4 overflow-hidden relative">
@@ -30,7 +30,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
 
         {/* Title & Subtitle */}
         <div className="flex flex-col items-start justify-start lg:items-center gap-4 z-10 relative">
-          <h2 className="text-left lg:text-center  text-white text-[28px] md:text-5xl font-semibold font-jakarta leading-tight">
+          <h2 className="text-left lg:text-center  text-white text-[28px] md:text-[28px] font-semibold font-jakarta leading-tight">
             {title}
           </h2>
           <div className="max-w-[564px] text-[14px] text-left lg:text-center text-neutral-500 font-['Inter'] leading-7">
@@ -73,12 +73,8 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
               <div
                 key={index}
                 className={`
-      md:py-12 md:px-4
-      ${
-        index >= features.length - 3
-          ? 'lg:border-0 border-neutral-800 border-t ' // Untuk 3 item terakhir, gunakan class 'border-0' (tanpa border)
-          : 'border-t border-neutral-800  lg:border-b' // Untuk item lainnya, gunakan border standar
-      }
+      md:py-6 lg:py-12  md:px-3 lg:px-4
+     
     `}
               >
                 <FeatureCard {...feature} />

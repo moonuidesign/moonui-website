@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef } from 'react';
+import { useState, useTransition, useRef, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
 import {
@@ -12,6 +12,8 @@ import {
   Sparkles,
   Trash2,
   Image as ImageIcon,
+  FileText,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -61,9 +63,9 @@ import DescriptionEditor from '@/components/text-editor/description-editor';
 interface DesignEntity {
   id: string;
   title: string;
-  description: any; // Gunakan 'any' untuk mengakomodasi JSONB object Tiptap
+  description: any; // Bisa string JSON, string HTML, atau Object
   categoryDesignsId: string | null;
-  imageUrl: string | null;
+  imagesUrl: string[];
   tier: string;
   linkDownload: string | null;
   urlBuyOneTime: string | null;
@@ -83,20 +85,55 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // --- STATE FILE UPLOADS ---
-  // 1. Thumbnail Image
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    design?.imageUrl || null,
+  const [existingImages, setExistingImages] = useState<string[]>(
+    design?.imagesUrl || [],
   );
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 2. Source File (Zip/Rar/Fig)
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const sourceFileInputRef = useRef<HTMLInputElement>(null);
 
   const isEditMode = !!design;
 
-  // --- DEFAULT VALUES & TYPE GUARDS ---
+  useEffect(() => {
+    return () => {
+      newPreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [newPreviews]);
+
+  // --- HELPER UTAMA: PARSE DESCRIPTION ---
+  // Fungsi ini memperbaiki masalah raw HTML string
+  const parseDescription = (desc: any) => {
+    if (!desc) return undefined;
+
+    // 1. Jika sudah berupa Object (Tiptap JSON Object), kembalikan langsung
+    if (typeof desc === 'object') {
+      return desc;
+    }
+
+    // 2. Jika berupa String, kita coba parse
+    if (typeof desc === 'string') {
+      // Coba parse sebagai JSON terlebih dahulu
+      try {
+        const parsed = JSON.parse(desc);
+        // Cek apakah hasil parse adalah Tiptap Doc (biasanya punya properti type: 'doc')
+        if (parsed && typeof parsed === 'object' && parsed.type === 'doc') {
+          return parsed; // Kembalikan Object JSON
+        }
+      } catch (e) {
+        // Jika gagal parse JSON, berarti ini adalah HTML String biasa (contoh: "<p>Halo</p>")
+        // Biarkan saja, nanti Editor akan merendernya sebagai HTML
+      }
+
+      // Kembalikan string aslinya (HTML atau Plain Text)
+      return desc;
+    }
+
+    return undefined;
+  };
+
   const defaultTier: DesignTierType =
     design?.tier && DESIGN_TIER_OPTIONS.includes(design.tier as DesignTierType)
       ? (design.tier as DesignTierType)
@@ -112,23 +149,20 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
     resolver: zodResolver(ContentDesignSchema),
     defaultValues: {
       title: design?.title ?? '',
-      // PENTING: Gunakan undefined jika null agar tidak error tipe string vs object
-      description: design?.description ?? undefined,
+      // GUNAKAN HELPER DISINI
+      description: parseDescription(design?.description),
       categoryDesignsId: design?.categoryDesignsId ?? '',
       tier: defaultTier,
       statusContent: defaultStatus,
       urlBuyOneTime: design?.urlBuyOneTime ?? '',
       slug: Array.isArray(design?.slug) ? (design?.slug as string[]) : [],
-      imageUrl: design?.imageUrl ?? undefined,
+      imagesUrl: design?.imagesUrl ?? [],
     },
   });
 
   // --- HANDLERS ---
-
   const handleCategoryCreated = (newCategory: Category) => {
     setLocalCategories((prev) => [...prev, newCategory]);
-    // If created category is a child, we set it directly.
-    // If it's a parent, we set it directly.
     form.setValue('categoryDesignsId', newCategory.id, {
       shouldValidate: true,
     });
@@ -137,25 +171,46 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        toast.error('Hanya gambar yang diperbolehkan');
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('Maksimal 10MB per file');
-        return;
-      }
+    const files = event.target.files;
+    if (files) {
+      const validFiles: File[] = [];
+      const validPreviews: string[] = [];
 
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result && typeof e.target.result === 'string') {
-          setImagePreview(e.target.result);
+      Array.from(files).forEach((file) => {
+        if (!file.type.startsWith('image/')) {
+          toast.error(`File ${file.name} is not an image`);
+          return;
         }
-      };
-      reader.readAsDataURL(file);
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`File ${file.name} too large (max 10MB)`);
+          return;
+        }
+        validFiles.push(file);
+        validPreviews.push(URL.createObjectURL(file));
+      });
+
+      setSelectedFiles((prev) => [...prev, ...validFiles]);
+      setNewPreviews((prev) => [...prev, ...validPreviews]);
+
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const removeExistingImage = (index: number) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index: number) => {
+    URL.revokeObjectURL(newPreviews[index]);
+    setNewPreviews((prev) => prev.filter((_, i) => i !== index));
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileNameFromUrl = (url: string) => {
+    try {
+      return url.split('/').pop() || 'Existing File';
+    } catch {
+      return 'Existing File';
     }
   };
 
@@ -163,15 +218,23 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
     startTransition(async () => {
       const formData = new FormData();
 
-      // 1. Serialize Data JSON (Termasuk deskripsi rich text)
-      formData.append('data', JSON.stringify(values));
+      // Normalisasi Description sebelum dikirim
+      // Kita pastikan mengirim JSON String ke server
+      // REVISI: Kirim sebagai Object agar validator bisa cek content
+      const finalDescription = values.description;
 
-      // 2. Append Thumbnail Image
-      if (selectedFile) {
-        formData.append('image', selectedFile);
-      }
+      const submissionValues = {
+        ...values,
+        description: finalDescription,
+        imagesUrl: existingImages, // Kirim list URL gambar lama
+      };
 
-      // 3. Append Source File
+      formData.append('data', JSON.stringify(submissionValues));
+
+      selectedFiles.forEach((file) => {
+        formData.append('images', file);
+      });
+
       if (sourceFile) {
         formData.append('sourceFile', sourceFile);
       }
@@ -207,15 +270,17 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
         .then(() => {
           if (!isEditMode) {
             form.reset();
-            setImagePreview(null);
-            setSelectedFile(null);
+            setExistingImages([]);
+            setNewPreviews([]);
+            setSelectedFiles([]);
             setSourceFile(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
             if (sourceFileInputRef.current)
               sourceFileInputRef.current.value = '';
           } else {
-            // Edit mode: reset files only
-            setSelectedFile(null);
+            // Edit mode reset partial
+            setSelectedFiles([]);
+            setNewPreviews([]);
             setSourceFile(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
             if (sourceFileInputRef.current)
@@ -227,14 +292,11 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
   };
 
   const parentCategories = localCategories.filter((c) => !c.parentId);
-
-  // Watch category ID to derive Parent/Child state
   const watchedCategoryId = useWatch({
     control: form.control,
     name: 'categoryDesignsId',
   });
 
-  // Derive logic
   const selectedCategory = localCategories.find(
     (c) => c.id === watchedCategoryId,
   );
@@ -276,6 +338,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
               onSubmit={(e) => form.handleSubmit(onSubmit)(e)}
               className="space-y-16"
             >
+              {/* SECTION 1: BASIC INFO */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -286,7 +349,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                 </div>
 
                 <div className="space-y-8">
-                  {/* Category Section with Split Logic */}
+                  {/* Category Logic */}
                   <div className="grid grid-cols-2 gap-6">
                     <FormItem>
                       <div className="flex items-center justify-between mb-3">
@@ -307,8 +370,6 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                       <Select
                         value={currentParentId}
                         onValueChange={(val) => {
-                          // When parent changes, we set the value to the parent ID
-                          // This effectively clears the child selection
                           form.setValue('categoryDesignsId', val, {
                             shouldValidate: true,
                           });
@@ -335,12 +396,10 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                         <FormLabel className="text-sm font-medium text-foreground">
                           Sub Category
                         </FormLabel>
-                        {/* Optional: Add Sub Category Button if needed, currently main dialog handles it */}
                       </div>
                       <Select
                         value={currentChildId}
                         onValueChange={(val) => {
-                          // When child changes, we set the value to the child ID
                           form.setValue('categoryDesignsId', val, {
                             shouldValidate: true,
                           });
@@ -468,6 +527,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                 </div>
               </section>
 
+              {/* SECTION 2: DESCRIPTION (FIXED) */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -485,7 +545,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                       <FormControl>
                         <div className="rounded-lg border border-border/60 bg-muted/30 p-4 hover:border-border transition-colors">
                           <DescriptionEditor
-                            initialContent={field.value as any}
+                            initialContent={field.value}
                             onChange={field.onChange}
                           />
                         </div>
@@ -496,6 +556,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                 />
               </section>
 
+              {/* SECTION 3: TAGS */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -527,6 +588,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                 />
               </section>
 
+              {/* SECTION 4: LINKS */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -561,6 +623,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                 />
               </section>
 
+              {/* SECTION 5: SOURCE FILE */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
@@ -571,77 +634,109 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                   <div className="h-px flex-1 bg-border/40" />
                 </div>
 
-                <div className="rounded-xl border border-border/60 bg-muted/20 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className="text-base font-medium text-foreground">
-                        Main Source File
-                      </h3>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Upload ZIP, RAR, or FIG file
-                      </p>
+                <div>
+                  <input
+                    ref={sourceFileInputRef}
+                    type="file"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        if (file.size > 100 * 1024 * 1024) {
+                          toast.error('File maksimal 100MB');
+                          return;
+                        }
+                        setSourceFile(file);
+                        toast.success(`File ${file.name} siap diupload`);
+                      }
+                    }}
+                    className="hidden"
+                    id="source-file-upload"
+                  />
+                  <label htmlFor="source-file-upload">
+                    <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        {sourceFile ? (
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="rounded-full bg-primary/10 p-4">
+                              <Upload className="h-8 w-8 text-primary" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-base font-medium text-foreground">
+                                {sourceFile.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {(sourceFile.size / 1024 / 1024).toFixed(2)} MB
+                              </p>
+                            </div>
+                          </div>
+                        ) : isEditMode && design?.linkDownload ? (
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="rounded-full bg-emerald-500/10 p-4">
+                              <FileText className="h-8 w-8 text-emerald-600" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-base font-medium text-foreground">
+                                Existing File:{' '}
+                                {getFileNameFromUrl(design.linkDownload)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Click to replace with a new file
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
+                              <Upload className="h-8 w-8 text-primary" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-base font-medium text-foreground">
+                                Click to upload source file
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                ZIP, RAR, FIG (Max 100MB)
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    {isEditMode && design?.linkDownload && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8"
-                        asChild
-                      >
-                        <a
-                          href={design.linkDownload}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Download Current
-                        </a>
-                      </Button>
-                    )}
-                  </div>
+                  </label>
 
-                  <div className="flex items-center gap-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-12 border-dashed border-2 px-6"
-                      onClick={() => sourceFileInputRef.current?.click()}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      {sourceFile ? 'Change File' : 'Upload File'}
-                    </Button>
-                    <div className="text-sm text-muted-foreground">
-                      {sourceFile ? (
-                        <span className="font-medium text-foreground">
-                          {sourceFile.name} (
-                          {(sourceFile.size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      ) : (
-                        <span>
-                          {isEditMode && design?.linkDownload
-                            ? 'Existing file retained.'
-                            : 'No file selected'}
-                        </span>
-                      )}
+                  {(sourceFile || (isEditMode && design?.linkDownload)) && (
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          if (sourceFile) {
+                            setSourceFile(null);
+                            if (sourceFileInputRef.current)
+                              sourceFileInputRef.current.value = '';
+                          } else {
+                            toast.info(
+                              'Cannot remove existing file without replacing.',
+                            );
+                          }
+                        }}
+                        className="mt-3 h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                        {sourceFile ? 'Cancel Upload' : 'Clear File Selection'}
+                      </Button>
                     </div>
-                    <input
-                      ref={sourceFileInputRef}
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) setSourceFile(f);
-                      }}
-                    />
-                  </div>
+                  )}
                 </div>
               </section>
 
+              {/* SECTION 6: IMAGES */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border/40" />
                   <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Sparkles className="w-3.5 h-3.5" />
-                    Thumbnail
+                    Images / Gallery
                   </h2>
                   <div className="h-px flex-1 bg-border/40" />
                 </div>
@@ -651,60 +746,90 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    multiple
                     className="hidden"
+                    id="thumbnail-upload"
                     onChange={handleImageUpload}
                   />
-                  <div
-                    className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-8 text-center transition-all hover:border-primary/40 hover:bg-muted/30"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {imagePreview ? (
-                      <div className="relative aspect-video w-full max-w-md mx-auto overflow-hidden rounded-lg shadow-sm">
-                        <Image
-                          src={imagePreview}
-                          alt="Preview"
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <p className="text-white font-medium flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4" /> Change Image
+                  <label htmlFor="thumbnail-upload">
+                    <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
+                          <ImageIcon className="h-8 w-8 text-primary" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-base font-medium text-foreground">
+                            Click to upload images
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Recommended: 16:9 aspect ratio
                           </p>
                         </div>
                       </div>
-                    ) : (
-                      <div className="py-8">
-                        <div className="mx-auto rounded-full bg-primary/10 p-4 w-fit mb-4">
-                          <ImageIcon className="h-8 w-8 text-primary" />
-                        </div>
-                        <p className="text-base font-medium text-foreground">
-                          Upload Thumbnail
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Recommended: 16:9 aspect ratio
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  {imagePreview && (
-                    <div className="mt-4 flex justify-center">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setImagePreview(null);
-                          setSelectedFile(null);
-                          if (fileInputRef.current)
-                            fileInputRef.current.value = '';
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" /> Remove Image
-                      </Button>
                     </div>
-                  )}
+                  </label>
+
+                  <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {/* Existing Images */}
+                    {existingImages.map((url, index) => (
+                      <div
+                        key={`existing-${index}`}
+                        className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30"
+                      >
+                        <div className="absolute top-2 left-2 z-10 bg-blue-500/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                          Saved
+                        </div>
+                        <Image
+                          src={url}
+                          alt={`Existing ${index}`}
+                          fill
+                          className="object-cover transition-transform group-hover:scale-105"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            removeExistingImage(index);
+                          }}
+                          className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+
+                    {/* New Previews */}
+                    {newPreviews.map((url, index) => (
+                      <div
+                        key={`new-${index}`}
+                        className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30"
+                      >
+                        <div className="absolute top-2 left-2 z-10 bg-green-500/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                          New
+                        </div>
+                        <Image
+                          src={url}
+                          alt={`New ${index}`}
+                          fill
+                          className="object-cover transition-transform group-hover:scale-105"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            removeNewImage(index);
+                          }}
+                          className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </section>
 

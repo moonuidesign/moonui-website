@@ -54,7 +54,7 @@ export async function registerWithCredentials(values: RegisterSchemaType) {
     .returning({ id: users.id });
 
   try {
-    await activateLicense(licenseKey, newUser.id, email);
+    await activateLicense(licenseKey, newUser.id);
   } catch (error) {
     console.error('LICENSE_ACTIVATION_FAILED', error);
 

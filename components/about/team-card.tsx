@@ -17,7 +17,7 @@ export const TeamCard: React.FC<TeamMemberProps> = ({
       <Image src={imageSrc} alt={name} fill className="object-cover" />
     </div>
     <div className="flex flex-col gap-1">
-      <div className="text-zinc-800 text-lg font-medium leading-7">{name}</div>
+      <div className="text-[#3D3D3D] text-lg font-medium leading-7">{name}</div>
       <div className="text-zinc-500 text-base font-medium leading-6">
         {role}
       </div>

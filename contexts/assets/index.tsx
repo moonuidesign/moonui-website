@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import { ReactNode } from 'react';
 
 export type ToolType = 'figma' | 'framer';
@@ -19,6 +19,8 @@ interface FilterState {
   selectedColors: string[];
   selectedTiers: TierType[];
   searchQuery: string;
+  isFilterOpen: boolean;
+  _hasHydrated: boolean;
 }
 
 interface FilterActions {
@@ -37,6 +39,8 @@ interface FilterActions {
   toggleTier: (t: TierType) => void;
 
   setSearchQuery: (q: string) => void;
+  setFilterOpen: (open: boolean) => void;
+  setHasHydrated: (state: boolean) => void;
 
   applySearchFilter: (params: {
     contentType?: ContentType;
@@ -48,6 +52,21 @@ interface FilterActions {
 
   clearAllFilters: () => void;
 }
+
+const storage: StateStorage = {
+  getItem: (name: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(name);
+  },
+  setItem: (name: string, value: string): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(name, value);
+  },
+  removeItem: (name: string): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(name);
+  },
+};
 
 export const useFilterStore = create<FilterState & FilterActions>()(
   persist(
@@ -61,8 +80,12 @@ export const useFilterStore = create<FilterState & FilterActions>()(
       selectedColors: [],
       selectedTiers: [],
       searchQuery: '',
+      isFilterOpen: false,
+      _hasHydrated: false,
 
       setTool: (tool) => set({ tool }),
+      setFilterOpen: (isFilterOpen) => set({ isFilterOpen }),
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
 
       setContentType: (contentType) =>
         set({
@@ -160,7 +183,8 @@ export const useFilterStore = create<FilterState & FilterActions>()(
           return newState;
         }),
 
-      clearAllFilters: () =>
+      clearAllFilters: () => {
+        localStorage.removeItem('assets-filter-storage');
         set({
           categorySlugs: [],
           subCategorySlugs: [],
@@ -168,11 +192,25 @@ export const useFilterStore = create<FilterState & FilterActions>()(
           selectedColors: [],
           selectedTiers: [],
           searchQuery: '',
-        }),
+        });
+      },
     }),
     {
       name: 'assets-filter-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => storage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+      // BAGIAN PENTING: Tambahkan 'searchQuery' ke dalam filter blacklist
+      partialize: (state) =>
+        Object.fromEntries(
+          Object.entries(state).filter(
+            ([key]) =>
+              // Jangan simpan 'searchQuery' di localStorage!
+              // Biarkan URL yang mengaturnya.
+              !['isFilterOpen', '_hasHydrated', 'searchQuery'].includes(key),
+          ),
+        ),
     },
   ),
 );

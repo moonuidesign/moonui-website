@@ -38,7 +38,7 @@ export const MobileCardView = ({
         className="shadow-[inset_0px_0px_0px_1px_rgba(211,211,211,1.00)] shadow-[inset_0px_0px_0px_0px_rgba(255,255,255,1.00)]  rounded-[20px]"
       >
         <div className="rounded-[28px] px-4 overflow-hidden flex flex-col min-h-[500px] relative transition-colors duration-500">
-          <div className="flex items-start h-fit justify-between pt-5 pb-0 border-b relative">
+          <div className="flex items-start border-b-[#D3D3D3] h-fit justify-between pt-5 pb-0 border-b relative">
             {tabs.map((tab, index) => {
               const isActive = activeTab === tab.id;
               const isFirst = index === 0;
@@ -115,7 +115,7 @@ export const MobileCardView = ({
             </p>
           </div>
 
-          <div className="flex-1 pb-5 shadow-[0_8px_30px_-10px_rgba(0,0,0,0.08)]">
+          <div className="flex-1 pb-5  px-6 ">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -123,7 +123,7 @@ export const MobileCardView = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="w-full rounded-[24px] border-[1.5px] border-gray-100 overflow-hidden flex flex-col h-full min-h-[380px] relative"
+                className="w-full rounded-[24px] border-[1.5px] shadow-[0_8px_30px_-10px_rgba(0,0,0,0.08)] border-gray-100 overflow-hidden flex flex-col h-full min-h-[380px] relative"
               >
                 {currentTab && (
                   <Image
@@ -140,12 +140,12 @@ export const MobileCardView = ({
         </div>
       </motion.div>
 
-      <button className="flex -bottom-10 items-center z-[110] absolute justify-between w-full bg-[#1A1A1A] text-white h-14 px-6 rounded-[20px] shadow-xl active:scale-[0.98] transition-all">
-        <span className="text-[15px] font-semibold font-sans">
+      <button className="absolute left-1/2 -translate-x-1/2 bottom-0 z-[80] flex w-[90%] h-12 items-center justify-between rounded-[20px] bg-[#1A1A1A] px-3 text-white shadow-xl transition-all">
+        <span className="text-[14px] font-semibold font-sans">
           Explore Template
         </span>
         <div className="flex items-center gap-2 opacity-60">
-          <span className="text-[12px] font-medium capitalize">
+          <span className="text-[14px] font-medium capitalize">
             {config.title}
           </span>
           <Icons.ArrowRight />

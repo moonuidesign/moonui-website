@@ -1,6 +1,7 @@
 import { TierType } from '@/contexts';
 import React from 'react';
 import { ActionButton, NewBadge, TierIndicator } from './card-element';
+import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton';
 
 interface ComponentCardProps {
   title: string;
@@ -23,10 +24,11 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
     <div className="group w-96 flex flex-col justify-start items-start gap-3">
       {/* Container Gambar */}
       <div className="self-stretch h-64 relative bg-white rounded-2xl shadow-[0px_0px_0px_1px_rgba(51,51,51,0.10)] shadow-[0px_48px_48px_-24px_rgba(51,51,51,0.04)] shadow-[0px_12px_12px_-6px_rgba(51,51,51,0.04)] border-t-[5px] border-white overflow-hidden transition-all duration-300 group-hover:shadow-xl">
-        <img
-          className="w-full h-full object-cover rounded-lg p-[1px]"
+        <ImageWithSkeleton
           src={thumbnail}
           alt={title}
+          className="w-full h-full object-cover rounded-lg p-[1px]"
+          skeletonClassName="bg-zinc-100"
         />
 
         {/* Overlay Hover */}
@@ -84,7 +86,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
       {/* Footer Info */}
       <div className="self-stretch px-2 inline-flex justify-between items-center">
         <div className="flex justify-start items-center">
-          <div className="text-zinc-800 text-sm font-medium font-['Inter'] leading-6 truncate max-w-[180px]">
+          <div className="text-[#3D3D3D] text-sm font-medium font-['Inter'] leading-6 truncate max-w-[180px]">
             {title}
           </div>
           {isNew && <NewBadge />}

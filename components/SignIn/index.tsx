@@ -96,7 +96,7 @@ export function SignInForm() {
     <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 w-full">
       <Card className="w-full max-w-md rounded-xl shadow-lg">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white">
+          <CardTitle className="text-[28px] md:text-[30px] font-bold text-gray-900 dark:text-white">
             Sign In
           </CardTitle>
           <CardDescription>

@@ -1,23 +1,21 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { auth } from '@/libs/auth'; // Sesuaikan path
-import { db } from '@/libs/drizzle'; // Sesuaikan path
-import { s3Client } from '@/libs/getR2 copy'; // Sesuaikan path
-import { contentComponents } from '@/db/migration'; // Import schema
+import { auth } from '@/libs/auth';
+import { db } from '@/libs/drizzle';
+import { s3Client } from '@/libs/getR2 copy';
+import { contentComponents } from '@/db/migration';
 import { eq } from 'drizzle-orm';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import OpenAI from 'openai';
 import {
   ContentComponentFormValues,
   ContentComponentSchema,
-} from './component-validator'; // Sesuaikan path
+} from './component-validator';
 
 // ============================================================================
-// 1. TYPES & INTERFACES
+// 1. CONFIG & TYPES
 // ============================================================================
-
-type FrameworkType = 'react' | 'vue' | 'angular' | 'html';
 
 type ActionResponse =
   | { success: true; message: string }
@@ -38,148 +36,125 @@ const GEMINI_API_KEYS = [
   process.env.GEMINI_API_KEY_1,
   process.env.GEMINI_API_KEY_2,
   process.env.GEMINI_API_KEY_3,
-].filter((key): key is string => typeof key === 'string' && key.length > 0);
+  process.env.OPENROUTER_API_KEY,
+].filter(
+  (key): key is string => typeof key === 'string' && key.trim().length > 0,
+);
 
-const AI_MODEL = 'google/gemini-2.0-flash-exp';
-const AI_BASE_URL = 'https://openrouter.ai/api/v1';
+const AI_MODEL = 'google/gemini-2.0-flash-exp:free';
+const AI_BASE_URL =
+  '[https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)';
 
-const SYSTEM_INSTRUCTION = `
-### ROLE & OBJECTIVE
-You are an expert Senior Frontend Architect. Your task is to refactor "Raw/Spaghetti HTML" into clean, production-grade, responsive component code.
+const SYSTEM_INSTRUCTION_JSON = `
+You are a Senior Frontend Architect.
+Task: Convert the input HTML into React, Vue, Angular, and clean HTML5.
 
-### CRITICAL OUTPUT RULES
-1. **CODE ONLY**: Return strictly the code. No conversation.
-2. **NO MARKDOWN**: Output raw text only.
-3. **NO HALLUCINATION**: Do not invent imports.
-
-### CONTINUATION PROTOCOL
-If you hit the token limit:
-1. Stop exactly where the limit hits.
-2. When the user says "CONTINUE", resume generation **EXACTLY** from there.
-3. **DO NOT REPEAT** the last segment.
-
-### FRAMEWORK STANDARDS
-- **React**: Functional components, Tailwind CSS, 'lucide-react'. Remove absolute positioning.
-- **Vue**: Vue 3 <script setup>, Tailwind CSS.
-- **Angular**: Standalone Components, Tailwind CSS.
-- **HTML**: Semantic HTML5, Tailwind CSS.
-`;
-
-const CONTINUATION_PROMPT = `
-You stopped due to the output token limit. 
-Please continue generation **IMMEDIATELY** from the exact character where you stopped. 
-Do not repeat the last segment. 
-Do not add markdown backticks. 
-Just flow the code.
+### OUTPUT FORMAT (STRICT)
+Return ONLY a raw JSON object. Do not use Markdown.
+{
+  "react": "string (React component code)",
+  "vue": "string (Vue 3 script setup code)",
+  "angular": "string (Angular standalone component code)",
+  "html": "string (Semantic HTML5 code)"
+}
 `;
 
 // ============================================================================
-// 3. AI HELPER FUNCTIONS
+// 2. HELPER FUNCTIONS
 // ============================================================================
 
-function cleanMarkdown(text: string): string {
-  return text
-    .replace(
-      /^```(tsx|jsx|vue|html|ts|javascript|typescript|css|json)?\n?/gi,
-      '',
-    )
-    .replace(/\n?```$/g, '')
-    .trim();
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function safeParseJSON(text: string, rawInput: string): CodeSnippets {
+  try {
+    const cleanText = text
+      .replace(/^```json\n?/gi, '')
+      .replace(/^```\n?/gi, '')
+      .replace(/\n?```$/g, '')
+      .trim();
+
+    const json = JSON.parse(cleanText);
+
+    return {
+      react: json.react || `/* React generation empty */\n${rawInput}`,
+      vue: json.vue || `\n${rawInput}`,
+      angular: json.angular || `/* Angular generation empty */\n${rawInput}`,
+      html: json.html || rawInput,
+    };
+  } catch (e) {
+    console.error('[AI Parse Error] Output bukan JSON valid.');
+    throw new Error('AI Output Invalid JSON');
+  }
 }
 
 async function callAIWithRotation(
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
 ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+  if (GEMINI_API_KEYS.length === 0) throw new Error('No API Keys configured.');
+
   let lastError: Error | null = null;
 
-  for (const apiKey of GEMINI_API_KEYS) {
+  for (let i = 0; i < GEMINI_API_KEYS.length; i++) {
+    const apiKey = GEMINI_API_KEYS[i];
     try {
-      const openai = new OpenAI({
-        baseURL: AI_BASE_URL,
-        apiKey: apiKey,
-      });
+      const openai = new OpenAI({ baseURL: AI_BASE_URL, apiKey: apiKey });
 
-      const response = await openai.chat.completions.create({
+      return await openai.chat.completions.create({
         model: AI_MODEL,
         messages: messages,
         temperature: 0.2,
+        response_format: { type: 'json_object' },
       });
-
-      return response;
     } catch (error) {
-      if (error instanceof Error) {
-        console.warn(
-          `[AI Warning] Key ...${apiKey.slice(-4)} failed. Switching...`,
-        );
-        lastError = error;
-      }
-      continue;
+      lastError = error instanceof Error ? error : new Error(String(error));
+      const isRateLimit = lastError.message.includes('429');
+
+      console.warn(
+        `[AI Warning] Key ...${apiKey.slice(-4)} failed (${
+          isRateLimit ? '429' : 'Err'
+        }). Switching...`,
+      );
+
+      if (isRateLimit) await delay(1000 * (i + 1));
     }
   }
-
-  throw new Error(
-    `All API Keys failed. Last error: ${lastError?.message || 'Unknown error'}`,
-  );
+  throw new Error(`All keys failed. Last error: ${lastError?.message}`);
 }
 
-async function generateCodeWithAI(
-  framework: FrameworkType,
+async function generateCodeSafely(
   rawHtml: string,
-): Promise<string> {
-  const prompts: Record<FrameworkType, string> = {
-    react: `Convert this HTML to **React** (Tailwind + Lucide). Export default function. Remove absolute positioning.`,
-    vue: `Convert this HTML to **Vue 3** (<script setup> + Tailwind). Remove absolute positioning.`,
-    angular: `Convert this HTML to **Angular Standalone Component** (Tailwind). Remove absolute positioning.`,
-    html: `Refactor to clean Semantic **HTML5** + Tailwind. Remove absolute positioning.`,
-  };
-
+): Promise<{ data: CodeSnippets; isAiSuccess: boolean; errorMsg?: string }> {
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-    { role: 'system', content: SYSTEM_INSTRUCTION },
-    {
-      role: 'user',
-      content: `${prompts[framework]}\n\n--- INPUT HTML ---\n${rawHtml}`,
-    },
+    { role: 'system', content: SYSTEM_INSTRUCTION_JSON },
+    { role: 'user', content: `--- INPUT HTML ---\n${rawHtml}` },
   ];
 
-  let fullCodeBuffer = '';
-  let loopCount = 0;
-  const MAX_LOOPS = 5;
+  try {
+    console.log('[AI Start] Requesting 4 frameworks (Single Shot)...');
+    const response = await callAIWithRotation(messages);
+    const content = response.choices[0].message?.content || '{}';
 
-  console.log(`[AI Update] Generating ${framework}...`);
+    console.log('[AI Success] Parsing result...');
+    return {
+      data: safeParseJSON(content, rawHtml),
+      isAiSuccess: true,
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error(`[AI FAIL] ${msg}`);
 
-  while (loopCount < MAX_LOOPS) {
-    try {
-      const response = await callAIWithRotation(messages);
-      const choice = response.choices[0];
-      const contentChunk = choice.message?.content || '';
-      const finishReason = choice.finish_reason;
-
-      fullCodeBuffer += contentChunk;
-
-      if (finishReason === 'length') {
-        console.log(
-          `[AI Info] ${framework} truncated (Loop ${
-            loopCount + 1
-          }). Continuing...`,
-        );
-        messages.push({ role: 'assistant', content: contentChunk });
-        messages.push({ role: 'user', content: CONTINUATION_PROMPT });
-        loopCount++;
-      } else {
-        break;
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      console.error(`[AI Fatal] ${framework} failed:`, errorMessage);
-      return `${cleanMarkdown(
-        fullCodeBuffer,
-      )}\n\n// Error: Generation failed midway.`;
-    }
+    // Return status failed
+    return {
+      isAiSuccess: false,
+      errorMsg: msg,
+      data: { react: '', vue: '', angular: '', html: '' },
+    };
   }
-
-  return cleanMarkdown(fullCodeBuffer);
 }
+
+// ============================================================================
+// 3. MAIN ACTION (UPDATE COMPONENT)
+// ============================================================================
 
 export async function updateContentComponent(
   id: string,
@@ -187,10 +162,10 @@ export async function updateContentComponent(
   imageFile?: File | null,
 ): Promise<ActionResponse> {
   console.log('[UpdateComponent] Started for ID:', id);
+
   // 1. Auth Check
   const session = await auth();
   if (!session?.user?.id) {
-    console.error('[UpdateComponent] Unauthorized');
     return {
       success: false,
       error: 'Unauthorized: Harap login terlebih dahulu.',
@@ -200,12 +175,10 @@ export async function updateContentComponent(
   // 2. Validation
   const validated = ContentComponentSchema.safeParse(values);
   if (!validated.success) {
-    const errorDetails = validated.error.flatten().fieldErrors;
-    console.error('[UpdateComponent] Validation Failed:', errorDetails);
     return {
       success: false,
       error: 'Validasi data gagal.',
-      details: errorDetails,
+      details: validated.error.flatten().fieldErrors,
     };
   }
 
@@ -214,56 +187,51 @@ export async function updateContentComponent(
     type,
     rawHtmlInput,
     categoryComponentsId,
-    subCategoryComponentsId, // Ambil field Sub Category
+    subCategoryComponentsId,
     tier,
-    // platform, // Removed
     statusContent,
     urlBuyOneTime,
     description,
     copyComponentTextHTML,
     copyComponentTextPlain,
+    slug,
   } = validated.data;
-  console.log('[UpdateComponent] Validated Values:', validated.data);
 
-  // 3. Logic Penentuan Kategori (Parent vs Sub)
-  // Jika subCategory dipilih, gunakan itu sebagai ID yang disimpan
+  // 3. Logic Kategori
   const finalCategoryId =
     subCategoryComponentsId && subCategoryComponentsId.trim() !== ''
       ? subCategoryComponentsId
       : categoryComponentsId;
-  console.log('[UpdateComponent] Final Category ID:', finalCategoryId);
 
-  // 4. AI Code Generation Logic
+  // 4. AI Code Generation Logic (STRICT MODE)
   let newCodeSnippets: CodeSnippets | undefined = undefined;
 
+  // Hanya jalankan AI jika ada input HTML baru
   if (rawHtmlInput && rawHtmlInput.trim().length >= 10) {
     console.log('[UpdateComponent] Generating AI Code...');
-    try {
-      // Jalankan AI secara parallel
-      const [react, vue, angular, html] = await Promise.all([
-        generateCodeWithAI('react', rawHtmlInput),
-        generateCodeWithAI('vue', rawHtmlInput),
-        generateCodeWithAI('angular', rawHtmlInput),
-        generateCodeWithAI('html', rawHtmlInput),
-      ]);
 
-      newCodeSnippets = { react, vue, angular, html };
-      console.log('[UpdateComponent] AI Generation Complete');
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error('[UpdateComponent] AI Update Generation Error:', errorMsg);
+    const aiResult = await generateCodeSafely(rawHtmlInput);
+
+    // CRITICAL CHANGE: Jika AI Gagal, Update Dibatalkan Total
+    if (!aiResult.isAiSuccess) {
+      console.error('[UpdateComponent] Aborting: AI Generation Failed.');
+      return {
+        success: false,
+        error: `Update Dibatalkan: AI sedang sibuk/limit (${
+          aiResult.errorMsg || 'Unknown'
+        }). Silakan coba lagi.`,
+      };
     }
+
+    newCodeSnippets = aiResult.data;
   } else {
-    console.log(
-      '[UpdateComponent] Skipping AI Update: No new/valid Raw HTML provided.',
-    );
+    console.log('[UpdateComponent] No new HTML provided, skipping AI.');
   }
 
-  // 5. Image Upload Logic
+  // 5. Image Upload Logic (Hanya jalan jika step sebelumnya aman)
   let newImageUrl: string | undefined = undefined;
   if (imageFile && imageFile.size > 0) {
     try {
-      console.log('[UpdateComponent] Uploading New Image:', imageFile.name);
       const ext = imageFile.name.split('.').pop();
       const fileName = `components/${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const buffer = Buffer.from(await imageFile.arrayBuffer());
@@ -279,11 +247,9 @@ export async function updateContentComponent(
         }),
       );
 
-      newImageUrl = `${fileName}`;
-      console.log('[UpdateComponent] New Image Uploaded:', newImageUrl);
+      newImageUrl = fileName;
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Unknown upload error';
-      console.error('[UpdateComponent] Upload Failed:', msg);
+      console.error('[UpdateComponent] Upload Failed:', e);
       return { success: false, error: 'Gagal mengupload gambar baru.' };
     }
   }
@@ -292,27 +258,32 @@ export async function updateContentComponent(
   try {
     const updateData = {
       title,
-      slug: validated.data.slug, // New Field
+      slug,
       typeContent: type,
-      categoryComponentsId: finalCategoryId, // Gunakan ID hasil logika di atas
+      categoryComponentsId: finalCategoryId,
       tier,
       description,
-      // platform, // Removed
       statusContent,
       urlBuyOneTime,
       updatedAt: new Date(),
       copyComponentTextHTML: { content: copyComponentTextHTML },
+      // Update Image jika ada
       ...(newImageUrl ? { imageUrl: newImageUrl } : {}),
+      // Update Code jika AI dipanggil & Sukses
       ...(newCodeSnippets
         ? {
             codeSnippets: newCodeSnippets,
-            copyComponentTextPlain: { content: newCodeSnippets.react },
+            copyComponentTextPlain: {
+              content:
+                newCodeSnippets.react.length > 50
+                  ? newCodeSnippets.react
+                  : copyComponentTextPlain,
+            },
           }
         : {
             copyComponentTextPlain: { content: copyComponentTextPlain },
           }),
     };
-    console.log('[UpdateComponent] Updating DB with:', updateData);
 
     await db
       .update(contentComponents)
@@ -320,12 +291,13 @@ export async function updateContentComponent(
       .where(eq(contentComponents.id, id));
 
     revalidatePath('/dashboard/components');
-    const msg = newCodeSnippets
-      ? 'Komponen berhasil diperbarui & Code AI digenerate ulang!'
-      : 'Data komponen berhasil diperbarui.';
 
-    console.log('[UpdateComponent] DB Update Success');
-    return { success: true, message: msg };
+    return {
+      success: true,
+      message: newCodeSnippets
+        ? 'Data & Code berhasil diperbarui!'
+        : 'Data komponen berhasil diperbarui.',
+    };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.error('[UpdateComponent] DB Update Error:', errorMsg);

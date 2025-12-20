@@ -335,7 +335,7 @@ export default function Bennefits() {
   );
 
   return (
-    <div className="min-h-screen relative lg:max-w-7xl mx-auto bg-[#E8E8E8] flex flex-col items-center py-8 md:py-20 font-sans text-[#2E2E2E]  selection:bg-black/10">
+    <div className="max-h-[1600px] h-fit md:h-[1200px] relative lg:max-w-7xl mx-auto bg-[#E8E8E8] flex flex-col items-center py-8 md:py-20 font-sans text-[#2E2E2E]  selection:bg-black/10">
       <div className="md:hidden w-full px-1 lg:px-5 flex flex-col gap-6 max-w-[420px]">
         <div className="flex flex-col items-center gap-4 mb-2">
           <div className="inline-flex h-8 px-3 items-center gap-2 rounded-xl bg-[#8A7F8D] shadow-sm">
@@ -357,7 +357,7 @@ export default function Bennefits() {
         <MobileCardView key={activeCategory} activeCategory={activeCategory} />
       </div>
 
-      <div className="hidden md:flex   flex-col items-center w-full max-w-[1440px] px-4">
+      <div className="hidden md:flex   flex-col items-center md:w-3xl md:overflow-hidden lg:w-6xl md:max-w-6xl lg:max-w-[1440px] px-4">
         <div className="flex flex-col items-center gap-8 mb-16 z-20 relative">
           <div className="inline-flex h-8 px-3 pl-2 items-center gap-1.5 rounded-[9px] bg-[#8A7F8D] shadow-sm">
             <Icons.Check />
@@ -381,7 +381,7 @@ export default function Bennefits() {
             </span>
           </h1>
 
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-4 w-3xl">
             {CATEGORIES_CONFIG.map((cat) => (
               <button
                 key={cat.id}
@@ -432,7 +432,7 @@ export default function Bennefits() {
                 {desktopCards.map((card, index) => (
                   <div
                     key={card.id + index}
-                    className="absolute w-6xl bg-white rounded-[24px] shadow-2xl border border-white/60 cursor-pointer overflow-hidden transform transition-transform hover:brightness-105"
+                    className="absolute md:w-2xl lg:w-4xl bg-white rounded-[24px] shadow-2xl border border-white/60 cursor-pointer overflow-hidden transform transition-transform hover:brightness-105"
                   >
                     <div className="h-12 bg-[#FAFAFA] border-b border-[#EBEBEB] flex items-center justify-between px-5">
                       <div className="flex items-center gap-3">
@@ -477,7 +477,7 @@ export default function Bennefits() {
           <Icons.ArrowRight />
         </button>
       </div>
-      <div className="absolute -bottom-10 z-[99] left-0 w-full h-[250px] lg:h-[500px] bg-gradient-to-t from-[#e8e8e8] via-[#e8e8e8] to-transparent pointer-events-none"></div>
+      <div className="absolute -bottom-10 z-[10] left-0 w-full h-[250px] lg:h-[500px] bg-gradient-to-t from-[#e8e8e8] via-[#e8e8e8] to-transparent pointer-events-none"></div>
     </div>
   );
 }

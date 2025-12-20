@@ -1,23 +1,17 @@
-import ListTransactions, { SearchParamsProps } from '@/modules/dashboard/transactions/list-page';
+import { SearchParamsProps } from '@/modules/dashboard/transactions/list-page';
 import { Suspense } from 'react';
+import { ListTransactionsWrapper } from './wraper';
+import { DashboardListSkeleton } from '@/components/skeletons/dashboard-list-skeleton';
 
-export default function Page({
+export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<SearchParamsProps>;
 }) {
+  const searchParamsS = await searchParams;
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ListTransactionsWrapper searchParams={searchParams} />
+    <Suspense fallback={<DashboardListSkeleton />}>
+      <ListTransactionsWrapper searchParams={searchParamsS} />
     </Suspense>
   );
-}
-
-async function ListTransactionsWrapper({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParamsProps>;
-}) {
-  const resolvedSearchParams = await searchParams;
-  return <ListTransactions searchParams={resolvedSearchParams} />;
 }

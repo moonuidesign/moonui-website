@@ -106,7 +106,6 @@ export async function updateContentTemplate(
         const assetUrl = `${fileName}`;
         newUploadedAssets.push({
           url: assetUrl,
-          type: 'image_preview',
         });
         console.log('[UpdateTemplate] Uploaded Asset:', assetUrl);
       } catch (e) {
@@ -120,7 +119,7 @@ export async function updateContentTemplate(
   // values.assetUrls: berisi URL lama yang user pertahankan + URL manual baru
   // newUploadedAssets: berisi hasil upload file fisik saat ini
   const finalAssets: AssetItem[] = [
-    ...(values.assetUrls || []),
+    ...(values.imagesUrl || []),
     ...newUploadedAssets,
   ];
 
@@ -134,7 +133,6 @@ export async function updateContentTemplate(
       slug: values.slug,
       assetUrl: finalAssets,
       tier: values.tier,
-      // platform: values.platform, // Removed
       statusContent: values.statusContent,
       urlBuyOneTime: values.urlBuyOneTime,
       updatedAt: new Date(),

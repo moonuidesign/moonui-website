@@ -5,6 +5,7 @@ import {
   timestamp,
   integer,
   jsonb,
+  serial,
 } from 'drizzle-orm/pg-core';
 import { categoryTemplates, users } from '@tables';
 
@@ -24,7 +25,7 @@ export const contentTemplates = pgTable('content_templates', {
   tier: varchar('tier', { length: 50, enum: ['free', 'pro'] })
     .default('free')
     .notNull(),
-  number: integer('number'),
+  number: serial('number').notNull(),
   urlBuyOneTime: text('url_buy_one_time'),
   statusContent: text('status_content').default('draft').notNull(),
   viewCount: integer('view_count').default(0).notNull(),

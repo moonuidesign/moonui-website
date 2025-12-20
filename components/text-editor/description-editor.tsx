@@ -19,8 +19,8 @@ import { EditorBubbleMenu } from './editor-buble-menu';
 import { FontSize } from './font-size';
 
 interface DescriptionEditorProps {
-  initialContent?: string;
-  onChange: (html: string) => void;
+  initialContent?: any;
+  onChange: (value: any) => void;
 }
 
 const DescriptionEditor = ({
@@ -61,15 +61,15 @@ const DescriptionEditor = ({
         placeholder: "Ketik '/' untuk perintah...",
       }),
     ],
-    content: initialContent || '',
+    content: initialContent || { type: 'doc', content: [] },
     editorProps: {
       attributes: {
         class:
-          'prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[300px] px-4 py-3',
+          'prose dark:prose-invert max-w-none w-full break-words focus:outline-none min-h-[300px] px-4 py-3 [&_p]:text-[12px] md:[&_p]:text-[14px] lg:[&_p]:text-[28px] [&_li]:text-[12px] md:[&_li]:text-[14px] lg:[&_li]:text-[28px] [&_ul]:list-none [&_ul_li]:flex [&_ul_li]:items-center [&_ul_li]:before:content-["•"] [&_ul_li]:before:mr-2 [&_ul_li_p]:m-0 [&_li]:m-0 [&_li]:leading-tight',
       },
     },
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      onChange(editor.getJSON());
     },
   });
 

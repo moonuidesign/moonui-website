@@ -3,59 +3,72 @@ import { db } from '@/libs/drizzle';
 import { contentTemplates, categoryTemplates } from '@/db/migration';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
-import { TemplateForm } from '@/components';
+import TemplateForm from '@/components/dashboard/templates/template-form';
 
 export default async function EditTemplate({ id }: { id: string }) {
-  const template = await db
-    .select({
-      id: contentTemplates.id,
-      title: contentTemplates.title,
-      description: contentTemplates.description,
-      typeContent: contentTemplates.typeContent,
+  // 2. Gunakan Promise.all untuk mengambil Template dan Kategori secara paralel
+  const [templateResult, categories] = await Promise.all([
+    db
+      .select({
+        id: contentTemplates.id,
+        title: contentTemplates.title,
+        description: contentTemplates.description,
+        typeContent: contentTemplates.typeContent,
+        linkDonwload: contentTemplates.linkDonwload, // Typo di DB dipertahankan
+        imagesUrl: contentTemplates.imagesUrl,
+        categoryTemplatesId: contentTemplates.categoryTemplatesId,
+        tier: contentTemplates.tier,
+        format: contentTemplates.format,
+        size: contentTemplates.size,
+        urlPreview: contentTemplates.urlPreview,
+        urlBuyOneTime: contentTemplates.urlBuyOneTime,
+        statusContent: contentTemplates.statusContent,
+        slug: contentTemplates.slug,
+        category: {
+          name: categoryTemplates.name,
+        },
+      })
+      .from(contentTemplates)
+      .leftJoin(
+        categoryTemplates,
+        eq(contentTemplates.categoryTemplatesId, categoryTemplates.id),
+      )
+      .where(eq(contentTemplates.id, id))
+      .limit(1),
 
-      linkDonwload: contentTemplates.linkDonwload,
-      assetUrl: contentTemplates.assetUrl,
-      categoryTemplatesId: contentTemplates.categoryTemplatesId,
-      // Add missing fields required by TemplateEntity
-      tier: contentTemplates.tier,
-      urlBuyOneTime: contentTemplates.urlBuyOneTime,
+    getCategoryTemplates(),
+  ]);
 
-      statusContent: contentTemplates.statusContent,
-      slug: contentTemplates.slug,
-      category: {
-        name: categoryTemplates.name,
-      },
-    })
-    .from(contentTemplates)
-    .leftJoin(
-      categoryTemplates,
-      eq(contentTemplates.categoryTemplatesId, categoryTemplates.id),
-    )
-    .where(eq(contentTemplates.id, id))
-    .limit(1);
+  // 3. Ambil item pertama dari array (Destructuring manual pengganti findFirst)
+  const template = templateResult[0];
 
-  if (!template[0]) {
+  // Jika tidak ditemukan, return 404
+  if (!template) {
     notFound();
   }
 
-  const categories = await getCategoryTemplates();
-  
-  // Platform is not in schema, default to 'web'
-  // Prepend R2_PUBLIC_DOMAIN to assets and linkDownload
+  // 4. Helper function untuk formatting URL (R2/S3)
+  const getAbsoluteUrl = (path: string | null) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path; // Jika sudah ada https, biarkan
+    return `https://${process.env.R2_PUBLIC_DOMAIN}/${path}`;
+  };
+
+  // 5. Format data agar sesuai dengan yang diharapkan Form
   const formattedTemplate = {
-    ...template[0],
-    platform: 'web',
-    assetUrl: (template[0].assetUrl as any[])?.map((asset) => ({
+    ...template,
+
+    // Handle imagesUrl: Pastikan array, lalu map URL-nya
+    imagesUrl: (Array.isArray(template.imagesUrl)
+      ? template.imagesUrl
+      : []
+    ).map((asset: any) => ({
       ...asset,
-      url:
-        asset.url && !asset.url.startsWith('http')
-          ? `https://${process.env.R2_PUBLIC_DOMAIN}/${asset.url}`
-          : asset.url,
+      url: getAbsoluteUrl(asset.url),
     })),
-    linkDonwload:
-      template[0].linkDonwload && !template[0].linkDonwload.startsWith('http')
-        ? `https://${process.env.R2_PUBLIC_DOMAIN}/${template[0].linkDonwload}`
-        : template[0].linkDonwload,
+
+    // Handle link download
+    linkDonwload: getAbsoluteUrl(template.linkDonwload),
   };
 
   return (

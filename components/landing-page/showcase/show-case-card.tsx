@@ -22,7 +22,7 @@ export const ShowcaseCard = ({
     </div>
     {/* Text align center pada desktop, mobile bisa center atau left tergantung selera. Di sini saya buat center konsisten */}
     <div className="text-center w-full">
-      <h3 className="text-zinc-800 text-sm md:text-base font-medium font-sans leading-5 md:leading-6">
+      <h3 className="text-[#3D3D3D] text-sm md:text-base font-medium font-sans leading-5 md:leading-6">
         {title}
       </h3>
       <p className="text-zinc-400 text-sm font-normal font-sans leading-5 mt-1">

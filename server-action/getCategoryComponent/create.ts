@@ -47,14 +47,14 @@ export async function createCategoryComponent(
     return { error: 'Data yang dikirim tidak valid.' };
   }
 
-  const { name, slug, parentId } = validatedFields.data;
+  const { name, parentId } = validatedFields.data;
 
   try {
     const newCategoryArray = await db
       .insert(categoryComponents)
       .values({
         name,
-        slug,
+        // slug, // Removed slug as it's not in the categoryComponents schema
         userId,
         parentId: parentId || null,
       })
@@ -90,21 +90,20 @@ export async function createCategoryDesign(
     return { error: 'Unauthorized: Anda harus login untuk membuat kategori.' };
   }
   const userId = session.user.id;
-
   const validatedFields = CategoryDesignSchema.safeParse(values);
 
   if (!validatedFields.success) {
     return { error: 'Data yang dikirim tidak valid.' };
   }
 
-  const { name, description, imageUrl, parentId } = validatedFields.data;
+  const { name, imageUrl, parentId } = validatedFields.data;
 
   try {
     const newCategoryArray = await db
       .insert(categoryDesigns)
       .values({
         name,
-        description,
+
         imageUrl,
         userId,
         parentId: parentId || null,
@@ -145,14 +144,14 @@ export async function createCategoryTemplate(
     return { error: 'Data yang dikirim tidak valid.' };
   }
 
-  const { name, description, imageUrl, parentId } = validatedFields.data;
+  const { name, imageUrl, parentId } = validatedFields.data;
 
   try {
     const newCategoryArray = await db
       .insert(categoryTemplates)
       .values({
         name,
-        description,
+
         imageUrl,
         userId,
         parentId: parentId || null,

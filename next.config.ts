@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
   experimental: {
+    // 1. Add this line to increase the limit for Middleware interception
+    middlewareClientMaxBodySize: '50mb',
+
     serverActions: {
       bodySizeLimit: '50mb',
     },
@@ -20,6 +23,14 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'placehold.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'waterm.site',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.fajarfe.me',
       },
       {
         protocol: 'https',
@@ -45,7 +56,7 @@ const nextConfig: NextConfig = {
           {
             key: 'Access-Control-Allow-Origin',
             value: process.env.NEXT_PUBLIC_APP_URL || '*',
-          }, // Adjust this to your specific domain in production
+          },
           {
             key: 'Access-Control-Allow-Methods',
             value: 'GET,DELETE,PATCH,POST,PUT',

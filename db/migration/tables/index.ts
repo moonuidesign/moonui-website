@@ -13,3 +13,4 @@ export * from './licenses';
 export * from './licenses-transactions';
 export * from './verifications-tokens';
 export * from './newsletter';
+export * from './invites';

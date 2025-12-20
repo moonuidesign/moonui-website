@@ -1,89 +1,124 @@
-import { ConvertCard } from 'iconsax-reactjs';
 import { FeatureItem } from './feature-card';
 import { FeaturesSection } from './section';
-
-// Helper for the custom CSS icons provided in your snippet
-const IconWrapper = ({ children }: { children: React.ReactNode }) => (
-  <div className="w-[18px] h-[18px] md:w-6 md:h-6 relative">{children}</div>
-);
+import Image from 'next/image';
 
 export default function Feature() {
   const featuresData: FeatureItem[] = [
     {
       title: '180+ Components',
       description: '180+ versatile UI elements for rapid development.',
-      icon: <ConvertCard />,
+      icon: (
+        <Image
+          src="/SVG.svg"
+          width={100}
+          height={100}
+          className=" size-7 md:size-6 "
+          alt="Logo Feature 1"
+        />
+      ),
     },
     {
       title: 'Production Ready',
       description: 'Pre-optimized code for instant project deployment.',
-      icon: <ConvertCard />,
+      icon: (
+        <Image
+          src="/SVG-1.svg"
+          width={100}
+          height={100}
+          className=" size-7 md:size-6 "
+          alt="Logo Feature 1"
+        />
+      ),
     },
     {
       title: 'Figma File',
       description: 'Comprehensive design kit for seamless UI/UX workflow.',
       icon: (
-        <IconWrapper>
-          <div className="w-4 h-4 absolute top-[4px] left-[4px] outline outline-[1.5px] outline-orange-600"></div>
-        </IconWrapper>
+        <Image
+          src="/SVG-2.svg"
+          width={100}
+          height={100}
+          className=" size-7 md:size-6 "
+          alt="Logo Feature 1"
+        />
       ),
     },
     {
       title: 'Customizable',
       description: 'Highly flexible system for unique brand expression.',
       icon: (
-        <IconWrapper>
-          <div className="w-4 h-4 absolute top-[3px] left-[4px] outline outline-[1.5px] outline-orange-600"></div>
-          <div className="w-1.5 h-1.5 absolute top-[9px] left-[9px] outline outline-[1.5px] outline-orange-600"></div>
-        </IconWrapper>
+        <Image
+          src="/SVG-3.svg"
+          width={100}
+          height={100}
+          className=" size-7 md:size-6 "
+          alt="Logo Feature 1"
+        />
       ),
     },
     {
       title: 'Responsive',
       description: 'Adaptive layouts for multi-device compatibility.',
       icon: (
-        <IconWrapper>
-          <div className="w-5 h-4 absolute top-[4px] left-[2px] outline outline-[1.5px] outline-orange-600"></div>
-        </IconWrapper>
+        <Image
+          src="/SVG-4.svg"
+          width={100}
+          height={100}
+          className=" size-7 md:size-6 "
+          alt="Logo Feature 1"
+        />
       ),
     },
     {
       title: 'Easy for Devs',
       description: 'Intuitive framework for rapid and efficient development.',
       icon: (
-        <IconWrapper>
-          <div className="w-5 h-5 absolute top-[2.5px] left-[2.5px] outline outline-[1.5px] outline-orange-600"></div>
-        </IconWrapper>
+        <Image
+          src="/SVG-5.svg"
+          width={100}
+          height={100}
+          className=" size-7 md:size-6 "
+          alt="Logo Feature 1"
+        />
       ),
     },
     {
       title: 'Dark Mode',
       description: 'Effortless integration for enhanced user experience.',
       icon: (
-        <IconWrapper>
-          <div className="w-5 h-5 absolute top-[2px] left-[2px] bg-orange-600"></div>
-          <div className="w-1.5 h-1.5 absolute top-[3px] left-[14px] bg-orange-600"></div>
-        </IconWrapper>
+        <Image
+          src="/SVG-6.svg"
+          width={100}
+          height={100}
+          className=" size-7 md:size-6 "
+          alt="Logo Feature 1"
+        />
       ),
     },
     {
       title: 'TypeScript',
       description: 'Strong typing for enhanced code maintainability.',
       icon: (
-        <IconWrapper>
-          <div className="w-4 h-4 absolute top-[3.75px] left-[3.75px] outline outline-[1.5px] outline-orange-600"></div>
-        </IconWrapper>
+        <Image
+          src="/SVG-7.svg"
+          width={100}
+          height={100}
+          className=" size-7 md:size-6 "
+          alt="Logo Feature 1"
+        />
       ),
     },
     {
       title: 'Accessible',
       description: 'WCAG-compliant design for inclusive user access.',
       icon: (
-        <IconWrapper>
-          <div className="w-5 h-5 absolute top-[2.75px] left-[2.75px] outline outline-[1.5px] outline-orange-600"></div>
-          <div className="w-0.5 h-[5px] absolute top-[11.25px] left-[12px] outline outline-[1.5px] outline-orange-600"></div>
-          <div className="w-1.5 h-2 absolute top-[7.25px] left-[8.75px] outline outline-[1.5px] outline-orange-600"></div>
-        </IconWrapper>
+        <Image
+          src="/SVG-8.svg"
+          width={100}
+          height={100}
+          className=" size-7 md:size-6 "
+          alt="Logo Feature 1"
+        />
       ),
     },
   ];

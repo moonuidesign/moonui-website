@@ -1,17 +1,24 @@
 // types/content.ts
+
 export type ContentType = 'template' | 'component' | 'gradient' | 'design';
 
 export interface UnifiedContent {
   id: string;
-  title: string; // atau name
+  title: string;
   description: string | null;
-  slug: any; // jsonb
-  imageUrl: string | null; // atau assetUrl/image
+  slug: any;
+  imageUrl: string | null;
+
+  // --- ADD THIS PROPERTY ---
+  images?: { url: string }[];
+  // ------------------------
+
   tier: 'free' | 'pro' | 'pro_plus';
   number: number;
   type: ContentType;
-  platform?: string; // Khusus template/component
-
+  platform?: string;
+  format: string;
+  size: string;
   // Stats
   viewCount: number;
   downloadCount?: number;
@@ -27,7 +34,7 @@ export interface UnifiedContent {
   // External Links
   urlPreview?: string | null;
   linkDownload?: string;
-  linkTemplate?: string; // LemonSqueezy Link for Templates
+  linkTemplate?: string;
 
   // Relations
   category: {

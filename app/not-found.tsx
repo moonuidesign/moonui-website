@@ -1,8 +1,7 @@
 'use client';
 import FuzzyText from '@/components/FuzzyText';
 import { Input } from '@/components/ui/input';
-import { Meteors } from '@/components/ui/meteors';
-import { ChevronRight, Dribbble, Instagram, Mail, X } from 'lucide-react';
+import { ChevronRight, Mail } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 

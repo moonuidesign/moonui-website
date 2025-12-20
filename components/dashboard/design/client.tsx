@@ -18,10 +18,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { DashboardPagination } from '@/components/dashboard/dashboard-pagination';
 
+interface images {
+  url: string;
+}
 export interface DesignItem {
   id: string;
   title: string;
-  imagesUrl: string[];
+  imagesUrl: images[];
   tier: string;
   statusContent: string;
   createdAt: string | null;
@@ -98,16 +101,14 @@ export default function DesignsClient({
                   </TableCell>
                 </TableRow>
               ) : (
-                // MODIFIKASI DISINI: Menggunakan .slice(0, 1) untuk ambil index 0 saja
                 data.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell>
-                      {/* Perhatikan: Di interface imagesUrl (array), tapi disini dipakai imageUrl (string). 
-                          Pastikan data yang masuk sesuai. Jika error, ganti item.imageUrl dengan item.imagesUrl[0] */}
-                      {(item as any).imageUrl ? (
+                      {/* FIX APPLIED HERE: Check if object AND url string exist */}
+                      {item.imagesUrl[0]?.url ? (
                         <div className="relative w-12 h-12 rounded overflow-hidden bg-gray-100">
                           <Image
-                            src={(item as any).imageUrl}
+                            src={item.imagesUrl[0].url}
                             alt={item.title}
                             fill
                             className="object-cover"
@@ -163,24 +164,23 @@ export default function DesignsClient({
               No designs found.
             </div>
           ) : (
-            // MODIFIKASI DISINI: Menggunakan .slice(0, 1) untuk ambil index 0 saja
             data.map((item) => (
               <div key={item.id} className="relative group">
                 <ResourceCard
                   id={item.id}
                   title={item.title}
-                  imageUrl={(item as any).imageUrl}
+                  // FIX APPLIED HERE: Use optional chaining and default to empty string if undefined
+                  // Note: Ensure ResourceCard handles empty strings safely, otherwise pass a placeholder URL
+                  imageUrl={item.imagesUrl[0]?.url || ''}
                   tier={item.tier}
                   createdAt={item.createdAt ? new Date(item.createdAt) : null}
                   className="w-full"
                 />
-                {/* Author badge for card view if superadmin */}
                 {isSuperAdmin && item.authorName && (
                   <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-sm">
                     {item.authorName}
                   </div>
                 )}
-                {/* Overlay Action for Edit in Card View */}
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Link href={`/dashboard/content/design/edit/${item.id}`}>
                     <Button size="sm" variant="secondary" className="shadow-sm">

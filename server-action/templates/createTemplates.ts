@@ -6,7 +6,6 @@ import { contentTemplates } from '@/db/migration';
 import { auth } from '@/libs/auth';
 import { s3Client } from '@/libs/getR2 copy';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { desc } from 'drizzle-orm';
 import { AssetItem, ContentTemplateSchema } from './validator';
 
 // Definisikan tipe return yang spesifik (Strict)
@@ -64,7 +63,7 @@ export async function createContentTemplate(
     try {
       console.log('[CreateTemplate] Uploading Main File:', mainFile.name);
       const ext = mainFile.name.split('.').pop();
-      const fileName = `downloads/templates/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      const fileName = `templates/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
       await s3Client.send(
         new PutObjectCommand({
@@ -109,7 +108,6 @@ export async function createContentTemplate(
         const assetUrl = `${fileName}`;
         uploadedAssets.push({
           url: assetUrl,
-          type: 'image_preview',
         });
         console.log('[CreateTemplate] Uploaded Asset:', assetUrl);
       } catch (e) {
@@ -121,19 +119,9 @@ export async function createContentTemplate(
 
   // Gabungkan asset manual + hasil upload
   const finalAssets: AssetItem[] = [
-    ...(values.assetUrls || []),
+    ...(values.imagesUrl || []),
     ...uploadedAssets,
   ];
-
-  // 5. Generate Number (Auto Increment Logic)
-  const lastItem = await db
-    .select({ number: contentTemplates.number })
-    .from(contentTemplates)
-    .orderBy(desc(contentTemplates.number))
-    .limit(1);
-
-  const nextNumber = (lastItem[0]?.number ?? 0) + 1;
-  console.log('[CreateTemplate] Next Number:', nextNumber);
 
   // 6. Insert ke Database
   try {
@@ -142,7 +130,7 @@ export async function createContentTemplate(
       title: values.title,
       description: values.description,
       typeContent: values.typeContent,
-      linkTemplate: values.linkTemplate,
+      urlPreview: values.linkTemplate,
       linkDonwload: linkDownloadUrl, // Typo fixed in schema, but keeping for now
       size: fileSize,
       format: fileFormat,
@@ -153,7 +141,7 @@ export async function createContentTemplate(
       // platform: values.platform, // Removed not in schema
       statusContent: values.statusContent,
       urlBuyOneTime: values.urlBuyOneTime,
-      number: nextNumber,
+
       imagesUrl: finalAssets, // Add imagesUrl to the insertData
       viewCount: 0,
       downloadCount: 0,

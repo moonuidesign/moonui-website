@@ -42,7 +42,7 @@ export async function authenticate(
     } else {
       // Tentukan Redirect URL berdasarkan Role
       if (user.roleUser === 'superadmin' || user.roleUser === 'admin') {
-        redirectUrl = '/admin/dashboard';
+        redirectUrl = '/dashboard';
       } else {
         redirectUrl = '/coba';
       }

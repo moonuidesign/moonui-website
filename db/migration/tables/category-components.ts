@@ -7,7 +7,6 @@ export const categoryComponents = pgTable('category_components', {
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar('name', { length: 100 }).notNull(),
   imageUrl: text('image_url'),
-  description: text('description'),
   parentId: text('parent_id').references((): any => categoryComponents.id, {
     onDelete: 'set null',
   }),

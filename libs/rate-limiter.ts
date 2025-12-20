@@ -35,7 +35,7 @@ export async function rateLimiter(
   // Determine client IP address
   // Headers are usually set by proxies like Vercel, Cloudflare, etc.
   const ip =
-    request.ip ||
+    (request as any).ip || // `request.ip` is not directly available on NextRequest in all environments
     request.headers.get('x-real-ip') ||
     request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
     '127.0.0.1'; // Fallback to localhost if IP cannot be determined

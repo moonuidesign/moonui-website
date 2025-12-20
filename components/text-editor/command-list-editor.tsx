@@ -46,7 +46,7 @@ export const CommandListTextEditor = forwardRef((props: any, ref) => {
   }
 
   return (
-    <div className="z-50 min-w-[300px] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95">
+    <div className="z-50 min-w-[300px] max-h-[300px] overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95">
       <div className="flex flex-col gap-1">
         {props.items.map((item: any, index: number) => {
           const Icon = item.icon;

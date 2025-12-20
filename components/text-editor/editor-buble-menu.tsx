@@ -57,7 +57,7 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
     if (!editor || !menuRef.current) return;
 
     // Inisialisasi Tippy
-    tippyInstance.current = tippy(editor.options.element, {
+    tippyInstance.current = tippy(editor.options.element as HTMLElement, {
       duration: 100,
       content: menuRef.current,
       interactive: true,

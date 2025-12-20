@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import GlobalToast from '@/components/global-toast';
 import './globals.css';
 import NextAuthSessionProvider from '@/contexts/session-provider';
+import { Suspense } from 'react';
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: '--font-plus-jakarta-sans',
@@ -40,7 +41,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${inter.variable}  bg-[#E8E8E8]  ${plusJakarta.variable} ${geistMono.variable} antialiased`}
       >
         <NextAuthSessionProvider>
-          <GlobalToast />
+          <Suspense>
+            <GlobalToast />
+          </Suspense>
           {children}
         </NextAuthSessionProvider>
       </body>

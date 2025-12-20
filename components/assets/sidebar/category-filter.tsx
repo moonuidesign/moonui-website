@@ -66,6 +66,11 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 isActive={activeSlugs.length === 0}
                 onClick={() => onToggle('all')}
               />
+              <CategoryChip
+                label="News"
+                isActive={activeSlugs.includes('news')}
+                onClick={() => onToggle('news')}
+              />
               {categories.map((cat) => (
                 <CategoryChip
                   key={cat.id}

@@ -10,13 +10,11 @@ import {
   X,
   Palette,
   Crown,
-  Layers,
-  RefreshCcw,
   PlusCircle,
-  LinkIcon,
   FileUp,
   Sparkles,
   Image as ImageIcon,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,9 +33,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectGroup,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -107,6 +103,24 @@ export default function GradientForm({
 
   const isEditMode = !!gradient;
 
+  // --- HELPER: Parse Description ---
+  const parseDescription = (desc: any) => {
+    if (!desc) return undefined;
+    if (typeof desc === 'object') return desc;
+    if (typeof desc === 'string') {
+      try {
+        const parsed = JSON.parse(desc);
+        if (parsed && typeof parsed === 'object' && parsed.type === 'doc') {
+          return parsed;
+        }
+      } catch (e) {
+        // Not JSON
+      }
+      return desc;
+    }
+    return undefined;
+  };
+
   // --- 2. TYPE-SAFE DEFAULT VALUES ---
   const defaultValues = useMemo<ContentGradientFormValues>(() => {
     // 1. Handle Colors
@@ -140,7 +154,7 @@ export default function GradientForm({
     return {
       name: gradient?.name || '',
       colors: safeColors,
-      description: gradient?.description ?? '',
+      description: parseDescription(gradient?.description),
       typeGradient: safeType,
       tier: safeTier,
       categoryGradientsId: gradient?.categoryGradientsId || '',
@@ -178,6 +192,14 @@ export default function GradientForm({
       const reader = new FileReader();
       reader.onload = (ev) => setImagePreview(ev.target?.result as string);
       reader.readAsDataURL(file);
+    }
+  };
+
+  const getFileNameFromUrl = (url: string) => {
+    try {
+      return url.split('/').pop() || 'Existing File';
+    } catch {
+      return 'Existing File';
     }
   };
 
@@ -267,7 +289,7 @@ export default function GradientForm({
           {/* Header Section */}
           <div className="mb-16">
             <h1 className="text-5xl font-bold tracking-tight text-foreground mb-4 text-balance">
-              {isEditMode ? 'Edit Gradient' : 'Create Gradient'}
+              {isEditMode ? 'Edit Gradient' : 'Create New Gradient'}
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
               {isEditMode
@@ -333,9 +355,11 @@ export default function GradientForm({
                     </FormItem>
 
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-foreground mb-3 block">
-                        Sub Category
-                      </FormLabel>
+                      <div className="flex items-center justify-between mb-3">
+                        <FormLabel className="text-sm font-medium text-foreground">
+                          Sub Category
+                        </FormLabel>
+                      </div>
                       <Select
                         value={currentChildId}
                         onValueChange={(val) => {
@@ -343,7 +367,9 @@ export default function GradientForm({
                             shouldValidate: true,
                           });
                         }}
-                        disabled={!currentParentId || childCategories.length === 0}
+                        disabled={
+                          !currentParentId || childCategories.length === 0
+                        }
                       >
                         <FormControl>
                           <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
@@ -590,6 +616,107 @@ export default function GradientForm({
                 />
               </section>
 
+              {/* SECTION: SOURCE FILE */}
+              <section className="space-y-8">
+                <div className="flex items-center gap-4">
+                  <div className="h-px flex-1 bg-border/40" />
+                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <FileUp className="w-3.5 h-3.5" />
+                    Source File
+                  </h2>
+                  <div className="h-px flex-1 bg-border/40" />
+                </div>
+
+                <div>
+                  <input
+                    ref={sourceFileInputRef}
+                    type="file"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setSourceFile(file);
+                        toast.success(`File ${file.name} ready to upload`);
+                      }
+                    }}
+                    className="hidden"
+                    id="source-file-upload"
+                  />
+                  <label htmlFor="source-file-upload">
+                    <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        {sourceFile ? (
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="rounded-full bg-primary/10 p-4">
+                              <Upload className="h-8 w-8 text-primary" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-base font-medium text-foreground">
+                                {sourceFile.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {(sourceFile.size / 1024 / 1024).toFixed(2)} MB
+                              </p>
+                            </div>
+                          </div>
+                        ) : isEditMode && gradient?.linkDownload ? (
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="rounded-full bg-emerald-500/10 p-4">
+                              <FileText className="h-8 w-8 text-emerald-600" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-base font-medium text-foreground">
+                                Existing File:{' '}
+                                {getFileNameFromUrl(gradient.linkDownload)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Click to replace with a new file
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
+                              <Upload className="h-8 w-8 text-primary" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-base font-medium text-foreground">
+                                Click to upload source file
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Upload source file (CSS/JSON)
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </label>
+
+                   {/* Cancel Button */}
+                   {(sourceFile ||
+                    (isEditMode && gradient?.linkDownload)) && (
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          if (sourceFile) {
+                            setSourceFile(null); // Cancel new upload
+                            if (sourceFileInputRef.current)
+                              sourceFileInputRef.current.value = '';
+                          }
+                        }}
+                        className="mt-3 h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                        {sourceFile ? 'Cancel Upload' : 'Clear File Selection'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </section>
+
               {/* SECTION: THUMBNAIL */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
@@ -607,135 +734,57 @@ export default function GradientForm({
                     type="file"
                     accept="image/*"
                     className="hidden"
+                    id="thumbnail-upload"
                     onChange={handleImageUpload}
                   />
-                  <div
-                    className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-8 text-center transition-all hover:border-primary/40 hover:bg-muted/30"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {imagePreview ? (
-                      <div className="relative aspect-video w-full max-w-md mx-auto overflow-hidden rounded-lg shadow-sm">
+                  <label htmlFor="thumbnail-upload">
+                     <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
+                          <ImageIcon className="h-8 w-8 text-primary" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-base font-medium text-foreground">
+                            Click to upload thumbnail
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Recommended: 16:9 aspect ratio
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+
+                  {imagePreview && (
+                    <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                       <div className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30">
+                        <div className="absolute top-2 left-2 z-10 bg-green-500/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                          Thumbnail
+                        </div>
                         <Image
                           src={imagePreview}
                           alt="Preview"
                           fill
-                          className="object-cover"
+                          className="object-cover transition-transform group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <p className="text-white font-medium flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4" /> Change Image
-                          </p>
-                        </div>
+                         <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setImagePreview(null);
+                            setSelectedFile(null);
+                            if (fileInputRef.current)
+                              fileInputRef.current.value = '';
+                          }}
+                          className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
-                    ) : (
-                      <div className="py-8">
-                        <div className="mx-auto rounded-full bg-primary/10 p-4 w-fit mb-4">
-                          <ImageIcon className="h-8 w-8 text-primary" />
-                        </div>
-                        <p className="text-base font-medium text-foreground">
-                          Upload Thumbnail
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Recommended: 16:9 aspect ratio
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  {imagePreview && (
-                    <div className="mt-4 flex justify-center">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setImagePreview(null);
-                          setSelectedFile(null);
-                          if (fileInputRef.current)
-                            fileInputRef.current.value = '';
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" /> Remove Image
-                      </Button>
                     </div>
                   )}
-                </div>
-              </section>
-
-              {/* SECTION: SOURCE FILE */}
-              <section className="space-y-8">
-                <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <FileUp className="w-3.5 h-3.5" />
-                    Source File
-                  </h2>
-                  <div className="h-px flex-1 bg-border/40" />
-                </div>
-
-                <div className="rounded-xl border border-border/60 bg-muted/20 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className="text-base font-medium text-foreground">
-                        Gradient Source File
-                      </h3>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Upload source file (CSS, JSON, etc.) if applicable.
-                      </p>
-                    </div>
-                    {isEditMode && gradient?.linkDownload && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8"
-                        asChild
-                      >
-                        <a
-                          href={gradient.linkDownload}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Download Current
-                        </a>
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-12 border-dashed border-2 px-6"
-                      onClick={() => sourceFileInputRef.current?.click()}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      {sourceFile ? 'Change File' : 'Upload File'}
-                    </Button>
-                    <div className="text-sm text-muted-foreground">
-                      {sourceFile ? (
-                        <span className="font-medium text-foreground">
-                          {sourceFile.name} (
-                          {(sourceFile.size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      ) : (
-                        <span>
-                          {isEditMode && gradient?.linkDownload
-                            ? 'Existing file retained.'
-                            : 'No file selected'}
-                        </span>
-                      )}
-                    </div>
-                    <input
-                      ref={sourceFileInputRef}
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) setSourceFile(f);
-                      }}
-                    />
-                  </div>
                 </div>
               </section>
 

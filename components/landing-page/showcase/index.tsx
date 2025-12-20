@@ -78,20 +78,16 @@ const ComponentShowcase = () => {
           <ComponentBadge />
 
           <div className="max-w-[768px] flex flex-col items-start md:items-center gap-4">
-            <h1 className="text-zinc-800 text-2xl md:text-5xl font-semibold leading-9 md:leading-[56px] tracking-tight">
+            <h1 className="text-[#3D3D3D] font-['Plus_Jakarta_Sans'] text-2xl md:text-5xl font-semibold leading-9 md:leading-[56px] tracking-tight">
               Elevate your design with <br className="hidden md:block" />
               premium components <br className="md:hidden" /> & blocks
             </h1>
 
-            <p className="text-base leading-6 md:leading-7 max-w-xl text-left md:text-center">
-              <span className="text-neutral-700 font-medium">Customizable</span>
-              <span className="text-neutral-500">
-                {' '}
-                components that seamlessly{' '}
-              </span>
-              <br className="md:hidden" />
-              <span className="text-neutral-700 font-medium">adapt</span>
-              <span className="text-neutral-500"> to your project needs</span>
+            <p className="mt-3 text-pretty text-ln-paragraph-md text-[#707070] md:text-center xl:mt-5 xl:text-ln-paragraph-lg">
+              <span className="font-medium text-[#3D3D3D]">Customizable</span>{' '}
+              components that seamlessly{' '}
+              <span className="font-medium text-[#3D3D3D]">adapt</span> to your
+              project needs
             </p>
 
             <a

@@ -1,35 +1,33 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { auth } from '@/libs/auth'; // Sesuaikan path
-import { db } from '@/libs/drizzle'; // Sesuaikan path
-import { s3Client } from '@/libs/getR2 copy'; // Sesuaikan path
-
+import { auth } from '@/libs/auth';
+import { db } from '@/libs/drizzle';
+import { s3Client } from '@/libs/getR2 copy';
+import { contentComponents } from '@/db/migration';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { desc } from 'drizzle-orm';
 import OpenAI from 'openai';
 import {
   ContentComponentFormValues,
   ContentComponentSchema,
-} from './component-validator'; // Sesuaikan path validator
-import { contentComponents } from '@/db/migration';
+} from './component-validator';
 
 // ============================================================================
-// 1. TYPES & INTERFACES (STRICT TYPING)
+// 1. CONFIG & TYPES
 // ============================================================================
 
-type FrameworkType = 'react' | 'vue' | 'angular' | 'html';
+const GEMINI_API_KEYS = [
+  process.env.GEMINI_API_KEY_1,
+  process.env.GEMINI_API_KEY_2,
+  process.env.GEMINI_API_KEY_3,
+  process.env.OPENROUTER_API_KEY,
+].filter(
+  (key): key is string => typeof key === 'string' && key.trim().length > 0,
+);
 
-// Tipe standar untuk response server action
-type ActionResponse =
-  | { success: true; message: string }
-  | {
-      success: false;
-      error: string;
-      details?: Record<string, string[] | undefined>;
-    };
+const AI_MODEL = 'google/gemini-2.0-flash-exp:free';
+const AI_BASE_URL = 'https://openrouter.ai/api/v1';
 
-// Interface untuk JSONB column
 interface CodeSnippets {
   react: string;
   vue: string;
@@ -37,181 +35,138 @@ interface CodeSnippets {
   html: string;
 }
 
-// ============================================================================
-// 2. CONFIGURATION & CONSTANTS
-// ============================================================================
+const SYSTEM_INSTRUCTION_JSON = `
+You are a Senior Frontend Architect.
+Task: Convert the input HTML into React, Vue, Angular, and clean HTML5.
 
-const GEMINI_API_KEYS = [
-  process.env.GEMINI_API_KEY_1,
-  process.env.GEMINI_API_KEY_2,
-  process.env.GEMINI_API_KEY_3,
-].filter((key): key is string => typeof key === 'string' && key.length > 0);
-
-const AI_MODEL = 'google/gemini-2.0-flash-exp';
-const AI_BASE_URL = 'https://openrouter.ai/api/v1';
-
-const SYSTEM_INSTRUCTION = `
-### ROLE & OBJECTIVE
-You are an expert Senior Frontend Architect. Your task is to refactor "Raw/Spaghetti HTML" (often from Figma exports) into clean, production-grade, responsive component code for a specific framework.
-
-### CRITICAL OUTPUT RULES
-1. **CODE ONLY**: Return strictly the code. Do NOT write conversational fillers.
-2. **NO MARKDOWN**: Do NOT wrap the output in markdown code blocks (\`\`\`). Output raw text only.
-3. **NO HALLUCINATION**: Do not invent imports that don't exist.
-
-### CONTINUATION PROTOCOL
-If you hit the token limit and stop:
-1. Stop exactly where the limit hits.
-2. When the user says "CONTINUE", resume generation **EXACTLY** from the character where you stopped.
-3. **DO NOT REPEAT** the last segment.
-4. **DO NOT RESTART** the code block.
-
-### FRAMEWORK STANDARDS
-- **React**: Functional components, Tailwind CSS, 'lucide-react' icons. Remove 'absolute' positioning.
-- **Vue**: Vue 3 <script setup>, Tailwind CSS.
-- **Angular**: Standalone Components, Tailwind CSS.
-- **HTML**: Semantic HTML5 tags, Tailwind CSS.
+### OUTPUT FORMAT (STRICT)
+Return ONLY a raw JSON object. Do not use Markdown.
+{
+  "react": "string (React component code)",
+  "vue": "string (Vue 3 script setup code)",
+  "angular": "string (Angular standalone component code)",
+  "html": "string (Semantic HTML5 code)"
+}
 `;
 
-const CONTINUATION_PROMPT = `
-You stopped due to the output token limit. 
-Please continue generation **IMMEDIATELY** from the exact character where you stopped. 
-Do not repeat the last segment. 
-Do not add markdown backticks. 
-Just flow the code.
-`;
+// ============================================================================
+// 2. HELPER FUNCTIONS
+// ============================================================================
 
-function cleanMarkdown(text: string): string {
-  return text
-    .replace(
-      /^```(tsx|jsx|vue|html|ts|javascript|typescript|css|json)?\n?/gi,
-      '',
-    )
-    .replace(/\n?```$/g, '')
-    .trim();
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function safeParseJSON(text: string, rawInput: string): CodeSnippets {
+  try {
+    const cleanText = text
+      .replace(/^```json\n?/gi, '')
+      .replace(/^```\n?/gi, '')
+      .replace(/\n?```$/g, '')
+      .trim();
+
+    const json = JSON.parse(cleanText);
+
+    return {
+      react: json.react || `/* React generation empty */\n${rawInput}`,
+      vue: json.vue || `\n${rawInput}`,
+      angular: json.angular || `/* Angular generation empty */\n${rawInput}`,
+      html: json.html || rawInput,
+    };
+  } catch (e) {
+    console.error('[AI Parse Error] Output bukan JSON valid.');
+    throw new Error('AI Output Invalid JSON'); // Throw error agar ditangkap wrapper
+  }
 }
 
 async function callAIWithRotation(
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
 ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+  if (GEMINI_API_KEYS.length === 0) throw new Error('No API Keys configured.');
+
   let lastError: Error | null = null;
 
-  for (const apiKey of GEMINI_API_KEYS) {
+  for (let i = 0; i < GEMINI_API_KEYS.length; i++) {
+    const apiKey = GEMINI_API_KEYS[i];
     try {
-      const openai = new OpenAI({
-        baseURL: AI_BASE_URL,
-        apiKey: apiKey,
-      });
+      const openai = new OpenAI({ baseURL: AI_BASE_URL, apiKey: apiKey });
 
-      const response = await openai.chat.completions.create({
+      return await openai.chat.completions.create({
         model: AI_MODEL,
         messages: messages,
         temperature: 0.2,
+        response_format: { type: 'json_object' },
       });
-
-      return response;
     } catch (error) {
-      if (error instanceof Error) {
-        console.warn(
-          `[AI Warning] Key ...${apiKey.slice(-4)} failed. Msg: ${
-            error.message
-          }. Switching...`,
-        );
-        lastError = error;
-      }
-      continue;
+      lastError = error instanceof Error ? error : new Error(String(error));
+      const isRateLimit = lastError.message.includes('429');
+
+      console.warn(
+        `[AI Warning] Key ...${apiKey.slice(-4)} failed (${
+          isRateLimit ? '429' : 'Err'
+        }). Switching...`,
+      );
+
+      if (isRateLimit) await delay(1000);
     }
   }
-
-  throw new Error(
-    `All API Keys failed. Last error: ${lastError?.message || 'Unknown error'}`,
-  );
+  throw new Error(`All keys failed. Last error: ${lastError?.message}`);
 }
 
-async function generateCodeWithAI(
-  framework: FrameworkType,
+async function generateCodeSafely(
   rawHtml: string,
-): Promise<string> {
-  const prompts: Record<FrameworkType, string> = {
-    react: `Convert this HTML to **React** (Tailwind + Lucide). Export default function. Remove absolute positioning.`,
-    vue: `Convert this HTML to **Vue 3** (<script setup> + Tailwind). Remove absolute positioning.`,
-    angular: `Convert this HTML to **Angular Standalone Component** (Tailwind). Remove absolute positioning.`,
-    html: `Refactor to clean Semantic **HTML5** + Tailwind. Remove absolute positioning.`,
-  };
-
+): Promise<{ data: CodeSnippets; isAiSuccess: boolean; errorMsg?: string }> {
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-    { role: 'system', content: SYSTEM_INSTRUCTION },
-    {
-      role: 'user',
-      content: `${prompts[framework]}\n\n--- INPUT HTML ---\n${rawHtml}`,
-    },
+    { role: 'system', content: SYSTEM_INSTRUCTION_JSON },
+    { role: 'user', content: `--- INPUT HTML ---\n${rawHtml}` },
   ];
 
-  let fullCodeBuffer = '';
-  let loopCount = 0;
-  const MAX_LOOPS = 5;
+  try {
+    console.log('[AI Start] Requesting 4 frameworks...');
+    const response = await callAIWithRotation(messages);
+    const content = response.choices[0].message?.content || '{}';
 
-  console.log(`[AI Start] Generating ${framework}...`);
+    console.log('[AI Success] Parsing result...');
+    return {
+      data: safeParseJSON(content, rawHtml),
+      isAiSuccess: true,
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error(`[AI FAIL] ${msg}`);
 
-  while (loopCount < MAX_LOOPS) {
-    try {
-      const response = await callAIWithRotation(messages);
-      const choice = response.choices[0];
-      const contentChunk = choice.message?.content || '';
-      const finishReason = choice.finish_reason;
-
-      fullCodeBuffer += contentChunk;
-
-      if (finishReason === 'length') {
-        console.log(
-          `[AI Info] ${framework} truncated (Loop ${
-            loopCount + 1
-          }). Continuing...`,
-        );
-        messages.push({ role: 'assistant', content: contentChunk });
-        messages.push({ role: 'user', content: CONTINUATION_PROMPT });
-        loopCount++;
-      } else {
-        console.log(`[AI Done] ${framework} complete.`);
-        break;
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      console.error(`[AI Fatal] ${framework} failed:`, errorMessage);
-      return `${cleanMarkdown(
-        fullCodeBuffer,
-      )}\n\n// Error: Generation failed midway.`;
-    }
+    // Return status failed agar main function bisa membatalkan proses
+    return {
+      isAiSuccess: false,
+      errorMsg: msg,
+      data: { react: '', vue: '', angular: '', html: '' }, // Dummy data
+    };
   }
-
-  return cleanMarkdown(fullCodeBuffer);
 }
+
+// ============================================================================
+// 3. MAIN ACTION (CREATE COMPONENT)
+// ============================================================================
+
 export async function createContentComponent(
   values: ContentComponentFormValues,
   imageFile?: File | null,
-): Promise<ActionResponse> {
+): Promise<{
+  success: boolean;
+  message?: string;
+  error?: string;
+  details?: any;
+}> {
   console.log('[CreateComponent] Started');
-  const session = await auth();
-  if (!session?.user?.id) {
-    console.error('[CreateComponent] Unauthorized');
-    return {
-      success: false,
-      error: 'Unauthorized: Harap login terlebih dahulu.',
-    };
-  }
-  const userId = session.user.id;
-  console.log('[CreateComponent] UserId:', userId);
 
-  // 1. Validation
+  // 1. Auth & Validasi
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: 'Unauthorized' };
+
   const validated = ContentComponentSchema.safeParse(values);
   if (!validated.success) {
-    const errorDetails = validated.error.flatten().fieldErrors;
-    console.error('[CreateComponent] Validation Failed:', errorDetails);
     return {
       success: false,
-      error: 'Validasi data gagal.',
-      details: errorDetails,
+      error: 'Validasi gagal',
+      details: validated.error.flatten().fieldErrors,
     };
   }
 
@@ -220,23 +175,21 @@ export async function createContentComponent(
     type,
     rawHtmlInput,
     categoryComponentsId,
-    subCategoryComponentsId, // Ambil field ini
+    subCategoryComponentsId,
     tier,
-    // platform, // Removed as it is not in schema
     statusContent,
     urlBuyOneTime,
     description,
     copyComponentTextHTML,
     copyComponentTextPlain,
+    slug,
   } = validated.data;
-  console.log('[CreateComponent] Validated Values:', validated.data);
 
-  const finalCategoryId =
-    subCategoryComponentsId && subCategoryComponentsId.trim() !== ''
-      ? subCategoryComponentsId
-      : categoryComponentsId;
-  console.log('[CreateComponent] Final Category ID:', finalCategoryId);
+  const finalCategoryId = subCategoryComponentsId?.trim()
+    ? subCategoryComponentsId
+    : categoryComponentsId;
 
+  // 2. GENERATE CODE (STRICT MODE)
   let codeSnippets: CodeSnippets = {
     react: '',
     vue: '',
@@ -245,48 +198,31 @@ export async function createContentComponent(
   };
 
   if (rawHtmlInput && rawHtmlInput.trim().length > 0) {
-    console.log('[CreateComponent] Generating AI Code...');
-    try {
-      const [react, vue, angular, html] = await Promise.all([
-        generateCodeWithAI('react', rawHtmlInput),
-        generateCodeWithAI('vue', rawHtmlInput),
-        generateCodeWithAI('angular', rawHtmlInput),
-        generateCodeWithAI('html', rawHtmlInput),
-      ]);
-      codeSnippets = { react, vue, angular, html };
-      console.log('[CreateComponent] AI Code Generation Complete');
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error(
-        '[CreateComponent] AI Generation Critical Error:',
-        errorMsg,
-      );
+    const aiResult = await generateCodeSafely(rawHtmlInput);
+
+    // CRITICAL CHANGE: Jika AI Gagal, return success: false
+    if (!aiResult.isAiSuccess) {
+      console.error('[CreateComponent] Aborting: AI Generation Failed.');
+      return {
+        success: false,
+        error: `Gagal membuat komponen: AI sedang sibuk/limit (${
+          aiResult.errorMsg || 'Unknown'
+        }). Silakan coba beberapa saat lagi.`,
+      };
     }
-  } else {
-    console.log(
-      '[CreateComponent] No Raw HTML Input provided, skipping AI generation',
-    );
+
+    codeSnippets = aiResult.data;
   }
 
-  // 3. Generate Number
-  const lastComponent = await db
-    .select({ number: contentComponents.number })
-    .from(contentComponents)
-    .orderBy(desc(contentComponents.number))
-    .limit(1);
-
-  const nextNumber = (lastComponent[0]?.number ?? 0) + 1;
-  console.log('[CreateComponent] Next Number:', nextNumber);
-
+  // 3. UPLOAD IMAGE (Hanya jalan jika AI sukses)
   let imageUrl: string | null = null;
   if (imageFile && imageFile.size > 0) {
     try {
-      console.log('[CreateComponent] Uploading Image:', imageFile.name);
       const ext = imageFile.name.split('.').pop();
       const fileName = `components/${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const buffer = Buffer.from(await imageFile.arrayBuffer());
 
-      if (!process.env.BUCKET_NAME) throw new Error('BUCKET_NAME not defined');
+      if (!process.env.BUCKET_NAME) throw new Error('No Bucket Name');
 
       await s3Client.send(
         new PutObjectCommand({
@@ -296,59 +232,44 @@ export async function createContentComponent(
           ContentType: imageFile.type,
         }),
       );
-
-      imageUrl = `${fileName}`;
-      console.log('[CreateComponent] Image Uploaded:', imageUrl);
+      imageUrl = fileName;
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Unknown upload error';
-      console.error('[CreateComponent] Upload Image Failed:', msg);
-      return { success: false, error: 'Gagal mengupload gambar.' };
+      console.error('[S3 Error]', e);
+      return { success: false, error: 'Gagal upload gambar' };
     }
   }
 
+  // 4. DB INSERT (Hanya jalan jika AI & Upload sukses)
   try {
-    const insertData = {
-      userId,
+    await db.insert(contentComponents).values({
+      userId: session.user.id,
       title,
       typeContent: type,
-      slug: validated.data.slug, // New Field
-      codeSnippets: codeSnippets,
+      slug,
+      codeSnippets,
       copyComponentTextHTML: { content: copyComponentTextHTML },
       copyComponentTextPlain: {
-        content: codeSnippets.react || copyComponentTextPlain,
+        content:
+          codeSnippets.react.length > 50
+            ? codeSnippets.react
+            : copyComponentTextPlain,
       },
       categoryComponentsId: finalCategoryId,
       tier,
       description,
-      // platform, // Removed
       statusContent,
       urlBuyOneTime,
-      number: nextNumber,
       imageUrl,
-      viewCount: 0,
-      copyCount: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    console.log('[CreateComponent] Inserting DB:', insertData);
+    });
 
-    await db.insert(contentComponents).values(insertData);
-
-    console.log('[CreateComponent] DB Insert Success');
     revalidatePath('/dashboard/components');
 
     return {
       success: true,
-      message: rawHtmlInput
-        ? 'Komponen berhasil dibuat & di-generate AI!'
-        : 'Komponen berhasil dibuat (Manual Mode)!',
+      message: 'Komponen berhasil dibuat & Code Generated!',
     };
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error('[CreateComponent] Database Error:', errorMsg);
-    return {
-      success: false,
-      error: 'Terjadi kesalahan sistem saat menyimpan ke database.',
-    };
+    console.error('[DB Error]', error);
+    return { success: false, error: 'Terjadi kesalahan database.' };
   }
 }

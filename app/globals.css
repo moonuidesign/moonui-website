@@ -44,20 +44,16 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --animate-meteor-effect: meteor 5s linear infinite;
-
   @keyframes meteor {
-    0% {
-      transform: rotate(180deg) translateX(0);
-      opacity: 1;
-    }
-    70% {
-      opacity: 1;
-    }
-    100% {
-      transform: rotate(180deg) translateX(-500px);
-      opacity: 0;
-    }
-  }
+  0% {
+    transform: rotate(var(--angle)) translateX(0);
+    opacity: 1;}
+  70% {
+    opacity: 1;}
+  100% {
+    transform: rotate(var(--angle)) translateX(-500px);
+    opacity: 0;}}
+  --animate-meteor: meteor 5s linear infinite
 }
 
 :root {
@@ -136,4 +132,37 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer utilities {
+  .ring-ln-gray-25 {
+    --tw-ring-opacity: 1;
+    /* rgb(247 247 247) adalah warna yang Anda minta */
+    --tw-ring-color: rgb(247 247 247 / var(--tw-ring-opacity));
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+.shadow-ln-subheading {
+  --tw-shadow: 0 4px 8px rgba(41, 41, 41, 0.06),
+    0 2px 4px rgba(41, 41, 41, 0.04), 0 1px 2px rgba(41, 41, 41, 0.04),
+    0 0 0 1px rgba(41, 41, 41, 0.08),
+    inset 0 -0.5px 0.5px rgba(41, 41, 41, 0.08);
+
+  --tw-shadow-colored: 0 4px 8px var(--tw-shadow-color),
+    0 2px 4px var(--tw-shadow-color), 0 1px 2px var(--tw-shadow-color),
+    0 0 0 1px var(--tw-shadow-color),
+    inset 0 -0.5px 0.5px var(--tw-shadow-color);
+}
+
+.shadow-ln-special-light-marketing,
+.shadow-ln-subheading {
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }

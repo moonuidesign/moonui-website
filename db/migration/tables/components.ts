@@ -5,6 +5,7 @@ import {
   timestamp,
   integer,
   jsonb,
+  serial,
 } from 'drizzle-orm/pg-core';
 import { categoryComponents, users } from '@tables';
 
@@ -16,8 +17,6 @@ export const contentComponents = pgTable('content_components', {
   slug: jsonb('slug').notNull(),
   description: jsonb('description'),
   imageUrl: text('image_url'),
-  size: text('size'),
-  format: text('format'),
   urlBuyOneTime: text('url_buy_one_time'),
   copyComponentTextHTML: jsonb('copy_component_html').notNull(),
   copyComponentTextPlain: jsonb('copy_component_plain').notNull(),
@@ -34,7 +33,7 @@ export const contentComponents = pgTable('content_components', {
     angular: string;
     html: string;
   }>(),
-  number: integer('number').notNull(),
+  number: serial('number').notNull(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),

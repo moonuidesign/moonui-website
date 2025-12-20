@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/libs/drizzle';
-import { eq, desc, count } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
 import {
   contentComponents,
   contentTemplates,
@@ -20,7 +20,6 @@ function buildCategoryTree(
 
   // 1. Create Nodes
   categories.forEach((c) => {
-    // Get direct item count for this category
     const directCount = countsMap.get(c.id) || 0;
 
     map.set(c.id, {
@@ -31,8 +30,6 @@ function buildCategoryTree(
       children: [],
     });
   });
-
-  // 2. Link Parent-Child
   categories.forEach((c) => {
     const node = map.get(c.id);
     if (!node) return;
@@ -50,8 +47,6 @@ function buildCategoryTree(
     }
   });
 
-  // 3. Aggregate Counts (Post-Order Traversal / Bottom-Up)
-  // We need to sum up children's counts into the parent
   const aggregateCounts = (node: NavCategoryItem): number => {
     let total = node.count || 0;
     if (node.children && node.children.length > 0) {
@@ -59,10 +54,7 @@ function buildCategoryTree(
         total += aggregateCounts(child);
       });
     }
-    // Update the node's count to include its children
-    // node.count = total;
-    // OPTIONAL: If we want the parent chip to show ALL items in its subtree.
-    // Usually yes for filters.
+
     node.count = total;
     return total;
   };
@@ -72,8 +64,15 @@ function buildCategoryTree(
   return roots;
 }
 
-export async function getAssetsData() {
+import { getAssetsItems } from './getAssetsItems';
+
+export async function getAssetsData(filters?: {
+  contentType?: string;
+  tool?: string;
+  searchQuery?: string;
+}) {
   try {
+    const { contentType = 'components', tool = 'figma', searchQuery = '' } = filters || {};
     // 1. Parallel Fetching of Data
     const results = await Promise.allSettled([
       // Categories
@@ -82,39 +81,32 @@ export async function getAssetsData() {
       db.query.categoryGradients.findMany(),
       db.query.categoryDesigns.findMany(),
 
-      // Content Items (Full list for UI)
-      db.query.contentComponents.findMany({
-        where: eq(contentComponents.statusContent, 'published'),
-        with: { category: true, user: true },
-        orderBy: [desc(contentComponents.createdAt)],
-      }),
-      db.query.contentTemplates.findMany({
-        where: eq(contentTemplates.statusContent, 'published'),
-        with: { category: true, user: true },
-        orderBy: [desc(contentTemplates.createdAt)],
-      }),
-      db.query.contentGradients.findMany({
-        with: { category: true, user: true },
-        orderBy: [desc(contentGradients.createdAt)],
-      }),
-      db.query.contentDesigns.findMany({
-        where: eq(contentDesigns.statusContent, 'published'),
-        with: { category: true, user: true },
-        orderBy: [desc(contentDesigns.createdAt)],
-      }),
-
-      // Counts Aggregation (Group By Category)
+      // Counts Aggregation (Group By Category & Tool)
       db
-        .select({ id: contentComponents.categoryComponentsId, value: count() })
+        .select({
+          id: contentComponents.categoryComponentsId,
+          type: contentComponents.typeContent,
+          value: count(),
+        })
         .from(contentComponents)
         .where(eq(contentComponents.statusContent, 'published'))
-        .groupBy(contentComponents.categoryComponentsId),
+        .groupBy(
+          contentComponents.categoryComponentsId,
+          contentComponents.typeContent,
+        ),
 
       db
-        .select({ id: contentTemplates.categoryTemplatesId, value: count() })
+        .select({
+          id: contentTemplates.categoryTemplatesId,
+          type: contentTemplates.typeContent,
+          value: count(),
+        })
         .from(contentTemplates)
         .where(eq(contentTemplates.statusContent, 'published'))
-        .groupBy(contentTemplates.categoryTemplatesId),
+        .groupBy(
+          contentTemplates.categoryTemplatesId,
+          contentTemplates.typeContent,
+        ),
 
       db
         .select({ id: contentGradients.categoryGradientsId, value: count() })
@@ -122,10 +114,14 @@ export async function getAssetsData() {
         .groupBy(contentGradients.categoryGradientsId),
 
       db
-        .select({ id: contentDesigns.categoryDesignsId, value: count() })
+        .select({
+          id: contentDesigns.categoryDesignsId,
+          type: contentDesigns.format,
+          value: count(),
+        })
         .from(contentDesigns)
         .where(eq(contentDesigns.statusContent, 'published'))
-        .groupBy(contentDesigns.categoryDesignsId),
+        .groupBy(contentDesigns.categoryDesignsId, contentDesigns.format),
     ]);
 
     // Helper
@@ -141,18 +137,37 @@ export async function getAssetsData() {
     const catGradients = getResult(results[2]);
     const catDesigns = getResult(results[3]);
 
-    const itemsComponents = getResult(results[4]);
-    const itemsTemplates = getResult(results[5]);
-    const itemsGradients = getResult(results[6]);
-    const itemsDesigns = getResult(results[7]);
+    const countsComponents = getResult(results[4]);
+    const countsTemplates = getResult(results[5]);
+    const countsGradients = getResult(results[6]);
+    const countsDesigns = getResult(results[7]);
 
-    const countsComponents = getResult(results[8]);
-    const countsTemplates = getResult(results[9]);
-    const countsGradients = getResult(results[10]);
-    const countsDesigns = getResult(results[11]);
+    // Build Maps for Counts (Tool Aware)
+    const mapCountsTool = (
+      list: { id: string | null; type?: string | null; value: number }[],
+    ) => {
+      const all = new Map<string, number>();
+      const figma = new Map<string, number>();
+      const framer = new Map<string, number>();
 
-    // Build Maps for Counts
-    const mapCounts = (list: { id: string | null; value: number }[]) => {
+      list.forEach((item) => {
+        if (!item.id) return;
+        // Aggregate All
+        all.set(item.id, (all.get(item.id) || 0) + item.value);
+
+        // Split by Tool
+        const t = item.type?.toLowerCase();
+        if (t === 'figma') {
+          figma.set(item.id, (figma.get(item.id) || 0) + item.value);
+        } else if (t === 'framer' || t === 'react') {
+          framer.set(item.id, (framer.get(item.id) || 0) + item.value);
+        }
+      });
+      return { all, figma, framer };
+    };
+
+    // Simple Map for non-tool items
+    const mapCountsSimple = (list: { id: string | null; value: number }[]) => {
       const m = new Map<string, number>();
       list.forEach((item) => {
         if (item.id) m.set(item.id, item.value);
@@ -160,97 +175,47 @@ export async function getAssetsData() {
       return m;
     };
 
-    const mapComp = mapCounts(countsComponents);
-    const mapTemp = mapCounts(countsTemplates);
-    const mapGrad = mapCounts(countsGradients);
-    const mapDes = mapCounts(countsDesigns);
+    const mapsComp = mapCountsTool(countsComponents);
+    const mapsTemp = mapCountsTool(countsTemplates);
+    const mapGrad = mapCountsSimple(countsGradients);
+    const mapsDes = mapCountsTool(countsDesigns); // Use Tool Aware for Designs
 
     // Build Trees with Counts
-    const componentCategories = buildCategoryTree(catComponents, mapComp);
-    const templateCategories = buildCategoryTree(catTemplates, mapTemp);
-    const gradientCategories = buildCategoryTree(catGradients, mapGrad);
-    const designCategories = buildCategoryTree(catDesigns, mapDes);
+    const componentCategories = {
+      all: buildCategoryTree(catComponents, mapsComp.all),
+      figma: buildCategoryTree(catComponents, mapsComp.figma),
+      framer: buildCategoryTree(catComponents, mapsComp.framer),
+    };
 
-    // Map Items (Same as before)
-    const allItems: any[] = [];
+    const templateCategories = {
+      all: buildCategoryTree(catTemplates, mapsTemp.all),
+      figma: buildCategoryTree(catTemplates, mapsTemp.figma),
+      framer: buildCategoryTree(catTemplates, mapsTemp.framer),
+    };
 
-    // Components
-    itemsComponents.forEach((item: any) => {
-      allItems.push({
-        id: item.id,
-        title: item.title,
-        type: 'components',
-        categorySlug: item.category?.name || 'Uncategorized',
-        tier: item.tier,
-        imageUrl: item.imageUrl,
-        slug: item.slug?.current,
-        createdAt: item.createdAt,
-        platform: item.platform,
-        author: item.user?.name || 'MoonUI Team',
-        copyData: item.copyComponentTextHTML,
-        typeContent: item.typeContent,
-      });
-    });
+    // Gradients don't strictly have tools, but we provide structure for consistency
+    const gradientCategoriesRaw = buildCategoryTree(catGradients, mapGrad);
+    const gradientCategories = {
+      all: gradientCategoriesRaw,
+      figma: gradientCategoriesRaw, // Duplicate for now
+      framer: gradientCategoriesRaw, // Duplicate for now
+    };
 
-    // Templates
-    itemsTemplates.forEach((item: any) => {
-      allItems.push({
-        id: item.id,
-        title: item.title,
-        type: 'templates',
-        categorySlug: item.category?.name || 'Uncategorized',
-        tier: item.tier,
-        imageUrl: item.urlPreview || item.imageUrl || '',
-        slug: item.slug?.current,
-        platform: item.platform,
-        createdAt: item.createdAt,
-        author: item.user?.name || 'MoonUI Team',
-        downloadUrl: item.linkDonwload,
-        size: item.size,
-        format: item.format,
-        typeContent: item.typeContent,
-      });
-    });
+    const designCategories = {
+      all: buildCategoryTree(catDesigns, mapsDes.all),
+      figma: buildCategoryTree(catDesigns, mapsDes.figma),
+      framer: buildCategoryTree(catDesigns, mapsDes.framer),
+    };
 
-    // Gradients
-    itemsGradients.forEach((item: any) => {
-      allItems.push({
-        id: item.id,
-        title: item.name,
-        type: 'gradients',
-        categorySlug: item.category?.name || 'Uncategorized',
-        gradientType: item.typeGradient,
-        tier: item.tier,
-        colors: item.colors,
-        slug: item.slug?.current,
-        createdAt: item.createdAt,
-        author: item.user?.name || 'MoonUI Team',
-        downloadUrl: item.linkDownload,
-        size: item.size,
-        format: item.format,
-      });
-    });
-
-    // Designs
-    itemsDesigns.forEach((item: any) => {
-      allItems.push({
-        id: item.id,
-        title: item.title,
-        type: 'designs',
-        categorySlug: item.category?.name || 'Uncategorized',
-        tier: item.tier,
-        imageUrl: item.imageUrl,
-        slug: item.slug?.current,
-        createdAt: item.createdAt,
-        author: item.user?.name || 'MoonUI Team',
-        downloadUrl: item.linkDownload,
-        size: item.size,
-        format: item.format,
-      });
-    });
-
+    // Fetch Initial Items (Page 1, Limit 12)
+    const { items: allItems, totalCount } = await getAssetsItems(
+      { contentType, tool, searchQuery },
+      { page: 1, limit: 12 },
+    );
+    
     return {
       allItems,
+      totalCount,
       componentCategories,
       templateCategories,
       gradientCategories,
@@ -258,12 +223,14 @@ export async function getAssetsData() {
     };
   } catch (error) {
     console.error('Fatal Error fetching assets data:', error);
+
     return {
       allItems: [],
-      componentCategories: [],
-      templateCategories: [],
-      gradientCategories: [],
-      designCategories: [],
+      totalCount: 0,
+      componentCategories: { all: [], figma: [], framer: [] },
+      templateCategories: { all: [], figma: [], framer: [] },
+      gradientCategories: { all: [], figma: [], framer: [] },
+      designCategories: { all: [], figma: [], framer: [] },
     };
   }
 }

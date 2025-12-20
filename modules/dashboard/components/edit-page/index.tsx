@@ -3,7 +3,8 @@ import { db } from '@/libs/drizzle';
 import { contentComponents } from '@/db/migration';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
-import { ComponentEntity, ComponentForm } from '@/components';
+import { ComponentEntity } from '@/components';
+import ComponentForm from '@/components/dashboard/components/component-form';
 
 export default async function EditComponent({ id }: { id: string }) {
   const data = await db
@@ -22,13 +23,16 @@ export default async function EditComponent({ id }: { id: string }) {
 
   const formattedComponent = {
     ...componentRaw,
-    copyComponentTextHTML: componentRaw.copyComponentTextHTML as string,
-    copyComponentTextPlain: componentRaw.copyComponentTextPlain as string,
+    copyComponentTextHTML: (componentRaw.copyComponentTextHTML as any)
+      ?.content as string,
+    copyComponentTextPlain: (componentRaw.copyComponentTextPlain as any)
+      ?.content as string,
     statusContent:
       componentRaw.statusContent as ComponentEntity['statusContent'],
     imageUrl: componentRaw.imageUrl
       ? `https://${process.env.R2_PUBLIC_DOMAIN}/${componentRaw.imageUrl}`
       : null,
+    rawHTMLInput: componentRaw.codeSnippets?.html,
   };
 
   return (

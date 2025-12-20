@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { useFilter } from '@/contexts';
 import { ResourceCard } from '@/components/card';
 import { SectionHeader } from './section-header';
 import { UseCopyToClipboard } from '@/hooks/use-clipboard';
 import { toast } from 'react-toastify';
+import { getFingerprint } from '@thumbmarkjs/thumbmarkjs'; // IMPORT THUMBMARK
 import {
   Pagination,
   PaginationContent,
@@ -24,19 +26,29 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { useDebounce } from '@/hooks/use-debounce'; // Import useDebounce
-import { checkDownloadLimit } from '@/server-action/limit';
+import { useDebounce } from '@/hooks/use-debounce';
+import { checkDownloadLimit } from '@/server-action/limit'; // Pastikan path import sesuai
+import { getAssetsItems } from '@/server-action/getAssetsItems';
+import { incrementAssetStats } from '@/server-action/incrementAssetStats';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export * from './section-header';
 
 interface ContentProps {
-  items: any[];
+  initialItems?: any[];
+  initialTotalCount?: number;
+  items?: any[];
 }
 
-export default function Content({ items }: ContentProps) {
+export default function Content({
+  initialItems = [],
+  initialTotalCount = 0,
+  items: legacyItems,
+}: ContentProps) {
+  const startItems = initialItems.length > 0 ? initialItems : legacyItems || [];
+
   const {
     tool,
-
     contentType,
     categorySlugs,
     subCategorySlugs,
@@ -46,175 +58,182 @@ export default function Content({ items }: ContentProps) {
     searchQuery,
   } = useFilter();
 
+  const router = useRouter();
   const { copy } = UseCopyToClipboard();
+  const isMobile = useIsMobile();
 
-  // --- PAGINATION STATE ---
-  const [currentPage, setCurrentPage] = useState(1);
+  // --- STATE ---
   const [itemsPerPage, setItemsPerPage] = useState(12);
-  const [jumpPageInput, setJumpPageInput] = useState(''); // Raw input value
-  const debouncedJumpPage = useDebounce(jumpPageInput, 500); // Debounce for 500ms
+  const [fetchedItems, setFetchedItems] = useState<any[]>(startItems);
+  const [totalCount, setTotalCount] = useState(
+    initialTotalCount || startItems.length,
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [jumpPageInput, setJumpPageInput] = useState('');
 
-  const handleCopy = async (text: string) => {
+  // State untuk menyimpan Fingerprint ID
+  const [fingerprint, setFingerprint] = useState<string>('');
+
+  const debouncedJumpPage = useDebounce(jumpPageInput, 500);
+
+  // Limits
+  const baseLimit = itemsPerPage;
+
+  // --- THUMBMARK INIT ---
+  useEffect(() => {
+    const initFingerprint = async () => {
+      try {
+        const fp = await getFingerprint();
+        setFingerprint(fp);
+      } catch (error) {
+        console.error('Failed to generate fingerprint:', error);
+        // Fingerprint kosong tidak masalah, server akan fallback ke IP Address
+      }
+    };
+    initFingerprint();
+  }, []);
+
+  // --- ACTIONS ---
+
+  const handleCopy = async (text: string, id: string, type: string) => {
     if (!text) return toast.error('No content to copy');
 
-    // Check Limit
-    const limitCheck = await checkDownloadLimit();
+    // Kirim fingerprint sebagai parameter ke-4
+    const limitCheck = await checkDownloadLimit('copy', id, type, fingerprint);
+
     if (!limitCheck.success) {
-      return toast.error(limitCheck.message || 'Daily limit reached');
+      if (limitCheck.requiresLogin) {
+        toast.info(limitCheck.message || 'Please login to continue');
+        return router.push('/signin');
+      }
+      if (limitCheck.requiresUpgrade) {
+        toast.warning(limitCheck.message || 'Please upgrade to continue');
+        return router.push('/pricing');
+      }
+      return toast.error(limitCheck.message || 'Limit reached');
     }
+
+    // Increment Stats (Fire and Forget)
+    incrementAssetStats(id, type, 'copy');
 
     copy(text, 'Component copied to clipboard!');
   };
 
-  const handleDownload = async (url: string) => {
+  const handleDownload = async (url: string, id: string, type: string) => {
     if (!url) return toast.error('Download link not available');
 
-    // Check Limit
-    const limitCheck = await checkDownloadLimit();
+    // Kirim fingerprint sebagai parameter ke-4
+    const limitCheck = await checkDownloadLimit(
+      'download',
+      id,
+      type,
+      fingerprint,
+    );
+
     if (!limitCheck.success) {
-      return toast.error(limitCheck.message || 'Daily limit reached');
+      if (limitCheck.requiresLogin) {
+        toast.info(limitCheck.message || 'Please login to continue');
+        return router.push('/signin');
+      }
+      if (limitCheck.requiresUpgrade) {
+        toast.warning(limitCheck.message || 'Please upgrade to continue');
+        return router.push('/pricing');
+      }
+      return toast.error(limitCheck.message || 'Limit reached');
     }
+
+    // Increment Stats (Fire and Forget)
+    incrementAssetStats(id, type, 'download');
 
     window.open(url, '_blank');
   };
 
-  const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      // 1. Content Type Check
-      if (item.type !== contentType) return false;
+  const fetchItems = useCallback(
+    async (page: number) => {
+      try {
+        setLoading(true);
 
-      // 2. Tool Check
-      if (item.typeContent && item.typeContent !== tool) {
-        return false;
+        const filters = {
+          tool,
+          contentType,
+          categorySlugs,
+          subCategorySlugs,
+          selectedTiers,
+          gradientTypes,
+          selectedColors,
+          searchQuery,
+        };
+
+        const limit = baseLimit;
+        const offset = (page - 1) * itemsPerPage;
+
+        if (limit <= 0) return;
+
+        const res = await getAssetsItems(filters, { limit, offset });
+
+        setFetchedItems(res.items);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+
+        setTotalCount(res.totalCount);
+      } catch (error) {
+        console.error('Error fetching items:', error);
+        toast.error('Failed to load items');
+      } finally {
+        setLoading(false);
       }
+    },
+    [
+      tool,
+      contentType,
+      categorySlugs,
+      subCategorySlugs,
+      selectedTiers,
+      gradientTypes,
+      selectedColors,
+      searchQuery,
+      baseLimit,
+      itemsPerPage,
+    ],
+  );
 
-      // 4. Main Category Check
-      if (
-        categorySlugs.length > 0 &&
-        !categorySlugs.includes(item.categorySlug)
-      ) {
-        return false;
-      }
+  // --- EFFECTS ---
 
-      // 4b. Sub-Category Check
-      if (
-        subCategorySlugs &&
-        subCategorySlugs.length > 0 &&
-        !subCategorySlugs.includes(item.categorySlug)
-      ) {
-        return false;
-      }
-
-      // 5. Tier Check
-      if (selectedTiers.length > 0 && !selectedTiers.includes(item.tier)) {
-        return false;
-      }
-
-      // 6. Gradient Type Check
-      if (contentType === 'gradients' && gradientTypes.length > 0) {
-        if (!item.gradientType || !gradientTypes.includes(item.gradientType)) {
-          return false;
-        }
-      }
-
-      // 7. Color Check
-      if (contentType === 'gradients' && selectedColors.length > 0) {
-        if (!item.colors) return false;
-
-        let hasColor = false;
-        if (Array.isArray(item.colors)) {
-          hasColor = item.colors.some((c: string) =>
-            selectedColors.includes(c),
-          );
-        } else if (typeof item.colors === 'object') {
-          // Handle { from: '...', to: '...' } style objects
-          hasColor = Object.values(item.colors).some(
-            (c: any) => typeof c === 'string' && selectedColors.includes(c),
-          );
-        }
-
-        if (!hasColor) return false;
-      }
-
-      // 8. Search
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchTitle = item.title.toLowerCase().includes(query);
-        const matchSlug = item.slug
-          ? item.slug.toLowerCase().includes(query)
-          : false;
-        const matchAuthor = item.author
-          ? item.author.toLowerCase().includes(query)
-          : false;
-
-        if (!matchTitle && !matchSlug && !matchAuthor) return false;
-      }
-
-      return true;
-    });
-  }, [
-    items,
-    tool,
-    contentType,
-    categorySlugs,
-    subCategorySlugs,
-    selectedTiers,
-    gradientTypes,
-    selectedColors,
-    searchQuery,
-  ]);
-
-  // --- SCROLL & PAGINATION RESET LOGIC ---
-
-  // Reset Page, Jump input and Scroll when FILTERS change
+  // 1. Filter Change -> Reset & Fetch Page 1
+  const isFirstRun = useRef(true);
   useEffect(() => {
-    setCurrentPage(1);
-    setJumpPageInput(''); // Clear jump input on filter change
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [
-    tool,
-    contentType,
-    categorySlugs,
-    subCategorySlugs,
-    selectedTiers,
-    gradientTypes,
-    selectedColors,
-    searchQuery,
-  ]);
-
-  // Scroll to top when PAGE changes (except when triggered by debouncedJumpPage)
-  useEffect(() => {
-    if (parseInt(jumpPageInput) !== currentPage) {
-      // Prevent re-setting input if user is actively typing a valid page
-      setJumpPageInput(currentPage.toString());
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      return;
     }
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [currentPage]);
+    setCurrentPage(1);
+    setJumpPageInput('');
+    fetchItems(1);
+  }, [
+    tool,
+    contentType,
+    categorySlugs,
+    subCategorySlugs,
+    selectedTiers,
+    gradientTypes,
+    selectedColors,
+    searchQuery,
+    itemsPerPage,
+  ]);
 
-  // --- PAGINATION CALC ---
-  const totalItems = filteredItems.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = filteredItems.slice(startIndex, endIndex);
-
-  // Effect to handle debounced jump page input
+  // 2. Jump Page Input
   useEffect(() => {
     const pageNum = parseInt(debouncedJumpPage);
-    if (
-      !isNaN(pageNum) &&
-      pageNum >= 1 &&
-      pageNum <= totalPages &&
-      pageNum !== currentPage
-    ) {
-      setCurrentPage(pageNum);
-    } else if (debouncedJumpPage === '' && currentPage !== 1) {
-      // If input is cleared, go to page 1, but only if not already on page 1
-      // Optionally, if input is cleared, do nothing or reset to current page.
-      // For now, if user clears input, it will just show currentPage.
+    if (!isNaN(pageNum) && pageNum >= 1 && pageNum !== currentPage) {
+      const maxPage = Math.ceil(totalCount / baseLimit);
+      const target = Math.min(pageNum, maxPage);
+      setCurrentPage(target);
+      fetchItems(target);
     }
-  }, [debouncedJumpPage, totalPages, currentPage]);
+  }, [debouncedJumpPage, totalCount, baseLimit]);
+
+  // --- RENDER HELPERS ---
+  const totalPages = Math.ceil(totalCount / baseLimit);
 
   const getPageNumbers = () => {
     const pages = [];
@@ -248,15 +267,18 @@ export default function Content({ items }: ContentProps) {
   };
 
   // Render No Results
-  if (filteredItems.length === 0) {
+  if (!loading && fetchedItems.length === 0) {
     return (
       <div className="w-full h-64 flex flex-col items-center justify-center text-zinc-400">
-        <p>No results found.</p>
+        <p className="text-lg font-medium">No {contentType || 'items'} found</p>
+        <p className="text-sm text-zinc-500 mt-1">
+          Try adjusting your search or filters to find what you're looking for.
+        </p>
         <button
           onClick={() => window.location.reload()}
-          className="text-orange-600 hover:underline mt-2"
+          className="text-orange-600 hover:underline mt-4 text-sm"
         >
-          Reset Filters
+          Clear all filters
         </button>
       </div>
     );
@@ -270,94 +292,122 @@ export default function Content({ items }: ContentProps) {
       <section className="flex flex-col gap-4">
         <div className="flex flex-wrap justify-between items-end gap-4">
           <SectionHeader
-            totalItems={totalItems}
-            endIndex={endIndex}
-            startIndex={startIndex}
-            title={`${totalItems} Results`}
+            totalItems={totalCount}
+            endIndex={Math.min(fetchedItems.length, totalCount)}
+            startIndex={0}
+            title={`${totalCount} Results`}
             className="capitalize truncate"
           />
         </div>
 
         <motion.div
-          layout
           style={{ overflowAnchor: 'none' }}
           className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
         >
-          <AnimatePresence mode="wait">
-            {currentItems.map((item) => (
-              <ResourceCard
-                key={item.id}
-                id={item.id}
-                title={item.title}
-                imageUrl={item.imageUrl}
-                tier={item.tier}
-                createdAt={item.createdAt}
-                author={item.author}
-                onCopy={
-                  item.type === 'components'
-                    ? () => handleCopy(item.copyData)
-                    : undefined
+          <AnimatePresence mode="popLayout">
+            {fetchedItems.map((item, index) => {
+              let rawUrl = item.imageUrl || item.url || '';
+              if (rawUrl && typeof rawUrl === 'object' && rawUrl.url) {
+                rawUrl = rawUrl.url;
+              }
+
+              let finalUrl = '/placeholder-image.png';
+
+              if (typeof rawUrl === 'string' && rawUrl.length > 0) {
+                if (rawUrl.startsWith('http') || rawUrl.startsWith('https')) {
+                  finalUrl = rawUrl;
+                } else {
+                  const domain = process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN;
+                  finalUrl = `https://${domain}/${rawUrl}`;
                 }
-                onDownload={
-                  item.type !== 'components'
-                    ? () => handleDownload(item.downloadUrl)
-                    : undefined
-                }
-              />
-            ))}
+              }
+              return (
+                <ResourceCard
+                  key={`${item.id}-${index}`}
+                  id={item.id}
+                  title={item.title}
+                  imageUrl={finalUrl}
+                  tier={item.tier}
+                  createdAt={item.createdAt}
+                  author={item.author}
+                  type={item.type}
+                  onCopy={
+                    item.type === 'components'
+                      ? () => handleCopy(item.copyData, item.id, item.type)
+                      : undefined
+                  }
+                  onDownload={
+                    item.type !== 'components'
+                      ? () =>
+                          handleDownload(item.downloadUrl, item.id, item.type)
+                      : undefined
+                  }
+                />
+              );
+            })}
           </AnimatePresence>
         </motion.div>
       </section>
 
       {/* --- PAGINATION & CONTROLS --- */}
-      {totalPages > 1 && (
+      {(totalPages > 1 || totalCount > 0) && (
         <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-6 border-t border-gray-100 pt-8">
-          {/* 1. Pagination Numbers */}
-          <Pagination className="mx-0 w-auto">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  className={
-                    currentPage === 1
-                      ? 'pointer-events-none opacity-50'
-                      : 'cursor-pointer'
-                  }
-                />
-              </PaginationItem>
-
-              {getPageNumbers().map((page, idx) => (
-                <PaginationItem key={idx}>
-                  {page === '...' ? (
-                    <PaginationEllipsis />
-                  ) : (
-                    <PaginationLink
-                      isActive={currentPage === page}
-                      onClick={() => setCurrentPage(Number(page))}
-                      className="cursor-pointer"
-                    >
-                      {page}
-                    </PaginationLink>
-                  )}
+          {totalPages > 1 && (
+            <Pagination className="mx-0 w-auto">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => {
+                      const p = Math.max(1, currentPage - 1);
+                      setCurrentPage(p);
+                      fetchItems(p);
+                    }}
+                    className={
+                      currentPage === 1
+                        ? 'pointer-events-none opacity-50'
+                        : 'cursor-pointer'
+                    }
+                  />
                 </PaginationItem>
-              ))}
 
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  className={
-                    currentPage === totalPages
-                      ? 'pointer-events-none opacity-50'
-                      : 'cursor-pointer'
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+                {getPageNumbers().map((page, idx) => (
+                  <PaginationItem key={idx}>
+                    {page === '...' ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        isActive={currentPage === page}
+                        onClick={() => {
+                          setCurrentPage(Number(page));
+                          fetchItems(Number(page));
+                        }}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
 
-          {/* 2. Controls Group (Rows & Jump) */}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => {
+                      const p = Math.min(totalPages, currentPage + 1);
+                      setCurrentPage(p);
+                      fetchItems(p);
+                    }}
+                    className={
+                      currentPage === totalPages
+                        ? 'pointer-events-none opacity-50'
+                        : 'cursor-pointer'
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+
+          {/* Controls Group */}
           <div className="flex items-center gap-4">
             {/* Rows Per Page */}
             <div className="flex items-center gap-2">
@@ -368,8 +418,6 @@ export default function Content({ items }: ContentProps) {
                 value={itemsPerPage.toString()}
                 onValueChange={(val) => {
                   setItemsPerPage(Number(val));
-                  setCurrentPage(1);
-                  window.scrollTo({ top: 0, behavior: 'instant' });
                 }}
               >
                 <SelectTrigger className="w-[65px] h-8 text-xs bg-white">
@@ -384,24 +432,27 @@ export default function Content({ items }: ContentProps) {
               </Select>
             </div>
 
-            {/* Separator */}
-            <div className="h-4 w-px bg-gray-200"></div>
+            {totalPages > 1 && (
+              <>
+                <div className="h-4 w-px bg-gray-200"></div>
 
-            {/* Jump To Page */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500 whitespace-nowrap">
-                Go to
-              </span>
-              <Input
-                type="number"
-                min={1}
-                max={totalPages}
-                value={jumpPageInput}
-                onChange={(e) => setJumpPageInput(e.target.value)}
-                className="w-[50px] h-8 text-xs text-center p-1 bg-white"
-              />
-              <span className="text-xs text-zinc-400">/ {totalPages}</span>
-            </div>
+                {/* Jump To Page */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-zinc-500 whitespace-nowrap">
+                    Go to
+                  </span>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={totalPages}
+                    value={jumpPageInput}
+                    onChange={(e) => setJumpPageInput(e.target.value)}
+                    className="w-[50px] h-8 text-xs text-center p-1 bg-white"
+                  />
+                  <span className="text-xs text-zinc-400">/ {totalPages}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -72,18 +72,18 @@ const Footer: React.FC<FooterProps> = ({
   };
 
   return (
-    <footer className="relative w-full bg-gray-200 overflow-hidden pt-20 ">
+    <footer className="relative w-full lg:w-7xl overflow-hidden pt-20 container mx-auto  ">
       {/* Garis Dekorasi Desktop */}
       <div className="hidden xl:block absolute top-[160px] left-0 w-[30%] h-px bg-neutral-300" />
       <div className="hidden xl:block absolute top-[160px] right-0 w-[30%] h-px bg-neutral-300" />
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="px-4 md:px-0 relative z-10">
         {/* Bagian Header (Logo & Sosmed) */}
         <div className="flex flex-col items-start justify-start md:items-center md:text-center gap-4 md:gap-6 mb-12 lg:mb-20">
           <MoonLogo />
 
           <div className="max-w-lg">
-            <h2 className="text-zinc-800 text-[28px]/[36px] md:text-2xl font-semibold font-sans md:leading-10">
+            <h2 className="text-[#3D3D3D] text-[28px] md:text-[30px]/[36px] md:text-2xl font-semibold font-sans md:leading-10">
               Enhance Your Design <br /> & Development
             </h2>
             <p className="text-zinc-500 text-[24px]/[36px] md:text-2xl font-semibold font-sans md:leading-10">
@@ -109,97 +109,96 @@ const Footer: React.FC<FooterProps> = ({
           </div>
         </div>
 
-        <div className="w-full h-px bg-neutral-300 mb-0 lg:mb-12" />
-
         {/* --- MENU LINKS AREA --- */}
 
-        {/* 1. VIEW DESKTOP (Grid - seperti sebelumnya) */}
-        <div className="hidden lg:grid grid-cols-5 gap-12 md:mb-32">
-          {columns.map((col, idx) => (
-            <div key={idx} className="flex flex-col gap-5">
-              <h3 className="text-zinc-800 text-xl font-bold font-sans leading-9">
-                {col.title}
-              </h3>
-              <ul className="flex flex-col gap-1">
-                {col.links.map((link, lIdx) => (
-                  <li key={lIdx}>
-                    <Link
-                      href={link.href}
-                      className="text-zinc-500 hover:text-orange-600 text-sm font-medium font-sans leading-9 transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {/* 2. VIEW MOBILE (Accordion - Sesuai Request) */}
-        <div className="flex flex-col lg:hidden md:mb-20 ">
-          {columns.map((col, idx) => {
-            const isOpen = openSection === col.title;
-            return (
-              <div key={idx} className="border-b border-neutral-300">
-                {/* Header Accordion */}
-                <button
-                  onClick={() => toggleSection(col.title)}
-                  className="w-full py-5 flex justify-between items-center text-left focus:outline-none group"
-                >
-                  <span className="text-zinc-800 text-base font-medium font-sans leading-6">
-                    {col.title}
-                  </span>
-                  {/* Icon Bulat dengan Chevron */}
-                  <div
-                    className={`w-6 h-6 rounded-full flex justify-center items-center transition-colors duration-200 bg-[rgb(211,211,211)] shadow-[0_0_0_1px_rgba(61,61,61,0.12),inset_0_0.75px_0.75px_hsla(0,0%,100%,0.64)]`}
-                  >
-                    <ChevronDown
-                      className={`w-4 h-4 text-zinc-600 transition-transform duration-300 ${
-                        isOpen ? 'rotate-180 text-orange-600' : ''
-                      }`}
-                    />
-                  </div>
-                </button>
-
-                {/* Isi Accordion (Links) */}
-                <div
-                  className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
-                    isOpen ? 'max-h-96' : 'max-h-0'
-                  }`}
-                >
-                  <ul className="flex flex-col gap-0  pb-5">
-                    {col.links.map((link, lIdx) => (
-                      <li key={lIdx}>
-                        <Link
-                          href={link.href}
-                          className="text-zinc-500 hover:text-orange-600 text-sm font-medium font-sans leading-7 block py-1"
-                        >
-                          {link.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+        <div className="lg:flex flex-col gap-5 md:gap-0 justify-center items-center md:border-x border-b md:border-[#D3D3D3] md:pb-12 rounded-b-2xl">
+          <div className="hidden lg:grid grid-cols-5 gap-12 md:mb-32">
+            {columns.map((col, idx) => (
+              <div key={idx} className="flex flex-col gap-5">
+                <h3 className="text-[#3D3D3D] text-xl font-bold font-sans leading-9">
+                  {col.title}
+                </h3>
+                <ul className="flex flex-col gap-1">
+                  {col.links.map((link, lIdx) => (
+                    <li key={lIdx}>
+                      <Link
+                        href={link.href}
+                        className="text-zinc-500 hover:text-orange-600 text-sm font-medium font-sans leading-9 transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+          {/* 2. VIEW MOBILE (Accordion - Sesuai Request) */}
+          <div className="flex flex-col lg:hidden md:mb-20 ">
+            {columns.map((col, idx) => {
+              const isOpen = openSection === col.title;
+              return (
+                <div
+                  key={idx}
+                  className="border-b-4 border-neutral-300 border-dashed"
+                >
+                  {/* Header Accordion */}
+                  <button
+                    onClick={() => toggleSection(col.title)}
+                    className="w-full py-5 flex justify-between items-center text-left focus:outline-none group"
+                  >
+                    <span className="text-[#3D3D3D] text-base font-medium font-sans leading-6">
+                      {col.title}
+                    </span>
+                    {/* Icon Bulat dengan Chevron */}
+                    <div
+                      className={`w-6 h-6 rounded-full flex justify-center items-center transition-colors duration-200 bg-[rgb(211,211,211)] shadow-[0_0_0_1px_rgba(61,61,61,0.12),inset_0_0.75px_0.75px_hsla(0,0%,100%,0.64)]`}
+                    >
+                      <ChevronDown
+                        className={`w-4 h-4 text-zinc-600 transition-transform duration-300 ${
+                          isOpen ? 'rotate-180 text-orange-600' : ''
+                        }`}
+                      />
+                    </div>
+                  </button>
 
-        {/* --- FOOTER BOTTOM --- */}
-        <div className="flex flex-col items-center gap-4 relative z-20 mt-10">
+                  {/* Isi Accordion (Links) */}
+                  <div
+                    className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
+                      isOpen ? 'max-h-96' : 'max-h-0'
+                    }`}
+                  >
+                    <ul className="flex flex-col gap-0  pb-5">
+                      {col.links.map((link, lIdx) => (
+                        <li key={lIdx}>
+                          <Link
+                            href={link.href}
+                            className="text-zinc-500 hover:text-orange-600 text-sm font-medium font-sans leading-7 block py-1"
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
           <a
             href={`mailto:${email}`}
-            className="text-orange-600 text-[20px] md:text-2xl font-semibold font-sans underline hover:text-orange-700 transition-colors"
+            className="text-orange-600 text-[20px] justify-center items-center text-center mt-5 md:mt-0 md:text-2xl font-semibold font-sans underline hover:text-orange-700 transition-colors w-full flex"
           >
             {email}
           </a>
-          <p className="text-neutral-400 text-[12px] md:text-sm font-medium font-sans">
-            {copyright}
-          </p>
         </div>
+        <p className="text-neutral-400 text-center text-[12px] md:text-sm font-medium font-sans">
+          {copyright}
+        </p>
 
-        <div className="w-full h-[80px] md:h-[200px] relative mt-10">
+        {/* --- FOOTER BOTTOM --- */}
+
+        <div className="w-full h-[80px] md:h-[292px] relative mt-10">
           {/* Perbaikan pada Image agar tidak error layout */}
           <Image
             src="/footer.svg"

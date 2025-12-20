@@ -23,10 +23,12 @@ const getColorValue = (colorIdOrHex: string) => {
 export const AppliedFilters = () => {
   const {
     categorySlugs,
+    subCategorySlugs,
     selectedTiers,
     gradientTypes,
     selectedColors, // Array warna terpilih
     toggleCategory,
+    toggleSubCategory,
     toggleTier,
     toggleGradientType,
     toggleColor,
@@ -35,6 +37,7 @@ export const AppliedFilters = () => {
 
   const hasActiveFilters =
     categorySlugs.length > 0 ||
+    subCategorySlugs.length > 0 ||
     selectedTiers.length > 0 ||
     gradientTypes.length > 0 ||
     selectedColors.length > 0; // Cek colors
@@ -44,7 +47,7 @@ export const AppliedFilters = () => {
   return (
     <div className="w-full pt-1 pb-4 bg-white rounded-2xl shadow-card-sm flex flex-col justify-start items-center gap-2 overflow-hidden mb-4 animate-in fade-in zoom-in duration-200">
       <div className="self-stretch h-8 px-3 rounded-[10px] inline-flex justify-between items-center">
-        <div className="text-zinc-800 text-xs font-medium">Applied Filter</div>
+        <div className="text-[#3D3D3D] text-xs font-medium">Applied Filter</div>
         <button
           onClick={clearAllFilters}
           className="text-orange-600 text-xs font-medium hover:underline"
@@ -91,6 +94,24 @@ export const AppliedFilters = () => {
             </span>
             <button
               onClick={() => toggleCategory(slug)}
+              className="hover:bg-white/20 rounded-full p-0.5"
+            >
+              <X className="w-3 h-3 text-white" />
+            </button>
+          </div>
+        ))}
+
+        {/* B2. SUB-CATEGORIES */}
+        {subCategorySlugs.map((slug) => (
+          <div
+            key={slug}
+            className="h-7 pl-2 pr-1 bg-orange-500 rounded-lg flex items-center gap-1"
+          >
+            <span className="text-white text-xs font-medium capitalize">
+              {slug}
+            </span>
+            <button
+              onClick={() => toggleSubCategory(slug)}
               className="hover:bg-white/20 rounded-full p-0.5"
             >
               <X className="w-3 h-3 text-white" />
