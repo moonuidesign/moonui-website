@@ -54,10 +54,6 @@ async function RegisterContent({
   const { email, licenseKey } = verificationResult.payload!;
 
   return (
-    <RegisterForm
-      signature={signature}
-      email={email}
-      licenseKey={licenseKey}
-    />
+    <RegisterForm signature={signature} email={email} licenseKey={licenseKey} />
   );
 }
