@@ -104,7 +104,7 @@ function normalizeContent(
     linkTemplate: data.linkTemplate,
     linkDownload: data.linkDonwload || data.linkDownload,
     codeSnippets: data.codeSnippets || null,
-    urlPreview: data.urlPreview || null,
+
     platform: data.platform || 'Web',
     category: catData
       ? {

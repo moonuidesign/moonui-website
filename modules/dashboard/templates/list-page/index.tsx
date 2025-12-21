@@ -123,6 +123,7 @@ export default async function ListTemplate({
           : img.url,
     }));
 
+    console.log('Formatted Images:', formattedImages);
     return {
       id: item.id,
       title: item.title,

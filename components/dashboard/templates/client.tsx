@@ -87,7 +87,7 @@ export default function TemplatesClient({
                 <TableHead className="w-[80px]">Preview</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Platform</TableHead>
+
                 <TableHead>Type</TableHead>
                 <TableHead>Tier</TableHead>
                 {isSuperAdmin && <TableHead>Author</TableHead>}

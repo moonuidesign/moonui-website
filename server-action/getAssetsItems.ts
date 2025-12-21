@@ -135,7 +135,7 @@ export async function getAssetsItems(
       if (searchQuery) {
         const q = `%${searchQuery}%`;
         const table = source.table as any;
-        
+
         // Define columns to search
         const titleCol = table.title || table.name;
         const numberCol = table.number;
@@ -143,14 +143,14 @@ export async function getAssetsItems(
 
         const searchConditions: SQL[] = [
           ilike(titleCol, q),
-          sql`CAST(${numberCol} AS TEXT) ILIKE ${q}`
+          sql`CAST(${numberCol} AS TEXT) ILIKE ${q}`,
         ];
 
         // Handle JSONB slug or text slug
         if (slugCol) {
-           searchConditions.push(sql`CAST(${slugCol} AS TEXT) ILIKE ${q}`);
-           // Also try searching specifically in the 'current' key if it's JSONB
-           searchConditions.push(sql`${slugCol}->>'current' ILIKE ${q}`);
+          searchConditions.push(sql`CAST(${slugCol} AS TEXT) ILIKE ${q}`);
+          // Also try searching specifically in the 'current' key if it's JSONB
+          searchConditions.push(sql`${slugCol}->>'current' ILIKE ${q}`);
         }
 
         conditions.push(or(...searchConditions) as SQL);
@@ -309,7 +309,7 @@ export async function getAssetsItems(
 
     const normalizedItems = details.map((item: any) => {
       const type = item._type;
-      let validImageUrl = item.imageUrl || item.image || item.urlPreview || '';
+      let validImageUrl = item.imageUrl || item.image || '';
       if (!validImageUrl && item.imagesUrl) {
         validImageUrl = Array.isArray(item.imagesUrl)
           ? item.imagesUrl[0]
@@ -331,14 +331,14 @@ export async function getAssetsItems(
         components: {
           title: item.title,
           imageUrl: validImageUrl,
-          platform: item.platform,
+
           copyData: item.copyComponentTextHTML,
           typeContent: item.typeContent,
         },
         templates: {
           title: item.title,
           imageUrl: validImageUrl,
-          platform: item.platform,
+
           downloadUrl: item.linkDonwload,
           size: item.size,
           format: item.format,

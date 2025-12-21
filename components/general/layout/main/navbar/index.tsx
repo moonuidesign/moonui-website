@@ -135,7 +135,7 @@ export default function Navbar() {
           <div className="hidden lg:flex justify-between items-center h-16 gap-4 px-4">
             <div className="flex items-center gap-8">
               <div className="w-9 h-9 relative p-1.5 rounded-xl shadow-sm flex  bg-gradient-to-b from-orange-600/0 to-orange-600/80 items-center justify-center overflow-hidden bg-white border border-gray-100">
-                <span className="absolute inset-0 rounded-xl bg-gradient-to-b from-orange-600/0 to-orange-600/40 z-40 pointer-events-none"></span>
+                <span className="absolute inset-0 rounded-xl bg-gradient-to-b from-orange-600/0 to-orange-600/80 z-20 pointer-events-none"></span>
 
                 {/* 2. Logo Image 
       - Gunakan 'z-10' (depan) agar logo tajam dan tidak tertutup gradient.
@@ -157,7 +157,6 @@ export default function Navbar() {
                     href={label.href}
                     className="text-sm font-medium flex gap-2 justify-center items-center text-neutral-500 hover:text-black transition-colors"
                   >
-                    <label.icon className="size-4 hover:text-[#FF4F00] text-gray-400" />
                     {label.label}
                   </Link>
                 ))}
@@ -228,7 +227,7 @@ export default function Navbar() {
           </div>
 
           {/* --- MOBILE HEADER --- */}
-          <div className="flex md:hidden justify-between items-center h-16 gap-3 px-4">
+          <div className="flex lg:hidden justify-between items-center h-16 gap-3 px-4">
             {!isAssetsPage && (
               <div className="flex items-center gap-3 shrink-0">
                 <div className="w-9 h-9 relative rounded overflow-hidden bg-gray-100">

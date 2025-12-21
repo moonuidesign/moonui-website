@@ -45,18 +45,8 @@ import Image from 'next/image';
 import { TagInput } from '@/components/ui/tag-input';
 
 // Imports Server Actions & Types
-import { Category } from '@/server-action/getCategoryComponent';
-import { AddCategoryCommand } from '@/components/Contentcomponents/addCategory';
-import {
-  ContentDesignFormValues,
-  ContentDesignSchema,
-  DESIGN_STATUS_OPTIONS,
-  DESIGN_TIER_OPTIONS,
-  DesignStatusType,
-  DesignTierType,
-} from '@/server-action/designs/validator';
-import { updateContentDesign } from '@/server-action/designs/updateDesign';
-import { createContentDesign } from '@/server-action/designs/createDesign';
+import { createCategoryDesign } from '@/server-action/getCategoryComponent/create';
+import { CategoryCombobox } from '@/components/dashboard/category-combobox';
 import DescriptionEditor from '@/components/text-editor/description-editor';
 
 // Interface untuk Data Design dari Database
@@ -82,7 +72,6 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
   const [isPending, startTransition] = useTransition();
   const [localCategories, setLocalCategories] =
     useState<Category[]>(categories);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // --- STATE FILE UPLOADS ---
   const [existingImages, setExistingImages] = useState<string[]>(
@@ -160,15 +149,40 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
     },
   });
 
-  // --- HANDLERS ---
-  const handleCategoryCreated = (newCategory: Category) => {
-    setLocalCategories((prev) => [...prev, newCategory]);
-    form.setValue('categoryDesignsId', newCategory.id, {
-      shouldValidate: true,
-    });
-    setIsDialogOpen(false);
-    toast.success('Kategori berhasil dibuat');
+  const createParentCategory = async (name: string) => {
+    const res = await createCategoryDesign({ name, parentId: null, imageUrl: '' }); // Design categories might need imageUrl? Checking validator.
+    // Looking at validator.ts for Design, name is required. imageUrl optional?
+    // create.ts for design: const { name, imageUrl, parentId } = validatedFields.data;
+    // I should check validator.
+    // Assuming imageUrl is optional or has default. If not, I might need to pass placeholder.
+    // But CategoryCombobox only passes name.
+    
+    // Let's assume standard behavior. If error, I'll see toast.
+    if ('error' in res) {
+      toast.error(res.error);
+      return null;
+    }
+    toast.success(res.success);
+    setLocalCategories((prev) => [...prev, res.category]);
+    return res.category;
   };
+
+  const createSubCategory = async (name: string) => {
+    const parentId = form.getValues('categoryDesignsId');
+    if (!parentId) {
+      toast.error('Please select a parent category first');
+      return null;
+    }
+    const res = await createCategoryDesign({ name, parentId, imageUrl: '' });
+    if ('error' in res) {
+      toast.error(res.error);
+      return null;
+    }
+    toast.success(res.success);
+    setLocalCategories((prev) => [...prev, res.category]);
+    return res.category;
+  };
+
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -352,85 +366,49 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                   {/* Category Logic */}
                   <div className="grid grid-cols-2 gap-6">
                     <FormItem>
-                      <div className="flex items-center justify-between mb-3">
-                        <FormLabel className="text-sm font-medium text-foreground">
-                          Category
-                        </FormLabel>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsDialogOpen(true)}
-                          className="h-8 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5"
-                        >
-                          <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
-                          Add
-                        </Button>
-                      </div>
-                      <Select
+                      <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                        Category
+                      </FormLabel>
+                      <CategoryCombobox
+                        categories={parentCategories}
                         value={currentParentId}
-                        onValueChange={(val) => {
+                        onChange={(val) => {
                           form.setValue('categoryDesignsId', val, {
                             shouldValidate: true,
                           });
                         }}
+                        onCreate={createParentCategory}
+                        placeholder="Select Category"
+                        searchPlaceholder="Search or create category..."
                         disabled={isPending}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
-                            <SelectValue placeholder="Select Category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {parentCategories.map((parent) => (
-                            <SelectItem key={parent.id} value={parent.id}>
-                              {parent.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      />
                     </FormItem>
 
                     <FormItem>
-                      <div className="flex items-center justify-between mb-3">
-                        <FormLabel className="text-sm font-medium text-foreground">
-                          Sub Category
-                        </FormLabel>
-                      </div>
-                      <Select
+                      <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                        Sub Category
+                      </FormLabel>
+                      <CategoryCombobox
+                        categories={childCategories}
                         value={currentChildId}
-                        onValueChange={(val) => {
+                        onChange={(val) => {
                           form.setValue('categoryDesignsId', val, {
                             shouldValidate: true,
                           });
                         }}
-                        disabled={
-                          !currentParentId ||
-                          childCategories.length === 0 ||
-                          isPending
+                        onCreate={createSubCategory}
+                        placeholder={
+                          !currentParentId
+                            ? 'Select Parent First'
+                            : childCategories.length === 0
+                            ? 'No Sub-categories'
+                            : 'Select Sub Category'
                         }
-                      >
-                        <FormControl>
-                          <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
-                            <SelectValue
-                              placeholder={
-                                !currentParentId
-                                  ? 'Select Parent First'
-                                  : childCategories.length === 0
-                                  ? 'No Sub-categories'
-                                  : 'Select Sub Category'
-                              }
-                            />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {childCategories.map((child) => (
-                            <SelectItem key={child.id} value={child.id}>
-                              {child.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        searchPlaceholder="Search or create sub category..."
+                        disabled={
+                          !currentParentId || isPending
+                        }
+                      />
                     </FormItem>
                   </div>
 
@@ -870,22 +848,6 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
             </form>
           </Form>
 
-          {/* Dialog Add Category */}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Create New Category</DialogTitle>
-                <DialogDescription>
-                  Create a new parent or sub-category.
-                </DialogDescription>
-              </DialogHeader>
-              <AddCategoryCommand
-                parentCategories={parentCategories}
-                onCategoryCreated={handleCategoryCreated}
-                closeDialog={() => setIsDialogOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
     </>

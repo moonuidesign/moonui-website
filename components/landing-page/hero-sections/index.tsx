@@ -5,9 +5,9 @@ import Meteors from '@/components/ui/meteors';
 
 const HeroSection = () => {
   return (
-    <div className="pt-30 md:pt-0 relative mx-auto md:max-w-7xl -pt-[200px] mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]  overflow-hidden  ">
-      <div className="absolute h-full w-full ">
-        <Meteors />
+    <div className="pt-30 md:pt-0 relative mx-auto md:max-w-7xl -pt-[200px] mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
+      <div className="absolute  h-full w-full ">
+        <Meteors minDelay={0.8} maxDelay={1.8} number={5} />
       </div>
       <Image
         src="/moonNotFound.png"

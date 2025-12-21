@@ -2,7 +2,7 @@
 -- 1. TABLE: CONTENT_COMPONENTS
 -- ==========================================
 
--- Hapus kolom yang tidak dipakai (sesuai log kamu)
+-- Hapus kolom yang tidak dipakai
 ALTER TABLE "content_components" DROP COLUMN IF EXISTS "size";
 ALTER TABLE "content_components" DROP COLUMN IF EXISTS "format";
 
@@ -12,8 +12,8 @@ ALTER TABLE "content_components" ALTER COLUMN "number" SET DEFAULT nextval('cont
 ALTER TABLE "content_components" ALTER COLUMN "number" SET NOT NULL;
 ALTER SEQUENCE content_components_number_seq OWNED BY "content_components"."number";
 
--- SINKRONISASI: Set sequence ke angka terbesar yang ada sekarang
-SELECT setval('content_components_number_seq', COALESCE((SELECT MAX("number") FROM "content_components"), 0));
+-- SINKRONISASI: Set sequence ke angka terbesar (jika kosong, default ke 1)
+SELECT setval('content_components_number_seq', COALESCE((SELECT MAX("number") FROM "content_components"), 1));
 
 
 -- ==========================================
@@ -25,8 +25,8 @@ ALTER TABLE "content_templates" ALTER COLUMN "number" SET DEFAULT nextval('conte
 ALTER TABLE "content_templates" ALTER COLUMN "number" SET NOT NULL;
 ALTER SEQUENCE content_templates_number_seq OWNED BY "content_templates"."number";
 
--- SINKRONISASI
-SELECT setval('content_templates_number_seq', COALESCE((SELECT MAX("number") FROM "content_templates"), 0));
+-- SINKRONISASI: Set sequence ke angka terbesar (jika kosong, default ke 1)
+SELECT setval('content_templates_number_seq', COALESCE((SELECT MAX("number") FROM "content_templates"), 1));
 
 
 -- ==========================================
@@ -38,8 +38,8 @@ ALTER TABLE "content_gradients" ALTER COLUMN "number" SET DEFAULT nextval('conte
 ALTER TABLE "content_gradients" ALTER COLUMN "number" SET NOT NULL;
 ALTER SEQUENCE content_gradients_number_seq OWNED BY "content_gradients"."number";
 
--- SINKRONISASI
-SELECT setval('content_gradients_number_seq', COALESCE((SELECT MAX("number") FROM "content_gradients"), 0));
+-- SINKRONISASI: Set sequence ke angka terbesar (jika kosong, default ke 1)
+SELECT setval('content_gradients_number_seq', COALESCE((SELECT MAX("number") FROM "content_gradients"), 1));
 
 
 -- ==========================================
@@ -51,5 +51,5 @@ ALTER TABLE "content_designs" ALTER COLUMN "number" SET DEFAULT nextval('content
 ALTER TABLE "content_designs" ALTER COLUMN "number" SET NOT NULL;
 ALTER SEQUENCE content_designs_number_seq OWNED BY "content_designs"."number";
 
--- SINKRONISASI
-SELECT setval('content_designs_number_seq', COALESCE((SELECT MAX("number") FROM "content_designs"), 0));
+-- SINKRONISASI: Set sequence ke angka terbesar (jika kosong, default ke 1)
+SELECT setval('content_designs_number_seq', COALESCE((SELECT MAX("number") FROM "content_designs"), 1));

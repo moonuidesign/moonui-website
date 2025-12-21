@@ -44,10 +44,8 @@ import {
 import { toast } from 'react-toastify';
 import Image from 'next/image';
 
-import { Category } from '@/server-action/getCategoryComponent';
-import { AddCategoryCommand } from '@/components/Contentcomponents/addCategory';
-import { updateContentGradient } from '@/server-action/gradient/update-gradient';
-import { createContentGradient } from '@/server-action/gradient/create-gradient';
+import { createCategoryGradient } from '@/server-action/getCategoryComponent/create';
+import { CategoryCombobox } from '@/components/dashboard/category-combobox';
 
 // --- 1. DEFINE CONSTANTS & SCHEMAS FIRST ---
 import { TagInput } from '@/components/ui/tag-input';
@@ -88,7 +86,6 @@ export default function GradientForm({
   const [isPending, startTransition] = useTransition();
   const [localCategories, setLocalCategories] =
     useState<Category[]>(categories);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // UI States
   const [imagePreview, setImagePreview] = useState<string | null>(
@@ -174,15 +171,50 @@ export default function GradientForm({
     name: 'colors',
   });
 
+  const createParentCategory = async (name: string) => {
+    const res = await createCategoryGradient({
+      name,
+      parentId: null,
+      imageUrl: '',
+    });
+    if ('error' in res) {
+      toast.error(res.error);
+      return null;
+    }
+    toast.success(res.success);
+    setLocalCategories((prev) => [...prev, res.category]);
+    return res.category;
+  };
+
+  const createSubCategory = async (name: string) => {
+    const parentId = form.getValues('categoryGradientsId');
+    if (!parentId) {
+      toast.error('Please select a parent category first');
+      return null;
+    }
+    const res = await createCategoryGradient({
+      name,
+      parentId,
+      imageUrl: '',
+    });
+    if ('error' in res) {
+      toast.error(res.error);
+      return null;
+    }
+    toast.success(res.success);
+    setLocalCategories((prev) => [...prev, res.category]);
+    return res.category;
+  };
+
   // --- 4. HANDLERS ---
   const handleCategoryCreated = (newCategory: Category) => {
     setLocalCategories((prev) => [...prev, newCategory]);
     form.setValue('categoryGradientsId', newCategory.id, {
       shouldValidate: true,
     });
-    setIsDialogOpen(false);
     toast.success('Category Created');
   };
+
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -316,82 +348,46 @@ export default function GradientForm({
                 <div className="space-y-8">
                   <div className="grid grid-cols-2 gap-6">
                     <FormItem>
-                      <div className="flex items-center justify-between mb-3">
-                        <FormLabel className="text-sm font-medium text-foreground">
-                          Category
-                        </FormLabel>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsDialogOpen(true)}
-                          className="h-8 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5"
-                        >
-                          <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
-                          Add
-                        </Button>
-                      </div>
-                      <Select
+                      <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                        Category
+                      </FormLabel>
+                      <CategoryCombobox
+                        categories={parentCategories}
                         value={currentParentId}
-                        onValueChange={(val) => {
+                        onChange={(val) => {
                           form.setValue('categoryGradientsId', val, {
                             shouldValidate: true,
                           });
                         }}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
-                            <SelectValue placeholder="Select Category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {parentCategories.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>
-                              {p.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        onCreate={createParentCategory}
+                        placeholder="Select Category"
+                        searchPlaceholder="Search or create category..."
+                      />
                     </FormItem>
 
                     <FormItem>
-                      <div className="flex items-center justify-between mb-3">
-                        <FormLabel className="text-sm font-medium text-foreground">
-                          Sub Category
-                        </FormLabel>
-                      </div>
-                      <Select
+                      <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                        Sub Category
+                      </FormLabel>
+                      <CategoryCombobox
+                        categories={childCategories}
                         value={currentChildId}
-                        onValueChange={(val) => {
+                        onChange={(val) => {
                           form.setValue('categoryGradientsId', val, {
                             shouldValidate: true,
                           });
                         }}
-                        disabled={
-                          !currentParentId || childCategories.length === 0
+                        onCreate={createSubCategory}
+                        placeholder={
+                          !currentParentId
+                            ? 'Select Parent First'
+                            : childCategories.length === 0
+                            ? 'No Sub-categories'
+                            : 'Select Sub Category'
                         }
-                      >
-                        <FormControl>
-                          <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
-                            <SelectValue
-                              placeholder={
-                                !currentParentId
-                                  ? 'Select Parent First'
-                                  : childCategories.length === 0
-                                  ? 'No Sub-categories'
-                                  : 'Select Sub Category'
-                              }
-                            />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {childCategories.map((c) => (
-                            <SelectItem key={c.id} value={c.id}>
-                              {c.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        searchPlaceholder="Search or create sub category..."
+                        disabled={!currentParentId}
+                      />
                     </FormItem>
                   </div>
 
@@ -825,21 +821,6 @@ export default function GradientForm({
             </form>
           </Form>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>New Category</DialogTitle>
-                <DialogDescription>
-                  Create a new category for your gradients.
-                </DialogDescription>
-              </DialogHeader>
-              <AddCategoryCommand
-                parentCategories={parentCategories}
-                onCategoryCreated={handleCategoryCreated}
-                closeDialog={() => setIsDialogOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
     </>

@@ -71,7 +71,7 @@ function AssetsPageContent() {
   }
 
   return (
-    <div className="min-h-screen font-['Inter']">
+    <div className="min-fit font-['Inter']">
       <MobileFilterDrawer
         isOpen={isFilterOpen}
         onClose={() => setFilterOpen(false)}
