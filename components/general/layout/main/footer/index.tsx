@@ -2,54 +2,80 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { FooterColumn, FooterProps } from './type'; // Pastikan path ini sesuai
+import { FooterProps } from './type'; // Pastikan path ini sesuai
 import Link from 'next/link';
 import { Disc, Github, Twitter, ChevronDown } from 'lucide-react'; // Tambah ChevronDown
 import { SocialButton } from './social-button'; // Pastikan path ini sesuai
 import { MoonLogo } from './moon-logo'; // Pastikan path ini sesuai
+import { ContentType, useFilterStore } from '@/contexts';
 export * from './moon-logo';
 export * from './social-button';
 export * from './type';
+interface ExtendedLink {
+  label: string;
+  href: string;
+  contentType?: ContentType;
+}
+
+interface ExtendedFooterColumn {
+  title: string;
+  links: ExtendedLink[];
+}
+
 // --- Data Default ---
-const defaultColumns: FooterColumn[] = [
+const defaultColumns: ExtendedFooterColumn[] = [
   {
     title: 'Products',
     links: [
-      { label: 'MoonUI Components', href: '#' },
-      { label: 'MoonUI Templates', href: '#' },
-      { label: 'MoonUI Gradients', href: '#' },
+      {
+        label: 'MoonUI Components',
+        href: '/assets',
+        contentType: 'components',
+      },
+      {
+        label: 'MoonUI Templates',
+        href: '/assets',
+        contentType: 'templates',
+      },
+      {
+        label: 'MoonUI Gradients',
+        href: '/assets',
+        contentType: 'gradients',
+      },
+      {
+        label: 'MoonUI Assets',
+        href: '/assets',
+
+        contentType: 'components',
+      },
     ],
   },
   {
     title: 'Premium',
     links: [
-      { label: 'Upgrade Pro', href: '#' },
-      { label: 'Upgrade Pro Plus', href: '#' },
-      { label: 'Contact Support', href: '#' },
+      { label: 'Upgrade Pro', href: '/pricing' },
+
+      { label: 'Contact Support', href: '/contact' },
     ],
   },
   {
     title: 'MoonUI Design',
-    links: [
-      { label: 'Explore Now', href: '#' },
-      { label: 'Become an Affiliate', href: '#' },
-      { label: 'About Us', href: '#' },
-    ],
+    links: [{ label: 'About Us', href: '/about' }],
   },
   {
     title: 'Account',
     links: [
-      { label: 'Active Membership', href: '#' },
-      { label: 'Sign In', href: '#' },
-      { label: 'Reset Password', href: '#' },
+      { label: 'Activy License', href: '/verify-license' },
+      { label: 'Sign In', href: '/signin' },
+      { label: 'Reset Password', href: '/forgot-password' },
     ],
   },
   {
     title: 'Company',
     links: [
-      { label: 'Privacy Policy', href: '#' },
+      { label: 'Privacy Policy', href: '/privacy-policy' },
       { label: 'Terms of Use', href: '#' },
-      { label: 'Contact Us', href: '#' },
+      { label: 'Contact Us', href: '/contact' },
     ],
   },
 ];
@@ -60,6 +86,8 @@ const Footer: React.FC<FooterProps> = ({
   columns = defaultColumns,
   socials,
 }) => {
+  const applySearchFilter = useFilterStore((state) => state.applySearchFilter);
+
   // State untuk mengontrol Accordion di mobile
   const [openSection, setOpenSection] = useState<string | null>(null);
 
@@ -71,6 +99,15 @@ const Footer: React.FC<FooterProps> = ({
     }
   };
 
+  const handleLinkClick = (link: ExtendedLink) => {
+    if (link.contentType) {
+      applySearchFilter({
+        contentType: link.contentType,
+        clearOthers: true, // Reset kategori/search query saat pindah tab utama
+        searchQuery: '', // Opsional: kosongkan search bar juga
+      });
+    }
+  };
   return (
     <footer className="relative w-full lg:w-7xl overflow-hidden pt-20 container mx-auto  ">
       {/* Garis Dekorasi Desktop */}
@@ -95,16 +132,22 @@ const Footer: React.FC<FooterProps> = ({
           <div className="flex items-center gap-3">
             <SocialButton
               href={socials?.twitter}
-              icon={<Twitter className="w-4 h-4 text-white" />}
+              icon={
+                <Twitter className="w-4 h-4 hover:text-[#FF4F00] text-white" />
+              }
               activeColor="bg-orange-600"
             />
             <SocialButton
               href={socials?.discord}
-              icon={<Disc className="w-4 h-4 text-zinc-400" />}
+              icon={
+                <Disc className="w-4 h-4 hover:text-[#FF4F00] text-zinc-400" />
+              }
             />
             <SocialButton
               href={socials?.github}
-              icon={<Github className="w-4 h-4 text-zinc-400" />}
+              icon={
+                <Github className="w-4 h-4 hover:text-[#FF4F00] text-zinc-400" />
+              }
             />
           </div>
         </div>
@@ -112,6 +155,7 @@ const Footer: React.FC<FooterProps> = ({
         {/* --- MENU LINKS AREA --- */}
 
         <div className="lg:flex flex-col gap-5 md:gap-0 justify-center items-center md:border-x border-b md:border-[#D3D3D3] md:pb-12 rounded-b-2xl">
+          {/* DESKTOP VIEW */}
           <div className="hidden lg:grid grid-cols-5 gap-12 md:mb-32">
             {columns.map((col, idx) => (
               <div key={idx} className="flex flex-col gap-5">
@@ -119,21 +163,28 @@ const Footer: React.FC<FooterProps> = ({
                   {col.title}
                 </h3>
                 <ul className="flex flex-col gap-1">
-                  {col.links.map((link, lIdx) => (
-                    <li key={lIdx}>
-                      <Link
-                        href={link.href}
-                        className="text-zinc-500 hover:text-orange-600 text-sm font-medium font-sans leading-9 transition-colors"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
+                  {col.links.map((link, lIdx) => {
+                    // Casting link ke ExtendedLink agar TS tidak complain jika tipe aslinya strict
+                    const extendedLink = link as ExtendedLink;
+                    return (
+                      <li key={lIdx}>
+                        <Link
+                          href={extendedLink.href}
+                          // 3. Pasang Handler onClick
+                          onClick={() => handleLinkClick(extendedLink)}
+                          className="text-zinc-500 hover:text-orange-600 text-sm font-medium font-sans leading-9 transition-colors"
+                        >
+                          {extendedLink.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ))}
           </div>
-          {/* 2. VIEW MOBILE (Accordion - Sesuai Request) */}
+
+          {/* MOBILE VIEW (Accordion) */}
           <div className="flex flex-col lg:hidden md:mb-20 ">
             {columns.map((col, idx) => {
               const isOpen = openSection === col.title;
@@ -142,7 +193,6 @@ const Footer: React.FC<FooterProps> = ({
                   key={idx}
                   className="border-b-4 border-neutral-300 border-dashed"
                 >
-                  {/* Header Accordion */}
                   <button
                     onClick={() => toggleSection(col.title)}
                     className="w-full py-5 flex justify-between items-center text-left focus:outline-none group"
@@ -150,7 +200,6 @@ const Footer: React.FC<FooterProps> = ({
                     <span className="text-[#3D3D3D] text-base font-medium font-sans leading-6">
                       {col.title}
                     </span>
-                    {/* Icon Bulat dengan Chevron */}
                     <div
                       className={`w-6 h-6 rounded-full flex justify-center items-center transition-colors duration-200 bg-[rgb(211,211,211)] shadow-[0_0_0_1px_rgba(61,61,61,0.12),inset_0_0.75px_0.75px_hsla(0,0%,100%,0.64)]`}
                     >
@@ -162,29 +211,34 @@ const Footer: React.FC<FooterProps> = ({
                     </div>
                   </button>
 
-                  {/* Isi Accordion (Links) */}
                   <div
                     className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
                       isOpen ? 'max-h-96' : 'max-h-0'
                     }`}
                   >
-                    <ul className="flex flex-col gap-0  pb-5">
-                      {col.links.map((link, lIdx) => (
-                        <li key={lIdx}>
-                          <Link
-                            href={link.href}
-                            className="text-zinc-500 hover:text-orange-600 text-sm font-medium font-sans leading-7 block py-1"
-                          >
-                            {link.label}
-                          </Link>
-                        </li>
-                      ))}
+                    <ul className="flex flex-col gap-0 pb-5">
+                      {col.links.map((link, lIdx) => {
+                        const extendedLink = link as ExtendedLink;
+                        return (
+                          <li key={lIdx}>
+                            <Link
+                              href={extendedLink.href}
+                              // 3. Pasang Handler onClick juga di Mobile
+                              onClick={() => handleLinkClick(extendedLink)}
+                              className="text-zinc-500 hover:text-orange-600 text-sm font-medium font-sans leading-7 block py-1"
+                            >
+                              {extendedLink.label}
+                            </Link>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 </div>
               );
             })}
           </div>
+
           <a
             href={`mailto:${email}`}
             className="text-orange-600 text-[20px] justify-center items-center text-center mt-5 md:mt-0 md:text-2xl font-semibold font-sans underline hover:text-orange-700 transition-colors w-full flex"
@@ -196,10 +250,7 @@ const Footer: React.FC<FooterProps> = ({
           {copyright}
         </p>
 
-        {/* --- FOOTER BOTTOM --- */}
-
         <div className="w-full h-[80px] md:h-[292px] relative mt-10">
-          {/* Perbaikan pada Image agar tidak error layout */}
           <Image
             src="/footer.svg"
             alt="Decoration"
@@ -208,8 +259,6 @@ const Footer: React.FC<FooterProps> = ({
           />
         </div>
       </div>
-
-      {/* Background Text Decoration */}
     </footer>
   );
 };

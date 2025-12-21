@@ -8,50 +8,48 @@ import {
   useScroll,
   useMotionValueEvent,
 } from 'framer-motion';
-import {
-  Search,
-  Menu,
-  X,
-  Monitor,
-  LayoutTemplate,
-  FileImage,
-  BookOpen,
-  Map,
-  PenTool,
-  Info,
-  Mail,
-} from 'lucide-react';
+import { Search, Menu, X, LayoutTemplate, Contact } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { SearchCommand } from './search-command';
 import { useSession } from 'next-auth/react';
 import { GoProCard } from '@/components/assets/sidebar';
+import { Note } from 'iconsax-reactjs';
+import Image from 'next/image';
 
 export * from './search-command';
 
 // --- DATA MENU ITEM ---
-const MOBILE_MENU_ITEMS = [
-  { label: 'Blocks', href: '#', icon: Monitor, isPro: true, isExternal: true },
+const MENU_ITEMS = [
   {
-    label: 'Templates',
-    href: '#',
+    label: 'Assets',
+    href: '/assets',
     icon: LayoutTemplate,
-    isPro: true,
+    isPro: false,
     isExternal: true,
   },
   {
-    label: 'Figma File',
-    href: '#',
-    icon: FileImage,
-    isPro: true,
+    label: 'About Us',
+    href: '/about',
+    icon: Note,
+    isPro: false,
     isExternal: true,
   },
-  { label: 'Docs', href: '#', icon: BookOpen, isPro: false, isExternal: false },
-  { label: 'Roadmap', href: '#', icon: Map, isPro: false, isExternal: false },
-  { label: 'Blog', href: '#', icon: PenTool, isPro: false, isExternal: false },
-  { label: 'About', href: '#', icon: Info, isPro: false, isExternal: false },
-  { label: 'Contact', href: '#', icon: Mail, isPro: false, isExternal: false },
+  {
+    label: 'Contact',
+    href: '/contact',
+    icon: Contact,
+    isPro: false,
+    isExternal: true,
+  },
+  {
+    label: 'Pricing',
+    href: '/pricing',
+    icon: Contact,
+    isPro: false,
+    isExternal: true,
+  },
 ];
 
 export default function Navbar() {
@@ -120,13 +118,6 @@ export default function Navbar() {
   return (
     <section className="md:mb-30 mb-20">
       <SearchCommand open={isSearchOpen} setOpen={setIsSearchOpen} />
-
-      {/* NAVBAR LOGIC:
-         1. Hapus style={{ top: scrollY }} -> Ini penyebab lag.
-         2. Gunakan logic Class:
-            - isScrolled ? 'fixed top-0' : 'absolute md:top-20'
-         3. Tampilan tetap sama seperti request awal.
-      */}
       <nav
         className={`left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
           isScrolled
@@ -143,20 +134,33 @@ export default function Navbar() {
         >
           <div className="hidden lg:flex justify-between items-center h-16 gap-4 px-4">
             <div className="flex items-center gap-8">
-              <div className="w-9 h-9 bg-gradient-to-b from-orange-600/0 to-orange-600/80 rounded-xl shadow-sm border border-gray-200"></div>
+              <div className="w-9 h-9 relative p-1.5 rounded-xl shadow-sm flex  bg-gradient-to-b from-orange-600/0 to-orange-600/80 items-center justify-center overflow-hidden bg-white border border-gray-100">
+                <span className="absolute inset-0 rounded-xl bg-gradient-to-b from-orange-600/0 to-orange-600/40 z-40 pointer-events-none"></span>
+
+                {/* 2. Logo Image 
+      - Gunakan 'z-10' (depan) agar logo tajam dan tidak tertutup gradient.
+      - Gunakan 'object-contain' agar logo tidak terpotong.
+  */}
+                <Image
+                  src="/logo.svg"
+                  alt="MoonUI Logo"
+                  width={100}
+                  height={100}
+                  className="w-full h-full object-contain relative z-10"
+                />
+              </div>
 
               <div className="flex items-center gap-6">
-                {['Components', 'Templates', 'What’s new?'].map(
-                  (label, idx) => (
-                    <Link
-                      key={idx}
-                      href="#"
-                      className="text-sm font-medium text-neutral-500 hover:text-black transition-colors"
-                    >
-                      {label}
-                    </Link>
-                  ),
-                )}
+                {MENU_ITEMS.map((label, idx) => (
+                  <Link
+                    key={idx}
+                    href={label.href}
+                    className="text-sm font-medium flex gap-2 justify-center items-center text-neutral-500 hover:text-black transition-colors"
+                  >
+                    <label.icon className="size-4 hover:text-[#FF4F00] text-gray-400" />
+                    {label.label}
+                  </Link>
+                ))}
               </div>
             </div>
 
@@ -342,7 +346,7 @@ export default function Navbar() {
                   <GoProCard />
                 </div>
 
-                {MOBILE_MENU_ITEMS.map((item, i) => (
+                {MENU_ITEMS.map((item, i) => (
                   <div
                     key={i}
                     className="py-5 flex items-center gap-3 border-b border-dashed border-gray-200"
