@@ -288,7 +288,7 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
         </div>
 
         {/* Content Area */}
-        <div className="w-full md:mt-12 relative flex flex-col items-center px-1">
+        <div className="w-full relative flex flex-col items-center px-1">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTabId}

@@ -8,78 +8,95 @@ import {
   useScroll,
   useMotionValueEvent,
 } from 'framer-motion';
-import { Search, Menu, X, LayoutTemplate, Contact } from 'lucide-react';
+import {
+  Search,
+  Menu,
+  X,
+  LayoutTemplate,
+  Contact,
+  LogOut,
+  User,
+  Settings,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useDebounce } from '@/hooks/use-debounce';
-import { SearchCommand } from './search-command';
-import { useSession } from 'next-auth/react';
-import { GoProCard } from '@/components/assets/sidebar';
-import { Note } from 'iconsax-reactjs';
+import { useDebounce } from '@/hooks/use-debounce'; // Pastikan path ini benar
+import { useSession, signOut } from 'next-auth/react';
 import Image from 'next/image';
+import { Note } from 'iconsax-reactjs';
+import { useMediaQuery } from 'react-responsive';
+import { SearchCommand } from './search-command'; // Pastikan path ini benar
+import { GoProCard } from '@/components/assets/sidebar'; // Pastikan path ini benar
 
 export * from './search-command';
 
-// --- DATA MENU ITEM ---
 const MENU_ITEMS = [
-  {
-    label: 'Assets',
-    href: '/assets',
-    icon: LayoutTemplate,
-    isPro: false,
-    isExternal: true,
-  },
-  {
-    label: 'About Us',
-    href: '/about',
-    icon: Note,
-    isPro: false,
-    isExternal: true,
-  },
-  {
-    label: 'Contact',
-    href: '/contact',
-    icon: Contact,
-    isPro: false,
-    isExternal: true,
-  },
-  {
-    label: 'Pricing',
-    href: '/pricing',
-    icon: Contact,
-    isPro: false,
-    isExternal: true,
-  },
+  { label: 'Assets', href: '/assets', icon: LayoutTemplate },
+  { label: 'About Us', href: '/about', icon: Note },
+  { label: 'Contact', href: '/contact', icon: Contact },
+  { label: 'Pricing', href: '/pricing', icon: Contact },
 ];
 
 export default function Navbar() {
   const { data: session } = useSession();
-
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // --- LOGIKA SCROLL ---
+  // --- 1. MOUNTED CHECK ---
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // --- 2. MEDIA QUERIES ---
+  const isDesktop = useMediaQuery({ query: '(min-width: 992px)' });
+  const isTablet = useMediaQuery({
+    query: '(min-width: 768px) and (max-width: 991px)',
+  });
+
+  // --- 3. PROFILE POPOVER STATE ---
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // --- 4. SCROLL LOGIC ---
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
 
-  useMotionValueEvent(scrollY, 'change', (latest) => {
-    // Jika scroll lebih dari 20px, ubah state
-    if (latest > 20) {
-      setIsScrolled(true);
-    } else {
-      setIsScrolled(false);
-    }
-  });
-  // -------------------------------
+  useEffect(() => {
+    // Fungsi cek manual agar saat refresh langsung detect posisi
+    const checkScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    checkScroll();
+    window.addEventListener('scroll', checkScroll);
+    return () => window.removeEventListener('scroll', checkScroll);
+  }, []);
 
+  useMotionValueEvent(scrollY, 'change', (latest) => {
+    setIsScrolled(latest > 50);
+  });
+
+  // --- 5. SEARCH & URL LOGIC ---
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  // Initialize from URL to prevent flashing/resetting on refresh
   const [searchValue, setSearchValue] = useState(searchParams.get('q') || '');
-
   const isAssetsPage = pathname === '/assets';
-
   const debouncedSearch = useDebounce(searchValue, 300);
   const debouncedSearchRef = useRef(debouncedSearch);
 
@@ -87,219 +104,328 @@ export default function Navbar() {
     debouncedSearchRef.current = debouncedSearch;
   }, [debouncedSearch]);
 
-  // Sync FROM URL to Local State
   useEffect(() => {
     if (isAssetsPage) {
       const q = searchParams.get('q') || '';
-      // If URL is different from our current debounced value, it means the change came from outside (navigation/url), so we sync.
-      if (q !== debouncedSearchRef.current) {
-        setSearchValue(q);
-      }
+      if (q !== debouncedSearchRef.current) setSearchValue(q);
     }
   }, [isAssetsPage, searchParams]);
 
-  // Sync TO URL from Local State
   useEffect(() => {
     if (isAssetsPage) {
       const currentQ = searchParams.get('q') || '';
-      // Only push if debounced value is different from URL
       if (debouncedSearch !== currentQ) {
         const params = new URLSearchParams(searchParams.toString());
-        if (debouncedSearch) {
-          params.set('q', debouncedSearch);
-        } else {
-          params.delete('q');
-        }
+        if (debouncedSearch) params.set('q', debouncedSearch);
+        else params.delete('q');
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
       }
     }
   }, [debouncedSearch, isAssetsPage, pathname, router, searchParams]);
 
-  return (
-    <section className="md:mb-30 mb-20">
-      <SearchCommand open={isSearchOpen} setOpen={setIsSearchOpen} />
-      <nav
-        className={`left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-          isScrolled
-            ? 'fixed top-0' // Saat discroll menempel di atas
-            : 'absolute md:top-20' // Posisi awal (Floating Island)
-        }`}
-      >
-        <div
-          className={`mx-auto sm:px-6 lg:px-8 h-full transition-all duration-300 ${
-            isScrolled
-              ? 'w-full bg-white/80 backdrop-blur-md border-b border-gray-200 rounded-none shadow-sm' // Style saat Fixed (Lebar Full)
-              : 'max-w-6xl lg:w-full bg-[#F7F7F7] rounded-2xl md:rounded-3xl border border-transparent' // Style Awal (Rounded Island)
-          }`}
-        >
-          <div className="hidden lg:flex justify-between items-center h-16 gap-4 px-4">
-            <div className="flex items-center gap-8">
-              <div className="w-9 h-9 relative p-1.5 rounded-xl shadow-sm flex  bg-gradient-to-b from-orange-600/0 to-orange-600/80 items-center justify-center overflow-hidden bg-white border border-gray-100">
-                <span className="absolute inset-0 rounded-xl bg-gradient-to-b from-orange-600/0 to-orange-600/80 z-20 pointer-events-none"></span>
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isOpen]);
 
-                {/* 2. Logo Image 
-      - Gunakan 'z-10' (depan) agar logo tajam dan tidak tertutup gradient.
-      - Gunakan 'object-contain' agar logo tidak terpotong.
-  */}
-                <Image
-                  src="/logo.svg"
-                  alt="MoonUI Logo"
-                  width={100}
-                  height={100}
-                  className="w-full h-full object-contain relative z-10"
-                />
-              </div>
+  // =========================================================================
+  // SKELETON LOADING (Tampil saat Hydration/SSR atau Loading)
+  // =========================================================================
+  if (!isMounted) {
+    return (
+      <section className="h-24 relative z-[1000]">
+        <div className="fixed top-10 left-0 right-0 flex justify-center pt-6 pointer-events-none z-[60]">
+          {/* Container Skeleton yang meniru layout asli */}
+          <div className="relative w-full h-16 md:h-20 px-4 md:px-3 mx-auto max-w-full md:max-w-[64rem] lg:max-w-[80rem] grid grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-2">
+            {/* Background Fake (Desktop/Tablet) */}
+            <div className="hidden md:block absolute inset-0 bg-white/80 border border-gray-200/60 rounded-[9999px] -z-10 shadow-sm" />
 
-              <div className="flex items-center gap-6">
-                {MENU_ITEMS.map((label, idx) => (
-                  <Link
-                    key={idx}
-                    href={label.href}
-                    className="text-sm font-medium flex gap-2 justify-center items-center text-neutral-500 hover:text-black transition-colors"
-                  >
-                    {label.label}
-                  </Link>
-                ))}
-              </div>
+            {/* Background Fake (Mobile) */}
+            <div className="md:hidden absolute inset-0 bg-white/80 border border-gray-200/60 rounded-full -z-10 mx-2 shadow-sm" />
+
+            {/* KIRI: Logo & Mobile Search */}
+            <div className="flex justify-start items-center w-full gap-3">
+              {/* Logo Box */}
+              <div className="w-9 h-9 bg-zinc-200 rounded-lg animate-pulse shrink-0" />
+              {/* Mobile Search Button */}
+              <div className="md:hidden w-9 h-9 bg-zinc-200 rounded-full animate-pulse shrink-0" />
             </div>
 
-            <div className="flex items-center gap-4">
+            {/* TENGAH: Menu Items & Search Bar (Desktop Only) */}
+            <div className="hidden md:flex justify-center items-center gap-6 w-full px-4">
+              {/* Menu Links Ghosts */}
+              <div className="flex items-center gap-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="hidden lg:block w-14 h-3 bg-zinc-200 rounded animate-pulse"
+                  />
+                ))}
+                {/* Tablet Ghosts (Sedikit lebih sedikit) */}
+                <div className="lg:hidden w-12 h-3 bg-zinc-200 rounded animate-pulse" />
+                <div className="lg:hidden w-12 h-3 bg-zinc-200 rounded animate-pulse" />
+              </div>
+
+              {/* Search Bar Ghost */}
+              <div className="w-48 lg:w-64 h-9 bg-zinc-100 rounded-full animate-pulse border border-zinc-200" />
+            </div>
+
+            {/* KANAN: Profile & Actions */}
+            <div className="flex items-center justify-end w-full gap-2 md:gap-4">
+              {/* Profile Pill Ghost */}
+              <div className="flex items-center gap-3 p-1 rounded-full bg-zinc-50 border border-zinc-200">
+                <div className="w-8 h-8 md:w-9 md:h-9 bg-zinc-200 rounded-full animate-pulse shrink-0" />
+                {/* Name & Plan (XL Only) */}
+                <div className="hidden xl:flex flex-col gap-1.5 mr-2">
+                  <div className="w-20 h-2 bg-zinc-200 rounded animate-pulse" />
+                  <div className="w-12 h-1.5 bg-zinc-200 rounded animate-pulse" />
+                </div>
+              </div>
+
+              {/* Mobile Hamburger Ghost */}
+              <div className="md:hidden w-9 h-9 bg-zinc-200 rounded-full animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // =========================================================================
+  // MAIN COMPONENT
+  // =========================================================================
+  return (
+    <section className="h-24 relative z-[1000]">
+      <SearchCommand open={isSearchOpen} setOpen={setIsSearchOpen} />
+
+      <div className="fixed top-10 left-0 right-0 flex justify-center pt-6 pointer-events-none z-[60]">
+        <motion.nav
+          initial={{
+            maxWidth: isDesktop ? '80rem' : isTablet ? '64rem' : '100%',
+            y: 0,
+          }}
+          animate={{
+            maxWidth: isScrolled
+              ? isDesktop
+                ? '72rem'
+                : isTablet
+                ? '48rem'
+                : '92%'
+              : isDesktop
+              ? '80rem'
+              : isTablet
+              ? '64rem'
+              : '100%',
+            y: isScrolled ? -55 : 0,
+          }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="pointer-events-auto relative w-full h-16 md:h-20 px-4 md:px-3 grid grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-2 mx-auto"
+        >
+          {/* Background Mobile Fallback */}
+          <div className="md:hidden absolute inset-0 bg-white/80 backdrop-blur-md shadow-sm border border-gray-200/60 rounded-full -z-10 md:mx-2" />
+
+          {/* 1. LEFT: LOGO */}
+          <div className="flex justify-start items-center w-full">
+            <div className="w-9 h-9 relative p-1.5 flex items-center justify-center shrink-0">
+              <span
+                className="absolute inset-0 bg-gradient-to-b hover:from-[#FF4F00]/0 hover:to-[#FF4F00] from-[#1B1B1B]/0 to-[#1B1B1B]/80 z-20 "
+                style={{
+                  maskImage: "url('/logo.svg')",
+                  WebkitMaskImage: "url('/logo.svg')",
+                  maskSize: 'contain',
+                  WebkitMaskSize: 'contain',
+                  maskRepeat: 'no-repeat',
+                  WebkitMaskRepeat: 'no-repeat',
+                  maskPosition: 'center',
+                  WebkitMaskPosition: 'center',
+                }}
+              ></span>
+            </div>
+
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="md:hidden ml-3 w-9 h-9 flex items-center justify-center border border-gray-200 rounded-full hover:bg-gray-50 text-gray-500 bg-white/50"
+            >
+              <Search size={18} />
+            </button>
+          </div>
+
+          {/* 2. CENTER: MENU & SEARCH */}
+          <div className="hidden relative justify-center md:flex items-center gap-4 px-4 py-4">
+            {/* Animated Background Pill */}
+            <motion.div
+              initial={false}
+              animate={{
+                width:
+                  isScrolled && isDesktop
+                    ? '72rem'
+                    : isScrolled && isTablet
+                    ? '48rem'
+                    : isScrolled
+                    ? '92%'
+                    : '100%',
+                height: '100%',
+                borderRadius: isScrolled ? '999px' : '9999px',
+              }}
+              transition={{
+                type: 'spring',
+                stiffness: 200,
+                damping: 25,
+              }}
+              style={{
+                position: 'absolute',
+                left: '50%',
+                x: '-50%',
+                zIndex: -1,
+              }}
+              className="bg-white/80 backdrop-blur-md shadow-sm border border-gray-200/60"
+            />
+
+            <div className="flex items-center gap-4 lg:gap-6 w-full z-10">
+              {MENU_ITEMS.map((label, idx) => (
+                <Link
+                  key={idx}
+                  href={label.href}
+                  className="text-sm font-medium flex gap-2 justify-center items-center text-neutral-500 hover:text-black transition-colors whitespace-nowrap"
+                >
+                  <span className="hidden lg:block"></span>
+                  {label.label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="hidden md:block ml-2 lg:ml-4 z-10">
               {isAssetsPage ? (
-                <div className="w-64 h-9 px-2 bg-zinc-100 rounded-lg border border-zinc-200 flex items-center gap-2 hover:bg-zinc-200/50 transition-colors focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-500">
+                <div className="w-48 lg:w-64 h-9 px-2 bg-zinc-100/50 rounded-full border border-zinc-200 flex items-center gap-2 hover:bg-zinc-200/50 transition-colors focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-500">
                   <Search size={14} className="text-zinc-400 ml-1" />
                   <input
                     type="text"
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
-                    placeholder="Search assets..."
+                    placeholder="Search..."
                     className="bg-transparent border-none outline-none text-sm text-zinc-700 w-full placeholder:text-zinc-400 h-full"
                   />
                 </div>
               ) : (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="w-64 h-9 px-2 bg-zinc-100 rounded-lg border border-zinc-200 flex items-center gap-2 hover:bg-zinc-200/50 transition-colors text-left"
+                  className="w-48 lg:w-64 h-9 px-2 bg-zinc-100/50 rounded-full border border-zinc-200 flex items-center gap-2 hover:bg-zinc-200/50 transition-colors text-left"
                 >
                   <Search size={14} className="text-zinc-400 ml-1" />
-                  <span className="text-sm text-zinc-400 flex-1">
-                    Quick search...
+                  <span className="text-sm text-zinc-400 flex-1 truncate">
+                    Search...
                   </span>
-                  <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border bg-white px-1.5 font-mono text-[10px] font-medium text-zinc-500">
+                  <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded-full border bg-white px-1.5 font-mono text-[10px] font-medium text-zinc-500">
                     <span className="text-xs">⌘</span>K
                   </kbd>
                 </button>
               )}
+            </div>
+          </div>
 
-              {session?.user ? (
-                <div className="flex items-center gap-3 pl-2">
-                  <div className="text-right hidden xl:block">
-                    <p className="text-sm font-medium text-gray-700">
-                      {session.user.name}
-                    </p>
-                    <p className="text-[10px] text-gray-400">Pro Plan</p>
-                  </div>
-                  <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-200 cursor-pointer hover:ring-2 ring-orange-500/20 transition-all">
+          {/* 3. RIGHT: ACTIONS */}
+          <div className="flex items-center justify-end w-full gap-2 md:gap-4">
+            {session?.user ? (
+              <div className="relative z-50" ref={profileRef}>
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-3 p-1 rounded-full bg-[#1B1B1B] border hover:bg-[#ff4f00] transition-all cursor-pointer group"
+                >
+                  <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-200 relative shrink-0">
                     {session.user.image ? (
-                      <img
+                      <Image
                         src={session.user.image}
                         alt="User"
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="40px"
+                        className="object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-orange-600 text-white font-bold">
+                      <div className="w-full h-full flex items-center justify-center bg-orange-600 text-white font-bold text-xs md:text-sm">
                         {session.user.name?.charAt(0) || 'U'}
                       </div>
                     )}
                   </div>
-                </div>
-              ) : (
-                <>
-                  <button className="h-9 px-4 bg-white border border-gray-200 rounded-lg text-sm font-medium text-neutral-600 hover:bg-gray-50">
-                    Sign in
-                  </button>
-                  <button className="h-9 px-4 bg-zinc-800 text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-zinc-700">
-                    <div className="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></div>{' '}
-                    Sign up for Pro
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
+                  <div className="text-left hidden xl:block xl:mr-2 ">
+                    <p className="text-sm font-medium text-[#D3D3D3] group-hover:text-white transition-colors">
+                      {session.user.name}
+                    </p>
+                    <p className="text-[10px] text-gray-300 group-hover:text-white transition-colors">
+                      Pro Plan
+                    </p>
+                  </div>
+                </button>
 
-          {/* --- MOBILE HEADER --- */}
-          <div className="flex lg:hidden justify-between items-center h-16 gap-3 px-4">
-            {!isAssetsPage && (
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="w-9 h-9 relative rounded overflow-hidden bg-gray-100">
-                  <img
-                    src="https://placehold.co/52x58"
-                    alt="Logo"
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-                <div className="px-2 py-1 bg-zinc-100 rounded-md border border-gray-200 flex items-center gap-1 shadow-sm">
-                  <span className="text-xs font-medium text-gray-600">
-                    v1.2
-                  </span>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                </div>
+                <AnimatePresence>
+                  {isProfileOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2, type: 'spring' }}
+                      className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden p-1.5"
+                    >
+                      <div className="px-3 py-2 border-b border-gray-100 mb-1">
+                        <p className="text-xs font-medium text-gray-500">
+                          Signed in as
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {session.user.email}
+                        </p>
+                      </div>
+
+                      <Link
+                        href="/profile"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <User size={16} />
+                        Profile
+                      </Link>
+                      <Link
+                        href="/settings"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <Settings size={16} />
+                        Settings
+                      </Link>
+
+                      <div className="h-px bg-gray-100 my-1" />
+
+                      <button
+                        onClick={() => signOut()}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <LogOut size={16} />
+                        Sign Out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center gap-3">
+                <button className="h-9 px-4 bg-white border border-gray-200 rounded-lg text-sm font-medium text-neutral-600 hover:bg-gray-50">
+                  Sign in
+                </button>
               </div>
             )}
 
-            <div
-              className={`flex items-center gap-3 ${
-                isAssetsPage ? 'flex-1 w-full' : ''
-              }`}
+            <button
+              onClick={() => setIsOpen(true)}
+              className="md:hidden w-9 h-9 flex items-center justify-center border border-gray-200 rounded-full hover:bg-gray-50 text-gray-500 bg-white/50"
             >
-              {isAssetsPage ? (
-                <div className="flex-1 h-9 px-2 bg-zinc-100 rounded-lg border border-zinc-200 flex items-center gap-2 focus-within:border-orange-500 w-full">
-                  <Search size={16} className="text-zinc-400" />
-                  <input
-                    type="text"
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    placeholder="Search..."
-                    className="bg-transparent border-none outline-none text-sm text-zinc-700 w-full placeholder:text-zinc-400"
-                  />
-                </div>
-              ) : (
-                <button
-                  onClick={() => setIsSearchOpen(true)}
-                  className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500"
-                >
-                  <Search size={18} />
-                </button>
-              )}
-
-              {/* Mobile Avatar (Navbar) */}
-              {session?.user && (
-                <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden border border-gray-200 shrink-0">
-                  {session.user.image ? (
-                    <img
-                      src={session.user.image}
-                      alt="User"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-orange-600 text-white text-xs font-bold">
-                      {session.user.name?.charAt(0) || 'U'}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <button
-                onClick={() => setIsOpen(true)}
-                className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500 shrink-0"
-              >
-                <Menu size={18} />
-              </button>
-            </div>
+              <Menu size={18} />
+            </button>
           </div>
-        </div>
-      </nav>
+        </motion.nav>
+      </div>
 
-      {/* --- MOBILE SIDEBAR --- */}
+      {/* --- MOBILE SIDEBAR DRAWER --- */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -307,7 +433,7 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-black/20 z-[60] backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 bg-black/20 z-[60] backdrop-blur-sm md:hidden"
           />
         )}
         {isOpen && (
@@ -316,9 +442,8 @@ export default function Navbar() {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 left-0 h-full w-full sm:w-[320px] bg-zinc-50 z-[70] lg:hidden flex flex-col"
+            className="fixed top-0 left-0 h-full w-[85%] sm:w-[320px] bg-zinc-50 z-[70] md:hidden flex flex-col"
           >
-            {/* Header Sidebar */}
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 bg-zinc-50 sticky top-0 z-10 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-orange-600 rounded-lg"></div>
@@ -333,18 +458,15 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* List Menu */}
             <div className="flex-1 overflow-y-auto">
               <motion.div
                 className="px-6 flex flex-col"
                 initial="closed"
                 animate="open"
               >
-                {/* GoPro Card */}
-                <div className="mb-4">
+                <div className="mb-4 mt-4">
                   <GoProCard />
                 </div>
-
                 {MENU_ITEMS.map((item, i) => (
                   <div
                     key={i}
@@ -359,16 +481,16 @@ export default function Navbar() {
               </motion.div>
             </div>
 
-            {/* Sidebar Footer (Login/Profile) */}
             <div className="p-5 border-t border-gray-200 bg-white shrink-0 pb-8">
               {session?.user ? (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-200">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-200 relative">
                     {session.user.image ? (
-                      <img
+                      <Image
                         src={session.user.image}
                         alt="User"
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-orange-600 text-white font-bold">
@@ -389,10 +511,6 @@ export default function Navbar() {
                 <div className="flex flex-col gap-3">
                   <button className="h-10 px-4 bg-white border border-gray-200 rounded-lg text-sm font-medium text-neutral-600 hover:bg-gray-50 w-full">
                     Sign in
-                  </button>
-                  <button className="h-10 px-4 bg-zinc-800 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-zinc-700 w-full">
-                    <div className="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></div>
-                    Sign up for Pro
                   </button>
                 </div>
               )}

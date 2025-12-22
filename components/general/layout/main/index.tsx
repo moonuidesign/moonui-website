@@ -18,7 +18,7 @@ export default function MainLayout({
   const { isFilterOpen, setFilterOpen } = useFilter();
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen overflow-x-hidden">
       <motion.div
         animate={
           isFilterOpen
@@ -31,19 +31,19 @@ export default function MainLayout({
           isFilterOpen ? 'cursor-pointer pointer-events-none' : ''
         }`}
       >
-        <div className="pb-20 md:py-4 pt-4 md:mb-10 bg-black h-fit w-full px-4  md:rounded-lg flex justify-center">
-          <div className="flex items-center gap-2 text-[#B8B8B8]">
+        <div className=" h-fit w-full md:p-2  ">
+          <div className="flex items-center justify-center gap-2 w-full px-4   md:rounded-lg pb-20 md:py-3 pt-4 md:mb-10   bg-black  text-[#B8B8B8]">
             {/* Icon tetap sebagai flex item pertama */}
             <Image
               alt="Rocket"
               src="/Vector.svg"
               width={100}
               height={100}
-              className="size-4 md:size-6 shrink-0" // shrink-0 agar icon tidak gepeng
+              className="size-4 md:size-4 shrink-0" // shrink-0 agar icon tidak gepeng
             />
 
             {/* Gabungkan SEMUA teks dalam satu tag <p> atau <div> */}
-            <p className="text-sm md:text-base">
+            <p className="text-sm ">
               Built faster websites with{' '}
               <span className="text-white font-medium">MoonUI</span> components!{' '}
               {/* Gunakan span/link untuk Learn more di SINI, bukan dipisah */}
@@ -53,7 +53,7 @@ export default function MainLayout({
             </p>
           </div>
         </div>
-        <div className="rounded-t-2xl md:rounded-0 md:m-0  -mt-[150px] h-fit w-full">
+        <div className="rounded-t-2xl -mt-[100px] z-[10] md:rounded-0 md:m-0  overflow-hidden h-fit">
           <Suspense fallback={<NavbarSkeleton />}>
             <Navbar />
           </Suspense>

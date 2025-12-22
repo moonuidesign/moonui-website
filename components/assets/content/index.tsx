@@ -302,7 +302,7 @@ export default function Content({
 
         <motion.div
           style={{ overflowAnchor: 'none' }}
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+          className="grid grid-cols-1 px-8 md:px-0 md:grid-cols-2 xl:grid-cols-3 gap-6"
         >
           <AnimatePresence mode="popLayout">
             {fetchedItems.map((item, index) => {

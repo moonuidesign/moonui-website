@@ -2,16 +2,17 @@ import TextType from '@/components/TextType';
 import { AvatarGroup } from './avatar-component';
 import Image from 'next/image';
 import Meteors from '@/components/ui/meteors';
+import { ArrowRight2 } from 'iconsax-reactjs';
 
 const HeroSection = () => {
   return (
-    <div className="pt-30 md:pt-0 relative mx-auto md:max-w-7xl -pt-[200px] mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
+    <div className="pt-30 md:pt-0 z-[800] md:z-0 bg-[#E7E7E7] md:bg-none md:rounded-none rounded-t-[39px] -mt-[69px] md:mt-[30px] relative mx-auto md:max-w-7xl -pt-[200px] mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
       <div className="absolute  h-full w-full ">
         <Meteors minDelay={0.8} maxDelay={1.8} number={5} />
       </div>
       <Image
         src="/moonNotFound.png"
-        className="absolute lg:top-[21%] select-none hidden md:block scale-[1.25] pointer-events-none w-max-[1318.4px] h-max-[1142px] left-[49%] md:w-[681px] md:h-[648px] lg:w-[1103px] lg:h-[1069px] -translate-x-1/2 -rotate-65"
+        className="absolute lg:top-[21%] select-none hidden md:block scale-[1.25] pointer-events-none md:w-max-[846px] md:h-max-[839px] lg:w-max-[1318.4px] h-max-[1142px] left-[49%] md:w-[681px] md:h-[648px] lg:w-[1103px] lg:h-[1069px] -translate-x-1/2 -rotate-65"
         alt="Not Found"
         draggable={false}
         style={{
@@ -109,10 +110,10 @@ const HeroSection = () => {
               It’s free
             </span>
           </div>
-          <div className="w-2 h-5 relative">
-            <div className="w-5 h-5 left-[-6px] top-0 absolute inline-flex flex-col justify-center items-center overflow-hidden">
-              <div className="w-5 flex-1 relative group-hover:translate-x-1 transition-transform">
-                <div className="w-[3.33px] h-1.5 left-[8.33px] top-[6.67px] absolute outline outline-[1.25px] outline-offset-[-0.63px] outline-neutral-400"></div>
+          <div className="w-5 h-full relative flex justify-center items-center">
+            <div className=" text-white left-1/2 transform -translate-x-1/2 top-1/2 -translate-y-1/2 top-0 absolute inline-flex flex-col justify-center items-center overflow-hidden">
+              <div className="flex-1 relative flex justify-center items-center group-hover:translate-x-1 transition-transform">
+                <ArrowRight2 size={18} />
               </div>
             </div>
           </div>

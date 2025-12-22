@@ -12,9 +12,9 @@ export const GradientBlurOverlay = () => {
   ];
 
   return (
-    <div className="absolute bottom-0 left-0 w-full h-[520px] pointer-events-none z-10">
+    <div className="absolute bottom-0 left-0 w-full h-full pointer-events-none z-10">
       {/* Base Fade */}
-      <div className="absolute inset-0  h-[820px] bg-gradient-to-b from-transparent to-[#E8E8E8] via-[#E8E8E8]/80"></div>
+      <div className="absolute inset-0 md:h-full h-[30%] bg-gradient-to-b from-transparent to-[#E8E8E8] via-[#E8E8E8]/80"></div>
 
       {/* Stacked Blur Layers */}
       {layers.map((layer, index) => (

@@ -15,7 +15,21 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
   },
   images: {
+    // 1. IZINKAN SVG (Wajib untuk DiceBear)
+    dangerouslyAllowSVG: true,
+    // 2. Atur Content Security Policy untuk SVG (Opsional tapi disarankan)
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
+      // --- TAMBAHAN PENTING DI SINI ---
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com', // Domain untuk Google Profile Picture
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com', // Domain untuk GitHub Profile Picture (Jaga-jaga)
+      },
+      // --------------------------------
       {
         protocol: 'https',
         hostname: 'example.com',
@@ -23,6 +37,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'placehold.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
       },
       {
         protocol: 'https',

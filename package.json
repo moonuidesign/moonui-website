@@ -81,6 +81,7 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.65.0",
+    "react-responsive": "^10.0.1",
     "redis": "^5.9.0",
     "resend": "^6.3.0",
     "shiki": "^3.20.0",

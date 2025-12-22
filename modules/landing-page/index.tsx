@@ -8,7 +8,16 @@ import ComponentShowcase from '@/components/landing-page/showcase';
 import FAQSection from '@/components/landing-page/faq';
 import NewsletterSection from '@/components/landing-page/newslatter';
 
-export default function LandingPage() {
+interface LandingPageProps {
+  showcaseData?: {
+    id: string | number;
+    title: string;
+    blocks: string;
+    image: string;
+  }[];
+}
+
+export default function LandingPage({ showcaseData }: LandingPageProps) {
   const handleCtaClick = () => {
     alert('Open Code Editor...');
   };
@@ -70,7 +79,7 @@ export default function LandingPage() {
       />
       <Feature />
       <Index />
-      <ComponentShowcase />
+      <ComponentShowcase data={showcaseData} />
       <FAQSection categories={faqData} />
       <NewsletterSection />
     </>

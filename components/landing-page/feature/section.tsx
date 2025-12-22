@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { FeatureCard, FeaturesSectionProps } from './feature-card';
 import { IntersectionMarker } from './intersection-marker';
 
@@ -19,7 +20,12 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
           <div className="flex-1 h-px bg-gradient-to-r hidden md:block from-transparent via-neutral-800 to-transparent" />
           <div className="h-8 px-3 py-1.5 bg-orange-600 rounded-lg shadow-sm flex items-start md:items-center gap-1.5">
             <div className="w-4 h-4 relative">
-              <div className="w-3.5 h-3.5 border border-white rounded-sm" />
+              <Image
+                src="/rocket.svg"
+                fill
+                alt="Rocket Icon"
+                className="object-contain"
+              />
             </div>
             <span className="text-white text-sm font-medium font-['Inter']">
               {badgeText}

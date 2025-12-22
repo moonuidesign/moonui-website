@@ -89,7 +89,7 @@ function AssetsPageContent() {
         }
       />
 
-      <div className="max-w-7xl w-7xl mx-auto px-4 md:px-6 py-6 flex gap-8 relative">
+      <div className="max-w-3xl pt-20 md:pt-0 z-[800] md:z-0 bg-[#E7E7E7] md:bg-none md:rounded-none rounded-t-[39px] -mt-[69px] md:mt-[30px] md:max-w-7xl md:w-7xl mx-auto px-4 md:px-6 py-6 flex gap-8 relative">
         <div className="hidden lg:block w-64 flex-shrink-0">
           <div className="sticky top-6">
             <div className="mb-6 pl-1">

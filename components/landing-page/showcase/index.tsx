@@ -65,15 +65,34 @@ const COMPONENT_DATA = [
     image: 'https://placehold.co/270x220',
   },
 ];
-const ComponentShowcase = () => {
-  return (
-    <div className=" lg:w-7xl min-h-screen mx-auto container md:bg-[#E8E8E8] flex justify-center py-10 md:py-20 overflow-hidden relative font-sans md:px-0 px-1">
-      {/* Decorative Lines */}
-      <div className="absolute top-[156px] left-0 w-64 border-t border-neutral-300 hidden xl:block" />
-      <div className="absolute top-[156px] right-0 w-64 border-t border-neutral-300 hidden xl:block" />
 
-      <div className="w-full lg:w-7xl md:max-w-7xl relative z-0 flex flex-col gap-10 md:gap-16">
-        {/* --- HEADER --- */}
+interface ShowcaseItem {
+  id: string | number;
+  title: string;
+  blocks: string;
+  image: string;
+}
+
+interface ComponentShowcaseProps {
+  data?: ShowcaseItem[];
+}
+
+const ComponentShowcase = ({ data }: ComponentShowcaseProps) => {
+  const items = data && data.length > 0 ? data : COMPONENT_DATA;
+
+  return (
+    <div className=" lg:w-7xl h-fit mx-auto container md:bg-[#E8E8E8] flex justify-center py-10 md:py-20 relative font-sans md:px-0 px-1">
+      {/* Decorative Lines */}
+      <div className="absolute top-[156px] left-0 w-64 border-t border-neutral-300 hidden xl:block">
+        <span className="h-1.5 w-1.5 absolute top-1/2 -translate-y-1/2 left-0 rounded-full bg-[#D3D3D3]" />
+        <span className="h-1.5 w-1.5 absolute top-1/2 -translate-y-1/2 right-0 rounded-full bg-[#D3D3D3]" />
+      </div>
+      <div className="absolute top-[156px] right-0 w-64 border-t border-neutral-300 hidden xl:block">
+        <span className="h-1.5 w-1.5 absolute top-1/2 -translate-y-1/2 left-0 rounded-full bg-[#D3D3D3]" />
+        <span className="h-1.5 w-1.5 absolute top-1/2 -translate-y-1/2 right-0 rounded-full bg-[#D3D3D3]" />
+      </div>
+
+      <div className="w-full h-fit lg:w-7xl md:max-w-7xl relative z-0 flex flex-col gap-10 md:gap-16">
         <div className="flex flex-col items-start md:items-center gap-5 px-6 md:px-4 text-left md:text-center">
           <ComponentBadge />
 
@@ -100,10 +119,14 @@ const ComponentShowcase = () => {
         </div>
 
         {/* --- GRID SECTION --- */}
-        <div className="relative w-full md:rounded-b-4xl md:border-x md:border-b md:border-[#D8D8D8] md:overflow-hidden">
-          <div className="grid grid-cols-1 md:w-max-6xl lg:w-6xl mx-auto sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 md:gap-y-10 px-6 md:px-4 pb-32 md:pb-20">
+        <div className="relative w-full h-fit ">
+          <div className="md:rounded-b-4xl hidden md:block w-full z-[100] h-full absolute md:border-x md:border-b md:border-[#D8D8D8]">
+            <span className="h-1.5 w-1.5 absolute top-0  -left-[3px] rounded-full bg-[#D3D3D3]" />
+            <span className="h-1.5 w-1.5 absolute top-0  -right-[3px] rounded-full bg-[#D3D3D3]" />
+          </div>
+          <div className="grid grid-cols-1 md:w-max-2xl w-full md:w-2xl lg:w-6xl mx-auto sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 lg:gap-y-10 px-6 lg:px-4 pb-32 lg:pb-20">
             {/* LOGIC SLICE MOBILE (0-2 Index) */}
-            {COMPONENT_DATA.slice(0, 8).map((item, index) => (
+            {items.slice(0, 8).map((item, index) => (
               <div
                 key={item.id}
                 className={

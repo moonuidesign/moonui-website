@@ -7,6 +7,7 @@ import {
   Message2,
   MoneyChange,
   Setting,
+  User,
   Wallet,
 } from 'iconsax-reactjs';
 import { Bot } from 'lucide-react';
@@ -14,6 +15,10 @@ import { MobileTopNav } from './mobile-top-nav';
 import { MockDashboardContent } from './mock-dashboard-content';
 import { CardSwap } from './card-swaps';
 import { MobileCardView } from './mobile-card-view';
+
+// ==========================================
+// 1. TYPES & CONFIG
+// ==========================================
 
 export type Category = 'hr' | 'finance' | 'marketing' | 'crypto' | 'ai';
 
@@ -28,6 +33,7 @@ export interface CategoryConfig {
   id: Category;
   title: string;
   subtitle: string;
+  icons: React.ReactNode;
   bgColor: string; // Tailwind class
   themeColor: string; // Hex code
   tabs: TabConfig[];
@@ -36,6 +42,7 @@ export interface CategoryConfig {
 export const CATEGORIES_CONFIG: CategoryConfig[] = [
   {
     id: 'hr',
+    icons: <User size={18} />,
     title: 'HR Management',
     subtitle: '25+ ready-to-use widgets.',
     bgColor: 'bg-[#7D52F4]',
@@ -69,6 +76,7 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
     title: 'Finance & Banking',
     subtitle: 'Complete financial overview.',
     bgColor: 'bg-[#335CFF]',
+    icons: <MoneyChange size={18} />, // Changed Icon
     themeColor: '#335CFF',
     tabs: [
       {
@@ -99,6 +107,7 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
     title: 'Marketing',
     subtitle: 'Growth statistics & ROI.',
     bgColor: 'bg-[#FB6B23]',
+    icons: <Chart size={18} />, // Changed Icon
     themeColor: '#FB6B23',
     tabs: [
       {
@@ -127,6 +136,7 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
   {
     id: 'crypto',
     title: 'Cryptocurrency',
+    icons: <Wallet size={18} />, // Changed Icon
     subtitle: 'Secure wallet management.',
     bgColor: 'bg-[#10B981]',
     themeColor: '#10B981',
@@ -157,6 +167,7 @@ export const CATEGORIES_CONFIG: CategoryConfig[] = [
   {
     id: 'ai',
     title: 'AI Assistant',
+    icons: <Bot size={18} />, // Changed Icon
     subtitle: 'Smart automation tools.',
     bgColor: 'bg-[#EC4899]',
     themeColor: '#EC4899',
@@ -215,90 +226,6 @@ export const Icons = {
       />
     </svg>
   ),
-  User: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-      <circle cx="12" cy="7" r="4"></circle>
-    </svg>
-  ),
-  Finance: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <line x1="12" y1="1" x2="12" y2="23"></line>
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-    </svg>
-  ),
-  Analytics: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <line x1="12" y1="20" x2="12" y2="10"></line>
-      <line x1="18" y1="20" x2="18" y2="4"></line>
-      <line x1="6" y1="20" x2="6" y2="16"></line>
-    </svg>
-  ),
-  Wallet: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-      <line x1="1" y1="10" x2="23" y2="10"></line>
-    </svg>
-  ),
-  Bot: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <rect x="3" y="11" width="14" height="10" rx="2"></rect>
-      <circle cx="12" cy="5" r="2"></circle>
-      <path d="M12 7v4"></path>
-      <line x1="8" y1="16" x2="8" y2="16"></line>
-      <line x1="16" y1="16" x2="16" y2="16"></line>
-    </svg>
-  ),
 };
 
 // ==========================================
@@ -317,6 +244,8 @@ export interface Slot {
 
 export default function Bennefits() {
   const [activeCategory, setActiveCategory] = useState<Category>('hr');
+
+  // Callback to get cards based on category
   const getDesktopCards = useCallback((category: Category) => {
     const config = CATEGORIES_CONFIG.find((c) => c.id === category);
     if (!config) return [];
@@ -334,8 +263,15 @@ export default function Bennefits() {
     [activeCategory, getDesktopCards],
   );
 
+  // Helper to get active category config
+  const activeConfig = useMemo(
+    () => CATEGORIES_CONFIG.find((c) => c.id === activeCategory),
+    [activeCategory],
+  );
+
   return (
-    <div className="max-h-[1600px] h-fit md:h-[1200px] relative lg:max-w-7xl mx-auto bg-[#E8E8E8] flex flex-col items-center py-8 md:py-20 font-sans text-[#2E2E2E]  selection:bg-black/10">
+    <div className="max-h-[1600px] h-fit md:h-fit relative lg:max-w-7xl mx-auto flex flex-col items-center py-8 lg:py-20 font-sans text-[#2E2E2E] selection:bg-black/10">
+      {/* MOBILE VIEW */}
       <div className="md:hidden w-full px-1 lg:px-5 flex flex-col gap-6 max-w-[420px]">
         <div className="flex flex-col items-center gap-4 mb-2">
           <div className="inline-flex h-8 px-3 items-center gap-2 rounded-xl bg-[#8A7F8D] shadow-sm">
@@ -357,9 +293,10 @@ export default function Bennefits() {
         <MobileCardView key={activeCategory} activeCategory={activeCategory} />
       </div>
 
-      <div className="hidden md:flex   flex-col items-center md:w-3xl md:overflow-hidden lg:w-6xl md:max-w-6xl lg:max-w-[1440px] px-4">
+      {/* DESKTOP VIEW */}
+      <div className="hidden md:flex flex-col items-center md:w-3xl md:overflow-hidden lg:w-6xl md:max-w-3xl lg:max-w-[1440px] px-4">
         <div className="flex flex-col items-center gap-8 mb-16 z-20 relative">
-          <div className="inline-flex h-8 px-3 pl-2 items-center gap-1.5 rounded-[9px] bg-[#8A7F8D] shadow-sm">
+          <div className="inline-flex h-8 px-3 pl-2 items-center gap-1.5 rounded-[9px] bg-[#FF4F00] shadow-sm">
             <Icons.Check />
             <span className="text-white text-sm font-medium leading-5">
               Sector-specific Templates
@@ -393,9 +330,13 @@ export default function Bennefits() {
                 }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-[7px] flex items-center justify-center shadow-inner ${cat.bgColor}`}
+                  className={`size-7 p-1 rounded-[7px] flex items-center justify-center shadow-inner ${cat.bgColor}`}
                 >
-                  <div className="w-2.5 h-2.5 border-2 border-white/80 rounded-full"></div>
+                  {/* Clone element to change color/size if needed, or render directly */}
+                  {React.cloneElement(cat.icons as React.ReactElement, {
+                    color: 'white', // Ensure icon is white
+                    variant: 'Bold', // Use Bold variant if supported by library
+                  })}
                 </div>
                 <span className="capitalize font-medium text-base text-[#3D3D3D]">
                   {cat.title}
@@ -405,16 +346,15 @@ export default function Bennefits() {
           </div>
         </div>
 
-        <div className="relative w-full flex justify-center  min-h-[600px]">
+        <div className="relative w-full flex justify-center min-h-[600px]">
           <span
-            style={{
-              zIndex: 100,
-            }}
-            className="border-x border-2 border-t-0 -bottom-10 rounded-b-4xl absolute pointer-events-none  border-[#D3D3D3] w-full flex h-[calc(100%+70px)] "
+            style={{ zIndex: 100 }}
+            className="border-x border-2 border-t-0 -bottom-10 rounded-b-4xl absolute pointer-events-none border-[#D3D3D3] w-full flex h-[calc(100%+70px)]"
           >
             <span className="w-1.5 h-1.5 absolute top-0 -left-[3px] bg-[#D3D3D3] rounded-full" />
             <span className="w-1.5 h-1.5 absolute top-0 -right-[3px] bg-[#D3D3D3] rounded-full" />
           </span>
+
           <AnimatePresence mode="wait">
             <motion.div
               key={activeCategory}
@@ -422,6 +362,7 @@ export default function Bennefits() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.4 }}
+              className="w-full flex justify-center"
             >
               <CardSwap
                 width={1000}
@@ -431,7 +372,7 @@ export default function Bennefits() {
               >
                 {desktopCards.map((card, index) => (
                   <div
-                    key={card.id + index}
+                    key={`${card.id}-${index}`}
                     className="absolute md:w-2xl lg:w-4xl bg-white rounded-[24px] shadow-2xl border border-white/60 cursor-pointer overflow-hidden transform transition-transform hover:brightness-105"
                   >
                     <div className="h-12 bg-[#FAFAFA] border-b border-[#EBEBEB] flex items-center justify-between px-5">
@@ -439,7 +380,14 @@ export default function Bennefits() {
                         <div
                           className={`w-6 h-6 rounded-[6px] flex items-center justify-center text-white text-xs shadow-sm ${card.bgColor}`}
                         >
-                          <div className="w-2 h-2 rounded-full bg-white"></div>
+                          {/* Correctly render icon from active config */}
+                          {React.cloneElement(
+                            activeConfig?.icons as React.ReactElement,
+                            {
+                              size: 14,
+                              color: 'white',
+                            },
+                          )}
                         </div>
                         <div>
                           <span className="text-[#333] font-medium text-sm">
@@ -471,13 +419,13 @@ export default function Bennefits() {
             <span className="font-medium">Explore Template</span>
             <span className="opacity-30">-</span>
             <span className="opacity-70 font-medium capitalize">
-              {CATEGORIES_CONFIG.find((c) => c.id === activeCategory)?.title}
+              {activeConfig?.title}
             </span>
           </div>
           <Icons.ArrowRight />
         </button>
       </div>
-      <div className="absolute -bottom-10 z-[10] left-0 w-full h-[250px] lg:h-[500px] bg-gradient-to-t from-[#e8e8e8] via-[#e8e8e8] to-transparent pointer-events-none"></div>
+      <div className="absolute bottom-[80px] lg:-bottom-10 z-[10] left-0 w-full h-[250px] lg:h-[500px] bg-gradient-to-t from-[#e8e8e8] via-[#e8e8e8] to-transparent pointer-events-none"></div>
     </div>
   );
 }

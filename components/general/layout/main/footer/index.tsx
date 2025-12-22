@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { FooterProps } from './type'; // Pastikan path ini sesuai
 import Link from 'next/link';
-import { Disc, Github, Twitter, ChevronDown } from 'lucide-react'; // Tambah ChevronDown
+import { Disc, Github, Twitter, ChevronDown, X } from 'lucide-react'; // Tambah ChevronDown
 import { SocialButton } from './social-button'; // Pastikan path ini sesuai
 import { MoonLogo } from './moon-logo'; // Pastikan path ini sesuai
 import { ContentType, useFilterStore } from '@/contexts';
@@ -109,19 +109,28 @@ const Footer: React.FC<FooterProps> = ({
     }
   };
   return (
-    <footer className="relative w-full lg:w-7xl overflow-hidden pt-20 container mx-auto  ">
+    <footer className="relative w-full lg:w-7xl  pt-20 container mx-auto  ">
       {/* Garis Dekorasi Desktop */}
-      <div className="hidden xl:block absolute top-[160px] left-0 w-[30%] h-px bg-neutral-300" />
-      <div className="hidden xl:block absolute top-[160px] right-0 w-[30%] h-px bg-neutral-300" />
+      <div className="hidden xl:block absolute top-[180px] left-0 w-[25%] h-px bg-neutral-300">
+        {/* Tambahkan: top-1/2 -translate-y-1/2 */}
+        <span className="h-1.5 w-1.5 absolute top-1/2 -translate-y-1/2 left-0 rounded-full bg-[#D3D3D3]" />
+        <span className="h-1.5 w-1.5 absolute top-1/2 -translate-y-1/2 right-0 rounded-full bg-[#D3D3D3]" />
+      </div>
+
+      {/* Garis Kanan */}
+      <div className="hidden xl:block absolute top-[180px] right-0 w-[25%] h-px bg-neutral-300">
+        <span className="h-1.5 w-1.5 absolute top-1/2 -translate-y-1/2 left-0 rounded-full bg-[#D3D3D3]" />
+        <span className="h-1.5 w-1.5 absolute top-1/2 -translate-y-1/2 right-0 rounded-full bg-[#D3D3D3]" />
+      </div>
 
       <div className="px-4 md:px-0 relative z-10">
         {/* Bagian Header (Logo & Sosmed) */}
         <div className="flex flex-col items-start justify-start md:items-center md:text-center gap-4 md:gap-6 mb-12 lg:mb-20">
           <MoonLogo />
 
-          <div className="max-w-lg">
-            <h2 className="text-[#3D3D3D] text-[28px] md:text-[30px]/[36px] md:text-2xl font-semibold font-sans md:leading-10">
-              Enhance Your Design <br /> & Development
+          <div className="lg:max-w-2xl max-w-lg">
+            <h2 className="text-[#3D3D3D] font-sans font-semibold text-[28px] leading-tight md:text-[30px] md:leading-10">
+              Enhance Your Design <br className="lg:hidden" /> & Development
             </h2>
             <p className="text-zinc-500 text-[24px]/[36px] md:text-2xl font-semibold font-sans md:leading-10">
               perfectly until to the moon
@@ -149,14 +158,23 @@ const Footer: React.FC<FooterProps> = ({
                 <Github className="w-4 h-4 hover:text-[#FF4F00] text-zinc-400" />
               }
             />
+            <SocialButton
+              href={socials?.github}
+              icon={
+                <X className="w-4 h-4 hover:text-[#FF4F00] text-zinc-400" />
+              }
+            />
           </div>
         </div>
 
         {/* --- MENU LINKS AREA --- */}
 
-        <div className="lg:flex flex-col gap-5 md:gap-0 justify-center items-center md:border-x border-b md:border-[#D3D3D3] md:pb-12 rounded-b-2xl">
+        <div className="lg:flex relative md:max-w-7xl flex-col mx-auto gap-5 md:gap-0 justify-center items-center md:border-x border-b md:border-[#D3D3D3] md:pb-12 rounded-b-2xl">
+          <span className="h-1.5 w-1.5 hidden md:block absolute top-0 -left-[3px] rounded-full bg-[#D3D3D3]" />
+          <span className="h-1.5 w-1.5 hidden md:block absolute top-0 -right-[3px] rounded-full bg-[#D3D3D3]" />
+
           {/* DESKTOP VIEW */}
-          <div className="hidden lg:grid grid-cols-5 gap-12 md:mb-32">
+          <div className="hidden lg:grid grid-cols-5 gap-12 md:mb-16 w-full max-w-6xl">
             {columns.map((col, idx) => (
               <div key={idx} className="flex flex-col gap-5">
                 <h3 className="text-[#3D3D3D] text-xl font-bold font-sans leading-9">
@@ -170,7 +188,6 @@ const Footer: React.FC<FooterProps> = ({
                       <li key={lIdx}>
                         <Link
                           href={extendedLink.href}
-                          // 3. Pasang Handler onClick
                           onClick={() => handleLinkClick(extendedLink)}
                           className="text-zinc-500 hover:text-orange-600 text-sm font-medium font-sans leading-9 transition-colors"
                         >
