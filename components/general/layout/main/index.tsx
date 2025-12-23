@@ -53,7 +53,7 @@ export default function MainLayout({
             </p>
           </div>
         </div>
-        <div className="rounded-t-2xl -mt-[100px] z-[10] md:rounded-0 md:m-0  overflow-hidden h-fit">
+        <div className=" z-[800] md:z-0 bg-[#E7E7E7] md:bg-none md:rounded-none rounded-t-[39px] -mt-[69px] md:mt-[30px] relative  overflow-hidden h-fit">
           <Suspense fallback={<NavbarSkeleton />}>
             <Navbar />
           </Suspense>
