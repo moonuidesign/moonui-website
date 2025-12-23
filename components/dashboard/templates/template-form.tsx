@@ -135,15 +135,15 @@ export default function TemplateForm({
   // --- FORM INITIALIZATION ---
   const defaultTier: TemplateTierType =
     template?.tier &&
-    TEMPLATE_TIER_OPTIONS.includes(template.tier as TemplateTierType)
+      TEMPLATE_TIER_OPTIONS.includes(template.tier as TemplateTierType)
       ? (template.tier as TemplateTierType)
       : 'free';
 
   const defaultStatus: TemplateStatusType =
     template?.statusContent &&
-    TEMPLATE_STATUS_OPTIONS.includes(
-      template.statusContent as TemplateStatusType,
-    )
+      TEMPLATE_STATUS_OPTIONS.includes(
+        template.statusContent as TemplateStatusType,
+      )
       ? (template.statusContent as TemplateStatusType)
       : 'draft';
 
@@ -426,8 +426,8 @@ export default function TemplateForm({
                         !currentParentId
                           ? 'Select Parent First'
                           : childCategories.length === 0
-                          ? 'No Sub-categories'
-                          : 'Select Sub Category'
+                            ? 'No Sub-categories'
+                            : 'Select Sub Category'
                       }
                       searchPlaceholder="Search or create sub category..."
                       disabled={!currentParentId || isPending}
@@ -504,6 +504,9 @@ export default function TemplateForm({
                         <DescriptionEditor
                           initialContent={field.value as any}
                           onChange={field.onChange}
+                          outputHtml={true}
+                          placeholder="Write a description for this template..."
+                          minHeight="150px"
                         />
                       </div>
                     </FormControl>

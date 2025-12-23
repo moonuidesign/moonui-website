@@ -133,7 +133,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
 
   const defaultStatus: DesignStatusType =
     design?.statusContent &&
-    DESIGN_STATUS_OPTIONS.includes(design.statusContent as DesignStatusType)
+      DESIGN_STATUS_OPTIONS.includes(design.statusContent as DesignStatusType)
       ? (design.statusContent as DesignStatusType)
       : 'draft';
 
@@ -307,7 +307,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
               sourceFileInputRef.current.value = '';
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     });
   };
 
@@ -407,8 +407,8 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                           !currentParentId
                             ? 'Select Parent First'
                             : childCategories.length === 0
-                            ? 'No Sub-categories'
-                            : 'Select Sub Category'
+                              ? 'No Sub-categories'
+                              : 'Select Sub Category'
                         }
                         searchPlaceholder="Search or create sub category..."
                         disabled={!currentParentId || isPending}
@@ -529,6 +529,9 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                           <DescriptionEditor
                             initialContent={field.value}
                             onChange={field.onChange}
+                            outputHtml={true}
+                            placeholder="Write a description for this design..."
+                            minHeight="150px"
                           />
                         </div>
                       </FormControl>

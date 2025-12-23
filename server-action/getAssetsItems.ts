@@ -262,13 +262,13 @@ export async function getAssetsItems(
 
     const detailPromises = [];
 
-    // Gunakan helper untuk membungkus fetch agar rapi
+    // Using relational queries for fetching details
     if (idsByType.components.length > 0) {
       detailPromises.push(
         db.query.contentComponents
           .findMany({
             where: inArray(contentComponents.id, idsByType.components),
-            with: { category: true, user: true },
+            with: { category: true },
           })
           .then((res) => res.map((i) => ({ ...i, _type: 'components' }))),
       );
@@ -278,7 +278,7 @@ export async function getAssetsItems(
         db.query.contentTemplates
           .findMany({
             where: inArray(contentTemplates.id, idsByType.templates),
-            with: { category: true, user: true },
+            with: { category: true },
           })
           .then((res) => res.map((i) => ({ ...i, _type: 'templates' }))),
       );
@@ -288,7 +288,7 @@ export async function getAssetsItems(
         db.query.contentGradients
           .findMany({
             where: inArray(contentGradients.id, idsByType.gradients),
-            with: { category: true, user: true },
+            with: { category: true },
           })
           .then((res) => res.map((i) => ({ ...i, _type: 'gradients' }))),
       );
@@ -298,7 +298,7 @@ export async function getAssetsItems(
         db.query.contentDesigns
           .findMany({
             where: inArray(contentDesigns.id, idsByType.designs),
-            with: { category: true, user: true },
+            with: { category: true },
           })
           .then((res) => res.map((i) => ({ ...i, _type: 'designs' }))),
       );

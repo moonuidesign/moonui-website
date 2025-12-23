@@ -153,9 +153,6 @@ function CodeEditor({
 
     const characters = Array.from(code); // Handle emoji/unicode correctly
     let index = 0;
-
-    // Hitung interval agar durasi total sesuai prop `duration`
-    // Minimal interval 4ms agar browser tidak hang
     const totalDurationMs = duration * 1000;
     const computedInterval = Math.max(totalDurationMs / characters.length, 4);
 
@@ -214,7 +211,7 @@ function CodeEditor({
               className={cn(
                 'flex flex-row items-center gap-2',
                 dots &&
-                  'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
+                'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
               )}
             >
               {icon ? (

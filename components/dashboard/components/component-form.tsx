@@ -341,10 +341,10 @@ export default function ComponentForm({
       const promise = async () => {
         const res = isEditMode
           ? await updateContentComponent(
-              component!.id,
-              values,
-              selectedFile || undefined,
-            )
+            component!.id,
+            values,
+            selectedFile || undefined,
+          )
           : await createContentComponent(values, selectedFile);
 
         if (!res?.success) {
@@ -376,7 +376,7 @@ export default function ComponentForm({
             setSelectedFile(null);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     });
   };
 
@@ -452,8 +452,8 @@ export default function ComponentForm({
                               !watchedParentCategoryId
                                 ? 'Select Parent First'
                                 : subCategories.length === 0
-                                ? 'No sub-categories'
-                                : 'Select Sub Category'
+                                  ? 'No sub-categories'
+                                  : 'Select Sub Category'
                             }
                             searchPlaceholder="Search or create sub category..."
                             disabled={!watchedParentCategoryId || isPending}
@@ -676,22 +676,20 @@ export default function ComponentForm({
                       <button
                         type="button"
                         onClick={() => setRawInputTab('code')}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                          rawInputTab === 'code'
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${rawInputTab === 'code'
                             ? 'bg-muted shadow-sm text-foreground'
                             : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                          }`}
                       >
                         Code
                       </button>
                       <button
                         type="button"
                         onClick={() => setRawInputTab('preview')}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                          rawInputTab === 'preview'
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${rawInputTab === 'preview'
                             ? 'bg-muted shadow-sm text-primary'
                             : 'text-muted-foreground hover:text-primary'
-                        }`}
+                          }`}
                       >
                         Review
                       </button>
@@ -730,9 +728,8 @@ export default function ComponentForm({
                                 <Textarea
                                   {...field}
                                   placeholder="Paste clean HTML here (<div class='...'>...</div>)"
-                                  className={`font-mono text-xs leading-relaxed resize-none border-0 focus-visible:ring-0 bg-background p-6 transition-all duration-300 ease-in-out ${
-                                    isCodeExpanded ? 'h-[500px]' : 'h-[250px]'
-                                  }`}
+                                  className={`font-mono text-xs leading-relaxed resize-none border-0 focus-visible:ring-0 bg-background p-6 transition-all duration-300 ease-in-out ${isCodeExpanded ? 'h-[500px]' : 'h-[250px]'
+                                    }`}
                                   spellCheck={false}
                                 />
                               </FormControl>
@@ -831,6 +828,9 @@ export default function ComponentForm({
                             <DescriptionEditor
                               initialContent={field.value}
                               onChange={(value) => field.onChange(value)}
+                              outputHtml={true}
+                              placeholder="Write a description for this component..."
+                              minHeight="150px"
                             />
                           </div>
                         </FormControl>

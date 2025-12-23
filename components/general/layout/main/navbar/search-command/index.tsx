@@ -113,7 +113,7 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
   useEffect(() => {
     if (!open) return;
 
-    // Static pages filtering
+    // Static pages filtering - show all when empty, filter when searching
     if (debouncedSearch) {
       const lower = debouncedSearch.toLowerCase();
       setStaticData(
@@ -124,14 +124,34 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
         ),
       );
     } else {
-      setStaticData([]);
+      // Show all static pages when no search query
+      setStaticData(STATIC_PAGES);
     }
 
-    setLoading(true);
-    getGlobalSearchData(debouncedSearch)
-      .then((res) => setData(res))
-      .catch((err) => console.error('Global Search Error:', err))
-      .finally(() => setLoading(false));
+    // Only fetch API data when there's a search query
+    if (debouncedSearch) {
+      setLoading(true);
+      getGlobalSearchData(debouncedSearch)
+        .then((res) => setData(res))
+        .catch((err) => console.error('Global Search Error:', err))
+        .finally(() => setLoading(false));
+    } else {
+      // Reset data when no search query
+      setData({
+        templates: [],
+        templateCategories: [],
+        templateSubCategories: [],
+        components: [],
+        componentCategories: [],
+        componentSubCategories: [],
+        designs: [],
+        designCategories: [],
+        designSubCategories: [],
+        gradients: [],
+        gradientCategories: [],
+        gradientSubCategories: [],
+      });
+    }
   }, [debouncedSearch, open]);
 
   const handleNavigate = (url: string) => {
@@ -213,7 +233,7 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
       searchQuery: search,
       clearOthers: true,
     });
-    
+
     // Always navigate to assets with the query param
     const params = new URLSearchParams();
     if (search) {

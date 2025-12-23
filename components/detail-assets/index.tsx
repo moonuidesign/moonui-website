@@ -75,22 +75,102 @@ const calculateDuration = (code: string) => {
 export function ContentDetailSkeleton() {
   return (
     <div className="w-full max-w-[1280px] mx-auto p-4 md:p-8 min-h-screen">
+      {/* Top Navigation Skeleton */}
       <div className="flex justify-between items-center mb-8">
         <div className="h-10 w-32 bg-neutral-200 rounded-full animate-pulse" />
-        <div className="flex gap-2">
-          <div className="h-10 w-10 bg-neutral-200 rounded-full animate-pulse" />
-          <div className="h-10 w-10 bg-neutral-200 rounded-full animate-pulse" />
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+        {/* Left Column - Image */}
+        <div className="w-full lg:w-[65%] flex flex-col gap-6">
+          <div className="w-full aspect-[4/3] bg-neutral-200 rounded-3xl animate-pulse" />
+          {/* Gallery Thumbnails */}
+          <div className="hidden lg:grid grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="aspect-video bg-neutral-200 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        </div>
+
+        {/* Right Column - Info */}
+        <div className="w-full lg:w-[35%] space-y-6">
+          {/* Stats & Number */}
+          <div className="flex items-center gap-3">
+            <div className="h-7 w-12 bg-neutral-200 rounded animate-pulse" />
+            <div className="h-5 w-20 bg-neutral-200 rounded animate-pulse" />
+            <div className="h-5 w-24 bg-neutral-200 rounded animate-pulse" />
+          </div>
+
+          {/* Title */}
+          <div className="space-y-2">
+            <div className="h-8 w-full bg-neutral-200 rounded animate-pulse" />
+            <div className="h-8 w-3/4 bg-neutral-200 rounded animate-pulse" />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <div className="h-12 w-12 bg-neutral-200 rounded-xl animate-pulse" />
+            <div className="h-12 flex-1 bg-neutral-200 rounded-xl animate-pulse" />
+            <div className="h-12 w-12 bg-neutral-200 rounded-xl animate-pulse" />
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <div className="h-4 w-full bg-neutral-200 rounded animate-pulse" />
+            <div className="h-4 w-5/6 bg-neutral-200 rounded animate-pulse" />
+            <div className="h-4 w-4/6 bg-neutral-200 rounded animate-pulse" />
+          </div>
+
+          {/* Pricing Section */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-end">
+              <div className="space-y-1">
+                <div className="h-3 w-16 bg-neutral-200 rounded animate-pulse" />
+                <div className="h-8 w-20 bg-neutral-200 rounded animate-pulse" />
+              </div>
+              <div className="h-6 w-20 bg-neutral-200 rounded-full animate-pulse" />
+            </div>
+          </div>
+
+          {/* Specifications Table */}
+          <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
+            <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-200">
+              <div className="h-4 w-28 bg-neutral-200 rounded animate-pulse" />
+            </div>
+            <div className="p-5 space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex justify-between items-center">
+                  <div className="h-3 w-20 bg-neutral-200 rounded animate-pulse" />
+                  <div className="h-4 w-24 bg-neutral-200 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+            {/* Tags Skeleton */}
+            <div className="px-5 pb-5">
+              <div className="h-3 w-12 bg-neutral-200 rounded animate-pulse mb-2" />
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-6 w-16 bg-neutral-200 rounded-full animate-pulse" />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="flex flex-col lg:flex-row gap-12">
-        <div className="w-full lg:w-[55%] flex flex-col gap-6">
-          <div className="w-full aspect-[4/3] bg-neutral-200 rounded-3xl animate-pulse" />
-        </div>
-        <div className="w-full lg:w-[45%] space-y-8 pt-2">
-          <div className="space-y-4">
-            <div className="h-4 w-24 bg-neutral-200 rounded animate-pulse" />
-            <div className="h-12 w-3/4 bg-neutral-200 rounded animate-pulse" />
-          </div>
+
+      {/* Related Content Skeleton */}
+      <div className="mt-16 space-y-8">
+        <div className="h-8 w-48 bg-neutral-200 rounded animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex flex-col gap-4">
+              <div className="aspect-[4/3] bg-neutral-200 rounded-2xl animate-pulse" />
+              <div className="space-y-2">
+                <div className="h-4 w-3/4 bg-neutral-200 rounded animate-pulse" />
+                <div className="h-3 w-1/2 bg-neutral-200 rounded animate-pulse" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -132,15 +212,15 @@ export default function ContentDetailClient({
   const { copy } = UseCopyToClipboard();
 
   // --- LOGIC ---
-  const isLocked = content.tier !== 'free' && userTier === 'free';
-  const isProPlusOnly = content.tier === 'pro_plus' && userTier !== 'pro_plus';
-  const canDownload = !isLocked && !isProPlusOnly;
+  // Lock: content tier is 'pro' and user is 'free'
+  const isLocked = content.tier === 'pro' && userTier === 'free';
+  const canDownload = !isLocked;
 
   // Cek apakah ada snippets. Type 'component' wajib punya snippets.
   const showCodeSnippet = content.type === 'component' && content.codeSnippets;
 
-  const canViewCode =
-    userTier === 'pro_plus' || userTier === 'pro' || content.tier === 'free';
+  // Can view code: user is 'pro' OR content is 'free'
+  const canViewCode = userTier === 'pro' || content.tier === 'free';
 
   // --- IMAGE LOGIC ---
   const validImages = useMemo(() => {
@@ -350,9 +430,8 @@ export default function ContentDetailClient({
                 className="relative w-full bg-white rounded-3xl overflow-hidden border border-[#D3D3D3] shadow-xl shadow-neutral-100 group"
               >
                 <div
-                  className={`relative w-full ${
-                    content.type === 'template' ? 'aspect-2/3' : 'aspect-4/3'
-                  }`}
+                  className={`relative w-full ${content.type === 'template' ? 'aspect-2/3' : 'aspect-4/3'
+                    }`}
                 >
                   <Image
                     src={mainImage}
@@ -377,9 +456,8 @@ export default function ContentDetailClient({
               </motion.div>
             ) : (
               <div
-                className={`relative w-full ${
-                  content.type === 'template' ? 'aspect-2/4' : ' aspect-3-4'
-                } bg-white rounded-3xl overflow-hidden border border-[#D3D3D3] shadow-xl flex items-center justify-center text-neutral-400 gap-2`}
+                className={`relative w-full ${content.type === 'template' ? 'aspect-2/4' : ' aspect-3-4'
+                  } bg-white rounded-3xl overflow-hidden border border-[#D3D3D3] shadow-xl flex items-center justify-center text-neutral-400 gap-2`}
               >
                 <ImageIcon size={32} className="opacity-50" />
                 <span className="text-xs font-medium">
@@ -408,11 +486,10 @@ export default function ContentDetailClient({
                     style={{ overflow: 'hidden' }}
                   >
                     <div
-                      className={`relative w-full ${
-                        content.type === 'template'
-                          ? 'aspect-2/3'
-                          : 'aspect-4/3'
-                      }`}
+                      className={`relative w-full ${content.type === 'template'
+                        ? 'aspect-2/3'
+                        : 'aspect-4/3'
+                        }`}
                     >
                       <Image
                         src={src}
@@ -570,11 +647,10 @@ export default function ContentDetailClient({
                     href={
                       prevItem ? getAssetPath(prevItem.type, prevItem.id) : '#'
                     }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${
-                      prevItem
-                        ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
-                        : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
-                    }`}
+                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${prevItem
+                      ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
+                      : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
+                      }`}
                     aria-disabled={!prevItem}
                   >
                     <ChevronLeft size={18} />
@@ -599,19 +675,18 @@ export default function ContentDetailClient({
                     {isProcessing
                       ? 'Processing...'
                       : content.type === 'component'
-                      ? 'Copy Code'
-                      : 'Download File'}
+                        ? 'Copy Code'
+                        : 'Download File'}
                   </button>
 
                   <Link
                     href={
                       nextItem ? getAssetPath(nextItem.type, nextItem.id) : '#'
                     }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${
-                      nextItem
-                        ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
-                        : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
-                    }`}
+                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${nextItem
+                      ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
+                      : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
+                      }`}
                     aria-disabled={!nextItem}
                   >
                     <ChevronRight size={18} />
@@ -623,11 +698,10 @@ export default function ContentDetailClient({
                     href={
                       prevItem ? getAssetPath(prevItem.type, prevItem.id) : '#'
                     }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${
-                      prevItem
-                        ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
-                        : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
-                    }`}
+                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${prevItem
+                      ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
+                      : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
+                      }`}
                     aria-disabled={!prevItem}
                   >
                     <ChevronLeft size={18} />
@@ -642,11 +716,10 @@ export default function ContentDetailClient({
                     href={
                       nextItem ? getAssetPath(nextItem.type, nextItem.id) : '#'
                     }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${
-                      nextItem
-                        ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
-                        : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
-                    }`}
+                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${nextItem
+                      ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
+                      : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
+                      }`}
                     aria-disabled={!nextItem}
                   >
                     <ChevronRight size={18} />
@@ -724,82 +797,133 @@ export default function ContentDetailClient({
                   Specifications
                 </h3>
               </div>
-              <div className="p-5 grid grid-cols-2 gap-y-6 gap-x-4">
-                <SpecItem
-                  icon={<Tag size={12} />}
-                  label="Category"
-                  value={content.category?.name}
-                />
-                <SpecItem
-                  icon={<Box size={12} />}
-                  label="size"
-                  value={content.size}
-                />
-                <SpecItem
-                  icon={<Hash size={12} />}
-                  label="Slug"
-                  value={slugString}
-                  monospace
-                />
-                <SpecItem
-                  icon={<Box size={12} />}
-                  label="format"
-                  value={content.format}
-                />
+              {/* Responsive Table */}
+              <div className="divide-y divide-neutral-100">
+                <SpecRow label="Category" value={content.category?.name} />
+                <SpecRow label="Author" value="MoonUI Design" />
+                <SpecRow label="Size" value={content.size} />
+                <SpecRow label="Format" value={content.format} />
               </div>
+              {/* Tags Section */}
+              {Array.isArray(content.slug) && content.slug.length > 0 && (
+                <div className="px-5 py-4 border-t border-neutral-100">
+                  <p className="text-xs text-neutral-400 font-medium uppercase tracking-wider mb-3">Tags</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(content.slug as string[]).map((tag, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1 text-xs font-medium bg-neutral-100 text-neutral-600 rounded-full hover:bg-neutral-200 transition-colors cursor-default"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-200 to-transparent my-16"></div>
+      {/* RELATED CONTENT - Only show if has data */}
+      {(relevantContent.length > 0 || popularContent.length > 0) && (
+        <>
+          <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-200 to-transparent my-16" />
 
-      {/* RELATED CONTENT */}
-      <div className="flex flex-col gap-16 pb-16">
-        <div>
-          <h2 className="text-neutral-900 text-2xl md:text-3xl font-bold tracking-tight mb-8 px-2">
-            More like this
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {relevantContent.map((item) => (
-              <CardItem key={item.id} item={item} />
-            ))}
-          </div>
-        </div>
-        <div className="pt-12 border-t border-[#D3D3D3]">
-          <h2 className="text-neutral-900 text-2xl md:text-3xl font-bold tracking-tight mb-8 px-2">
-            Most Popular
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {popularContent.map((item) => (
-              <CardItem type="" key={item.id} item={item} isPopular />
-            ))}
-          </div>
-        </div>
-      </div>
+          <div className="flex flex-col gap-16 pb-16">
+            {/* More Like This - Only show if has data */}
+            {relevantContent.length > 0 && (
+              <div>
+                <h2 className="text-neutral-900 text-2xl md:text-3xl font-bold tracking-tight mb-6 px-2">
+                  More like this
+                </h2>
+                {/* Mobile: Horizontal Scroll Carousel */}
+                <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide sm:hidden -mx-4 px-4">
+                  {relevantContent.map((item) => (
+                    <div key={item.id} className="flex-shrink-0 w-[280px] snap-start">
+                      <CardItem item={item} />
+                    </div>
+                  ))}
+                </div>
+                {/* Desktop: Grid */}
+                <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-8">
+                  {relevantContent.map((item) => (
+                    <CardItem key={item.id} item={item} />
+                  ))}
+                </div>
+              </div>
+            )}
 
-      {/* MODAL */}
+            {/* Most Popular - Only show if has data */}
+            {popularContent.length > 0 && (
+              <div className={relevantContent.length > 0 ? 'pt-12 border-t border-[#D3D3D3]' : ''}>
+                <h2 className="text-neutral-900 text-2xl md:text-3xl font-bold tracking-tight mb-6 px-2">
+                  Most Popular
+                </h2>
+                {/* Mobile: Horizontal Scroll Carousel */}
+                <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide sm:hidden -mx-4 px-4">
+                  {popularContent.map((item) => (
+                    <div key={item.id} className="flex-shrink-0 w-[280px] snap-start">
+                      <CardItem type="" item={item} isPopular />
+                    </div>
+                  ))}
+                </div>
+                {/* Desktop: Grid */}
+                <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-8">
+                  {popularContent.map((item) => (
+                    <CardItem type="" key={item.id} item={item} isPopular />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* MODAL - Image Preview */}
       {isImageModalOpen && previewImageSrc && (
-        <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
-          onClick={() => setIsImageModalOpen(false)}
-        >
-          <button className="absolute top-6 right-6 text-white p-2 bg-white/10 rounded-full hover:bg-white/20 transition">
-            <X size={24} />
-          </button>
+        <>
+          {/* Prevent body scroll when modal is open */}
+          <style jsx global>{`
+            body {
+              overflow: hidden !important;
+              touch-action: none !important;
+            }
+          `}</style>
           <div
-            className="relative w-full h-full max-w-6xl max-h-[90vh]"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm overscroll-none touch-none"
+            onClick={() => setIsImageModalOpen(false)}
           >
-            <Image
-              src={previewImageSrc}
-              alt="Full Preview"
-              fill
-              className="object-contain"
-              quality={100}
-            />
+            {/* Close Button - More prominent on mobile */}
+            <button
+              onClick={() => setIsImageModalOpen(false)}
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[101] text-white p-3 sm:p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors active:scale-95"
+              aria-label="Close preview"
+            >
+              <X size={28} className="sm:w-6 sm:h-6" />
+            </button>
+
+            {/* Tap anywhere hint - Mobile only */}
+            <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 text-xs sm:text-sm font-medium pointer-events-none">
+              Tap anywhere to close
+            </p>
+
+            {/* Image Container */}
+            <div
+              className="relative w-full h-full max-w-6xl max-h-[85vh] sm:max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={previewImageSrc}
+                alt="Full Preview"
+                fill
+                className="object-contain"
+                quality={100}
+                priority
+              />
+            </div>
           </div>
-        </div>
+        </>
       )}
     </motion.div>
   );
@@ -862,11 +986,10 @@ function SpecItem({
         {icon} {label}
       </div>
       <p
-        className={`text-sm ${
-          monospace
-            ? 'font-mono text-neutral-600 truncate'
-            : 'font-semibold text-neutral-800 capitalize'
-        }`}
+        className={`text-sm ${monospace
+          ? 'font-mono text-neutral-600 truncate'
+          : 'font-semibold text-neutral-800 capitalize'
+          }`}
         title={value || ''}
       >
         {value || 'N/A'}
@@ -875,17 +998,24 @@ function SpecItem({
   );
 }
 
-function TierBadge({ tier }: { tier?: string | null }) {
-  if (tier === 'pro_plus') {
-    return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-bold rounded-full shadow-md shadow-indigo-200">
-        <Check size={12} strokeWidth={3} /> Pro Plus
+// --- Responsive Table Row Component ---
+function SpecRow({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div className="flex items-center justify-between px-5 py-3 hover:bg-neutral-50/50 transition-colors">
+      <span className="text-xs text-neutral-400 font-medium uppercase tracking-wider">
+        {label}
       </span>
-    );
-  }
+      <span className="text-sm font-semibold text-neutral-800 capitalize text-right">
+        {value || 'N/A'}
+      </span>
+    </div>
+  );
+}
+
+function TierBadge({ tier }: { tier?: string | null }) {
   if (tier === 'pro') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-black text-white text-xs font-bold rounded-full shadow-md">
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-bold rounded-full shadow-md shadow-indigo-200">
         <Check size={12} strokeWidth={3} /> Pro
       </span>
     );
@@ -913,9 +1043,8 @@ function CardItem({
       className="flex flex-col gap-4 group"
     >
       <div
-        className={`relative w-full bg-white rounded-2xl overflow-hidden border ${
-          type === 'templates' ? ' aspect-2/3' : ' aspect-4/3'
-        } border-[#D3D3D3] shadow-sm group-hover:shadow-xl group-hover:-translate-y-1 transition duration-500 ease-out`}
+        className={`relative w-full bg-white rounded-2xl overflow-hidden border ${type === 'templates' ? ' aspect-2/3' : ' aspect-4/3'
+          } border-[#D3D3D3] shadow-sm group-hover:shadow-xl group-hover:-translate-y-1 transition duration-500 ease-out`}
       >
         {safeImg ? (
           <Image

@@ -276,7 +276,7 @@ export default function GradientForm({
               sourceFileInputRef.current.value = '';
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     });
   };
 
@@ -376,8 +376,8 @@ export default function GradientForm({
                           !currentParentId
                             ? 'Select Parent First'
                             : childCategories.length === 0
-                            ? 'No Sub-categories'
-                            : 'Select Sub Category'
+                              ? 'No Sub-categories'
+                              : 'Select Sub Category'
                         }
                         searchPlaceholder="Search or create sub category..."
                         disabled={!currentParentId}
@@ -578,6 +578,9 @@ export default function GradientForm({
                           <DescriptionEditor
                             initialContent={field.value as any}
                             onChange={field.onChange}
+                            outputHtml={true}
+                            placeholder="Write a description..."
+                            minHeight="150px"
                           />
                         </div>
                       </FormControl>

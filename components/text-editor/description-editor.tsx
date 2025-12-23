@@ -21,55 +21,87 @@ import { FontSize } from './font-size';
 interface DescriptionEditorProps {
   initialContent?: any;
   onChange: (value: any) => void;
+  /** If true, onChange will receive HTML string instead of JSON */
+  outputHtml?: boolean;
+  /** Placeholder text */
+  placeholder?: string;
+  /** Minimum height of the editor */
+  minHeight?: string;
 }
+
+// Shared extensions configuration
+const getExtensions = (placeholder: string) => [
+  StarterKit.configure({
+    codeBlock: false,
+  }),
+  // --- Formatting Extensions ---
+  Underline,
+  Link.configure({
+    openOnClick: false,
+    HTMLAttributes: {
+      class: 'text-blue-500 underline cursor-pointer',
+    },
+  }),
+  Highlight.configure({ multicolor: true }),
+
+  // --- Styling Extensions ---
+  TextStyle,
+  Color,
+  FontSize, // Custom extension font size !important
+
+  // --- Functional Extensions ---
+  SlashCommand,
+  TaskList,
+  TaskItem.configure({ nested: true }),
+  CodeBlock.configure({
+    HTMLAttributes: {
+      class: 'bg-muted rounded-md p-4 font-mono text-sm',
+    },
+  }),
+  Placeholder.configure({
+    placeholder: placeholder,
+  }),
+];
 
 const DescriptionEditor = ({
   initialContent,
   onChange,
+  outputHtml = false,
+  placeholder = "Ketik '/' untuk perintah...",
+  minHeight = '200px',
 }: DescriptionEditorProps) => {
+  const extensions = getExtensions(placeholder);
+
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        codeBlock: false,
-      }),
-      // --- Formatting Extensions ---
-      Underline,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-blue-500 underline cursor-pointer',
-        },
-      }),
-      Highlight.configure({ multicolor: true }),
-
-      // --- Styling Extensions ---
-      TextStyle,
-      Color,
-      FontSize, // Custom extension font size !important
-
-      // --- Functional Extensions ---
-      SlashCommand,
-      TaskList,
-      TaskItem.configure({ nested: true }),
-      CodeBlock.configure({
-        HTMLAttributes: {
-          class: 'bg-muted rounded-md p-4 font-mono text-sm',
-        },
-      }),
-      Placeholder.configure({
-        placeholder: "Ketik '/' untuk perintah...",
-      }),
-    ],
+    extensions,
     content: initialContent || { type: 'doc', content: [] },
     editorProps: {
       attributes: {
-        class:
-          'prose dark:prose-invert max-w-none w-full break-words focus:outline-none min-h-[300px] px-4 py-3 [&_p]:text-[12px] md:[&_p]:text-[14px] lg:[&_p]:text-[28px] [&_li]:text-[12px] md:[&_li]:text-[14px] lg:[&_li]:text-[28px] [&_ul]:list-none [&_ul_li]:flex [&_ul_li]:items-center [&_ul_li]:before:content-["•"] [&_ul_li]:before:mr-2 [&_ul_li_p]:m-0 [&_li]:m-0 [&_li]:leading-tight',
+        class: `prose dark:prose-invert max-w-none w-full break-words focus:outline-none px-4 py-3
+          [&_p]:text-sm [&_p]:sm:text-base [&_p]:lg:text-lg [&_p]:leading-relaxed
+          [&_li]:text-sm [&_li]:sm:text-base [&_li]:lg:text-lg [&_li]:leading-relaxed
+          [&_h1]:text-xl [&_h1]:sm:text-2xl [&_h1]:lg:text-3xl [&_h1]:font-bold [&_h1]:mb-4
+          [&_h2]:text-lg [&_h2]:sm:text-xl [&_h2]:lg:text-2xl [&_h2]:font-semibold [&_h2]:mb-3
+          [&_h3]:text-base [&_h3]:sm:text-lg [&_h3]:lg:text-xl [&_h3]:font-medium [&_h3]:mb-2
+          [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2
+          [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2
+          [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4
+          [&_code]:bg-gray-100 [&_code]:dark:bg-gray-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm
+          [&_strong]:font-semibold
+          [&_em]:italic`,
+        style: `min-height: ${minHeight}`,
       },
     },
     onUpdate: ({ editor }) => {
-      onChange(editor.getJSON());
+      if (outputHtml) {
+        // Output HTML string
+        const html = editor.getHTML();
+        onChange(html);
+      } else {
+        // Output JSON (default TipTap behavior)
+        onChange(editor.getJSON());
+      }
     },
   });
 

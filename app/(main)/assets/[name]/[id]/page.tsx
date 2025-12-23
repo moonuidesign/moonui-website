@@ -2,7 +2,7 @@ import ContentDetailClient from '@/components/detail-assets';
 import { auth } from '@/libs/auth';
 import { db } from '@/libs/drizzle';
 import { UnifiedContent } from '@/types/assets';
-import { and, asc, desc, eq, gt, lt, ne, count, lte } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, lt, ne, count, lte, sql } from 'drizzle-orm';
 import {
   contentTemplates,
   contentComponents,
@@ -77,7 +77,8 @@ function normalizeContent(
       url: `https://${process.env.R2_PUBLIC_DOMAIN}/${rawUrl}`,
     };
   });
-  const slug = typeof data.slug === 'string' ? data.slug : data.slug?.current;
+  // Keep slug as original format (array from DB)
+  const slug = data.slug;
   const catData =
     categoryOverride ||
     data.category ||
@@ -108,10 +109,10 @@ function normalizeContent(
     platform: data.platform || 'Web',
     category: catData
       ? {
-          id: catData.id,
-          name: catData.name,
-          parentId: catData.parentId,
-        }
+        id: catData.id,
+        name: catData.name,
+        parentId: catData.parentId,
+      }
       : null,
   };
 }
@@ -140,16 +141,28 @@ export default async function ContentPage({
   };
   const unifiedType = typeMap[typeKey];
 
-  // Fetch Item Utama
-  // @ts-ignore
-  const currentItemRaw = await db.query[config.relationKey].findFirst({
-    where: eq(config.contentTable.id, id),
-    with: { category: true },
-  });
+  try {
+    // Fetch Item Utama - Using relational query
+    // @ts-ignore - dynamic relation key
+    const currentItemRaw = await db.query[config.relationKey].findFirst({
+      where: eq(config.contentTable.id, id),
+      with: { category: true },
+    });
 
-  if (!currentItemRaw) return notFound();
+    if (!currentItemRaw) return notFound();
 
-  return await renderPage(currentItemRaw, unifiedType, config, name, id, user);
+    // Increment view count (fire and forget, don't await)
+    db.update(config.contentTable)
+      .set({ viewCount: sql`view_count + 1` } as any)
+      .where(eq(config.contentTable.id, id))
+      .execute()
+      .catch((err) => console.error('[ViewCount] Failed to increment:', err));
+
+    return await renderPage(currentItemRaw, unifiedType, config, name, id, user);
+  } catch (error) {
+    console.error(`[ContentPage] Failed to fetch ${name}/${id}:`, error);
+    return notFound();
+  }
 }
 
 async function renderPage(
@@ -214,7 +227,7 @@ async function renderPage(
       .orderBy(
         desc(
           (contentTable as any).downloadCount ||
-            (contentTable as any).viewCount,
+          (contentTable as any).viewCount,
         ),
       )
       .limit(3),
@@ -249,7 +262,7 @@ async function renderPage(
       nextItem={nextItem}
       relevantContent={relevantContent}
       popularContent={popularContent}
-      userTier={user?.user?.tier === 'pro_plus' ? 'pro_plus' : 'free'}
+      userTier={user?.user?.tier || 'free'}
     />
   );
 }
