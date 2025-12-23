@@ -21,6 +21,63 @@ import { db } from './drizzle';
 const THIRTY_DAYS_IN_SECONDS = 30 * 24 * 60 * 60;
 const ACTIVATION_COOKIE = 'ls_activation_key';
 
+// --- HELPER FUNCTION: Get Tier ---
+// Mengambil tier dari license yang aktif
+const getTierFromDb = async (userId: string): Promise<'free' | 'pro'> => {
+  try {
+    // Cek license aktif terlebih dahulu
+    const userLicenseData = await db
+      .select()
+      .from(licenses)
+      .where(eq(licenses.userId, userId))
+      .orderBy(desc(licenses.createdAt))
+      .limit(1);
+
+    const currentLicense = userLicenseData[0];
+
+    console.log(`[getTierFromDb] User: ${userId}, License found:`, currentLicense ? {
+      status: currentLicense.status,
+      planType: currentLicense.planType,
+      tier: currentLicense.tier,
+      expiresAt: currentLicense.expiresAt,
+    } : 'None');
+
+    if (!currentLicense) {
+      console.log(`[getTierFromDb] No license found for user ${userId}, returning 'free'`);
+      return 'free';
+    }
+
+    // Jika ada license dengan tier 'pro' dan status 'active'
+    if (currentLicense.status === 'active') {
+      const now = new Date();
+
+      // Untuk one_time license (lifetime), tidak ada expiresAt
+      if (currentLicense.planType === 'one_time') {
+        console.log(`[getTierFromDb] User ${userId} has lifetime license, returning 'pro'`);
+        return 'pro';
+      }
+
+      // Untuk subscribe, cek expiry
+      if (currentLicense.expiresAt && currentLicense.expiresAt > now) {
+        console.log(`[getTierFromDb] User ${userId} has active subscription, returning 'pro'`);
+        return 'pro';
+      }
+
+      // Subscribe tapi expiresAt null (anggap selamanya aktif untuk kasus edge case)
+      if (!currentLicense.expiresAt) {
+        console.log(`[getTierFromDb] User ${userId} has subscription without expiry, returning 'pro'`);
+        return 'pro';
+      }
+    }
+
+    console.log(`[getTierFromDb] User ${userId} license not valid, returning 'free'`);
+    return 'free';
+  } catch (error) {
+    console.error('[getTierFromDb] Error:', error);
+    return 'free';
+  }
+};
+
 export const {
   handlers: { GET, POST },
   auth,
@@ -30,7 +87,7 @@ export const {
 } = NextAuth({
   ...authConfig,
   trustHost: true,
-  debug: true, // Biarkan true dulu untuk debugging
+  // debug: true, // Matikan debug jika sudah production agar log bersih
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -54,7 +111,6 @@ export const {
         rememberMe: { label: 'Remember Me', type: 'boolean' },
       },
       authorize: async (credentials) => {
-        // Logika verifikasi password (tidak diubah, ini sudah benar)
         try {
           const parsedCredentials = z
             .object({
@@ -76,6 +132,10 @@ export const {
           const isPasswordValid = await bcrypt.compare(password, user.password);
 
           if (isPasswordValid) {
+            // ✅ FETCH TIER DI SINI (Hanya 1x saat login credentials)
+            // Ini mencegah query berulang di JWT callback
+            const tier = await getTierFromDb(user.id);
+
             return {
               id: user.id,
               name: user.name,
@@ -83,7 +143,7 @@ export const {
               emailVerified: user.emailVerified,
               image: user.image,
               roleUser: user.roleUser,
-              tier: 'free',
+              tier: tier,
               rememberMe: parsedCredentials.data.rememberMe ?? false,
             };
           }
@@ -102,52 +162,25 @@ export const {
       if (user) {
         token.id = user.id!;
         token.emailVerified = user.emailVerified;
+        token.roleUser = (user as any).roleUser ?? 'user';
+        token.rememberMe = (user as any).rememberMe ?? false;
 
-        try {
-          const dbUser = await getUserFromDb(user.email!);
-          token.roleUser = dbUser?.roleUser ?? 'user';
-          token.tier = (user as any).tier ?? 'free';
-          token.rememberMe = (user as any).rememberMe ?? false;
-        } catch (e) {
-          token.roleUser = 'user';
-          token.tier = 'free';
+        if ((user as any).tier) {
+          token.tier = (user as any).tier;
+        } else {
+          token.tier = await getTierFromDb(user.id!);
         }
       }
+      if (trigger === 'update') {
+        token.tier = await getTierFromDb(token.id as string);
 
-      // Update Tier Logic (Hanya jika token sudah ada ID)
-      if (token.id) {
-        try {
-          const userLicenseData = await db
-            .select()
-            .from(licenses)
-            .where(eq(licenses.userId, token.id))
-            .orderBy(desc(licenses.createdAt))
-            .limit(1);
-
-          const currentLicense = userLicenseData[0];
-          const now = new Date();
-
-          const isValid =
-            currentLicense &&
-            currentLicense.status === 'active' &&
-            currentLicense.expiresAt &&
-            currentLicense.expiresAt > now;
-
-          token.tier = isValid ? currentLicense.tier : 'free';
-        } catch (error) {
-          console.error('Error fetching tier in JWT callback:', error);
-          if (!token.tier) token.tier = 'free';
-        }
+        return { ...token, ...session };
       }
 
-      if (trigger === 'update' && session) {
-        token = { ...token, ...session };
-      }
       return token;
     },
 
     async signIn({ user, account }) {
-      // 1. Logika Google & Aktivasi License
       if (account?.provider === 'google') {
         const checkVerified = await getUserFromDb(user.email!);
         if (checkVerified && !checkVerified.emailVerified) {
@@ -160,27 +193,29 @@ export const {
         const activationCookie = (await cookies()).get(ACTIVATION_COOKIE);
         if (activationCookie) {
           try {
-            const { licenseKey, email } = JSON.parse(activationCookie.value);
+            const { licenseKey, email, tier, planType, orderId } = JSON.parse(
+              activationCookie.value,
+            );
             if (user.email === email) {
-              await activateLicense(licenseKey, user.id!);
+              await activateLicense(
+                licenseKey,
+                user.id!,
+                tier || 'pro',
+                planType || 'subscribe',
+                orderId || 0,
+              );
             }
           } catch (error) {
             console.error('GOOGLE_SIGNIN_ACTIVATION_ERROR', error);
-            // Tetap return true agar user bisa login meski aktivasi gagal
           } finally {
             (await cookies()).delete(ACTIVATION_COOKIE);
           }
         }
-        return true; // PENTING: Jangan return path URL
+        return true;
       }
 
-      // 2. Logika Credentials Check
       const dbUser = await getUserFromDb(user.email!);
       if (!dbUser) return false;
-
-      // PENTING: HAPUS SEMUA LOGIKA REDIRECT DI SINI
-      // Biarkan authConfig (Middleware) yang mengatur routing
-      // setelah cookie session berhasil dibuat.
 
       return true;
     },

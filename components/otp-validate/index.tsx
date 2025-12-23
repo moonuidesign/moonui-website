@@ -123,7 +123,6 @@ export function VerifyLicenseOTPForm() {
   const [isVerifying, startVerifyTransition] = useTransition();
   const [isResending, startResendTransition] = useTransition();
 
-  const [error, setError] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
 
   // State untuk cooldown
@@ -186,9 +185,9 @@ export function VerifyLicenseOTPForm() {
   });
 
   const onSubmit = (data: OTPSchemaType) => {
-    setError(null);
+
     if (!signature) {
-      setError('Invalid session. Please start over.');
+      toast.error('Invalid session. Please start over.');
       return;
     }
 
@@ -202,7 +201,7 @@ export function VerifyLicenseOTPForm() {
         const message = Array.isArray(result.message)
           ? result.message.join(', ')
           : result.message || 'An unknown error occurred.';
-        setError(message);
+        toast.error(message);
         form.setError('otp', { type: 'manual', message });
       } else {
         toast.success('License activated successfully!');
@@ -221,12 +220,10 @@ export function VerifyLicenseOTPForm() {
 
     if (dailyResendCount >= DAILY_LIMIT_COUNT) {
       const msg = 'You have reached the daily limit for resending OTPs.';
-      setError(msg);
       toast.error(msg);
       return;
     }
 
-    setError(null);
     startResendTransition(async () => {
       const result = await resendOtpAction(signature);
 
@@ -234,9 +231,8 @@ export function VerifyLicenseOTPForm() {
         toast.error(result.message || 'Failed to resend OTP.');
       } else {
         toast.success('A new OTP has been sent.');
-        const newUrl = `${
-          window.location.hostname + '/signup'
-        }?signature=${encodeURIComponent(result.data.newSignature)}`;
+        const newUrl = `${window.location.hostname + '/signup'
+          }?signature=${encodeURIComponent(result.data.newSignature)}`;
         window.history.replaceState({ ...window.history.state }, '', newUrl);
 
         form.reset();
@@ -390,13 +386,7 @@ export function VerifyLicenseOTPForm() {
               )}
             />
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+
 
             <div className="flex flex-col gap-2">
               <Button

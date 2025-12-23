@@ -19,12 +19,12 @@ export const PlatformSwitcher: React.FC<PlatformSwitcherProps> = ({
   const inactiveClass = 'bg-transparent text-[#3D3D3D] hover:bg-gray-50';
 
   return (
-    <div className="w-full p-1 bg-white rounded-2xl shadow-card-sm inline-flex justify-between items-center overflow-hidden">
+    <div className="w-full p-1 bg-white rounded-xl lg:rounded-2xl shadow-card-sm inline-flex justify-between items-center overflow-hidden">
       {/* FIGMA */}
       <button
         onClick={() => onChange('figma')}
         className={cn(
-          'w-1/2 h-8 px-3 rounded-[10px] flex justify-center items-center gap-1.5 transition-all duration-200',
+          'w-1/2 h-7 lg:h-8 px-2 lg:px-3 rounded-lg lg:rounded-[10px] flex justify-center items-center gap-1 lg:gap-1.5 transition-all duration-200',
           currentTool === 'figma' ? activeClass : inactiveClass,
         )}
       >
@@ -35,10 +35,10 @@ export const PlatformSwitcher: React.FC<PlatformSwitcherProps> = ({
           width={100}
           height={100}
           src="/ic-figma.svg"
-          className="w-[20px] h-[20px]"
+          className="w-4 h-4 lg:w-[20px] lg:h-[20px]"
         />
 
-        <span className="text-xs font-medium font-['Inter']">Figma</span>
+        <span className="text-[11px] lg:text-xs font-medium font-['Inter']">Figma</span>
       </button>
 
       {/* FRAMER */}

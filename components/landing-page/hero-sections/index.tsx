@@ -6,13 +6,13 @@ import { ArrowRight2 } from 'iconsax-reactjs';
 
 const HeroSection = () => {
   return (
-    <div className="pt-30 md:pt-0 mx-auto md:max-w-7xl -pt-[200px] mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
-      <div className="absolute  h-full w-full ">
+    <div className=" md:pt-0 mx-auto md:max-w-7xl relative mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
+      <div className="absolute hidden md:block  h-full w-full ">
         <Meteors minDelay={0.8} maxDelay={1.8} number={5} />
       </div>
       <Image
         src="/moonNotFound.png"
-        className="absolute lg:top-[21%] select-none hidden md:block scale-[1.25] pointer-events-none md:w-max-[846px] md:h-max-[839px] lg:w-max-[1318.4px] h-max-[1142px] left-[49%] md:w-[681px] md:h-[648px] lg:w-[1103px] lg:h-[1069px] -translate-x-1/2 -rotate-65"
+        className="absolute lg:top-[21%] z-100 select-none hidden md:block scale-[1.25] pointer-events-none md:w-max-[846px] md:h-max-[839px] lg:w-max-[1318.4px] h-max-[1142px] left-[49%] md:w-[681px] md:h-[648px] lg:w-[1103px] lg:h-[1069px] -translate-x-1/2 -rotate-65"
         alt="Not Found"
         draggable={false}
         style={{

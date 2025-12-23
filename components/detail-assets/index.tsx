@@ -325,7 +325,7 @@ export default function ContentDetailClient({
       <div className="flex justify-between items-center mb-8">
         <Link
           href="/assets"
-          className="bg-white px-4 py-2 rounded-full border border-neutral-200 shadow-sm flex items-center gap-2 text-sm font-semibold hover:bg-neutral-100 transition text-neutral-700"
+          className="bg-white px-4 py-2 rounded-full border border-[#D3D3D3] shadow-sm flex items-center gap-2 text-sm font-semibold hover:bg-neutral-100 transition text-neutral-700"
         >
           <ArrowLeft size={16} /> Back to Browse
         </Link>
@@ -347,7 +347,7 @@ export default function ContentDetailClient({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.1, duration: 0.4 }}
-                className="relative w-full bg-white rounded-3xl overflow-hidden border border-neutral-200 shadow-xl shadow-neutral-100 group"
+                className="relative w-full bg-white rounded-3xl overflow-hidden border border-[#D3D3D3] shadow-xl shadow-neutral-100 group"
               >
                 <div
                   className={`relative w-full ${
@@ -379,7 +379,7 @@ export default function ContentDetailClient({
               <div
                 className={`relative w-full ${
                   content.type === 'template' ? 'aspect-2/4' : ' aspect-3-4'
-                } bg-white rounded-3xl overflow-hidden border border-neutral-200 shadow-xl flex items-center justify-center text-neutral-400 gap-2`}
+                } bg-white rounded-3xl overflow-hidden border border-[#D3D3D3] shadow-xl flex items-center justify-center text-neutral-400 gap-2`}
               >
                 <ImageIcon size={32} className="opacity-50" />
                 <span className="text-xs font-medium">
@@ -404,7 +404,7 @@ export default function ContentDetailClient({
                       duration: 0.4,
                       ease: [0.04, 0.62, 0.23, 0.98],
                     }}
-                    className="relative w-full bg-white rounded-3xl overflow-hidden border border-neutral-200 shadow-xl shadow-neutral-100 group lg:!h-auto lg:!opacity-100 lg:!mt-0 lg:block"
+                    className="relative w-full bg-white rounded-3xl overflow-hidden border border-[#D3D3D3] shadow-xl shadow-neutral-100 group lg:!h-auto lg:!opacity-100 lg:!mt-0 lg:block"
                     style={{ overflow: 'hidden' }}
                   >
                     <div
@@ -445,7 +445,7 @@ export default function ContentDetailClient({
               >
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="flex items-center gap-2 px-6 py-3 bg-white border border-neutral-300 rounded-xl text-sm font-bold text-neutral-800 shadow-sm hover:bg-neutral-50 active:scale-95 transition-all w-full mr-4 justify-center"
+                  className="flex items-center gap-2 px-6 py-3 bg-white border border-[#D3D3D3] rounded-xl text-sm font-bold text-neutral-800 shadow-sm hover:bg-neutral-50 active:scale-95 transition-all w-full mr-4 justify-center"
                 >
                   {isExpanded ? (
                     <>
@@ -457,7 +457,7 @@ export default function ContentDetailClient({
                     </>
                   )}
                 </button>
-                <div className="flex items-center gap-2 bg-neutral-100 border border-neutral-200 px-4 py-3 rounded-xl text-neutral-600 font-bold text-sm whitespace-nowrap">
+                <div className="flex items-center gap-2 bg-neutral-100 border border-[#D3D3D3] px-4 py-3 rounded-xl text-neutral-600 font-bold text-sm whitespace-nowrap">
                   <LucideImage size={16} className="text-neutral-400" />
                   <span>+{galleryImages.length} Photos</span>
                 </div>
@@ -476,12 +476,12 @@ export default function ContentDetailClient({
                         ? calculateDuration(codeFiles[0].code)
                         : 3,
                     }}
-                    className="w-full min-h-[400px] border-neutral-200 shadow-sm"
+                    className="w-full min-h-[400px] border-[#D3D3D3] shadow-sm"
                   />
                 ) : (
                   // LOCKED STATE UI
-                  <div className="w-full bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm relative">
-                    <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+                  <div className="w-full bg-white rounded-2xl border border-[#D3D3D3] overflow-hidden shadow-sm relative">
+                    <div className="px-4 py-3 border-b border-[#D3D3D3] flex items-center justify-between bg-neutral-50/50">
                       <div className="flex items-center gap-2">
                         <Code size={16} className="text-blue-600" />
                         <span className="text-sm font-semibold text-neutral-800">
@@ -570,7 +570,7 @@ export default function ContentDetailClient({
                     href={
                       prevItem ? getAssetPath(prevItem.type, prevItem.id) : '#'
                     }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-neutral-200 flex items-center justify-center transition ${
+                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${
                       prevItem
                         ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
                         : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
@@ -607,7 +607,7 @@ export default function ContentDetailClient({
                     href={
                       nextItem ? getAssetPath(nextItem.type, nextItem.id) : '#'
                     }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-neutral-200 flex items-center justify-center transition ${
+                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${
                       nextItem
                         ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
                         : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
@@ -623,7 +623,7 @@ export default function ContentDetailClient({
                     href={
                       prevItem ? getAssetPath(prevItem.type, prevItem.id) : '#'
                     }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-neutral-200 flex items-center justify-center transition ${
+                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${
                       prevItem
                         ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
                         : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
@@ -642,7 +642,7 @@ export default function ContentDetailClient({
                     href={
                       nextItem ? getAssetPath(nextItem.type, nextItem.id) : '#'
                     }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-neutral-200 flex items-center justify-center transition ${
+                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${
                       nextItem
                         ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
                         : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
@@ -708,7 +708,7 @@ export default function ContentDetailClient({
                     href={content.urlPreview}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-3.5 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-800 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-sm"
+                    className="w-full py-3.5 bg-white border border-[#D3D3D3] hover:bg-neutral-50 text-neutral-800 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-sm"
                   >
                     <Globe size={18} className="text-blue-600" /> Live Preview
                   </a>
@@ -718,9 +718,8 @@ export default function ContentDetailClient({
                 Secure payment processed by LemonSqueezy. 30-day refund policy.
               </p>
             </div>
-
-            <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
-              <div className="px-5 py-3 bg-neutral-50/50 border-b border-neutral-100">
+            <div className="bg-white rounded-2xl border border-[#D3D3D3] overflow-hidden">
+              <div className="px-5 py-3 bg-neutral-50/50 border-b border-[#D3D3D3]">
                 <h3 className="text-sm font-bold text-neutral-800">
                   Specifications
                 </h3>
@@ -767,7 +766,7 @@ export default function ContentDetailClient({
             ))}
           </div>
         </div>
-        <div className="pt-12 border-t border-neutral-200">
+        <div className="pt-12 border-t border-[#D3D3D3]">
           <h2 className="text-neutral-900 text-2xl md:text-3xl font-bold tracking-tight mb-8 px-2">
             Most Popular
           </h2>
@@ -818,7 +817,7 @@ function AssetTypeBadge({ type }: { type: string }) {
   const { icon: Icon, color } =
     config[type as keyof typeof config] || config.default;
   return (
-    <div className="absolute top-5 left-5 bg-white/90 backdrop-blur-md text-neutral-900 px-4 py-1.5 rounded-full text-xs font-bold shadow-sm border border-neutral-100 flex items-center gap-2 uppercase tracking-wider z-10">
+    <div className="absolute top-5 left-5 bg-white/90 backdrop-blur-md text-neutral-900 px-4 py-1.5 rounded-full text-xs font-bold shadow-sm border border-[#D3D3D3] flex items-center gap-2 uppercase tracking-wider z-10">
       <Icon size={14} className={color} /> {type}
     </div>
   );
@@ -835,7 +834,7 @@ function StatItem({
 }) {
   return (
     <div className="flex items-center gap-2 text-neutral-600 font-medium">
-      <div className="p-1.5 bg-white rounded-md border border-neutral-200 shadow-sm text-neutral-400">
+      <div className="p-1.5 bg-white rounded-md border border-[#D3D3D3] shadow-sm text-neutral-400">
         {icon}
       </div>
       <span className="text-sm">
@@ -916,7 +915,7 @@ function CardItem({
       <div
         className={`relative w-full bg-white rounded-2xl overflow-hidden border ${
           type === 'templates' ? ' aspect-2/3' : ' aspect-4/3'
-        } border-neutral-200 shadow-sm group-hover:shadow-xl group-hover:-translate-y-1 transition duration-500 ease-out`}
+        } border-[#D3D3D3] shadow-sm group-hover:shadow-xl group-hover:-translate-y-1 transition duration-500 ease-out`}
       >
         {safeImg ? (
           <Image

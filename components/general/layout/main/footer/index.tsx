@@ -8,6 +8,7 @@ import { Disc, Github, Twitter, ChevronDown, X } from 'lucide-react'; // Tambah 
 import { SocialButton } from './social-button'; // Pastikan path ini sesuai
 import { MoonLogo } from './moon-logo'; // Pastikan path ini sesuai
 import { ContentType, useFilterStore } from '@/contexts';
+import { InstagramIcon, LinkedInIcon, XIcon } from './social-icons';
 export * from './moon-logo';
 export * from './social-button';
 export * from './type';
@@ -84,7 +85,11 @@ const Footer: React.FC<FooterProps> = ({
   email = 'hey@moonui.design',
   copyright = '© 2025 MoonUI Design. All rights reserved.',
   columns = defaultColumns,
-  socials,
+  socials = {
+    x: 'https://x.com/moonuidesign',
+    instagram: 'https://instagram.com/moonuidesign',
+    linkedin: 'https://linkedin.com/company/moonuidesign',
+  },
 }) => {
   const applySearchFilter = useFilterStore((state) => state.applySearchFilter);
 
@@ -140,36 +145,23 @@ const Footer: React.FC<FooterProps> = ({
           {/* Social Icons */}
           <div className="flex items-center gap-3">
             <SocialButton
-              href={socials?.twitter}
-              icon={
-                <Twitter className="w-4 h-4 hover:text-[#FF4F00] text-white" />
-              }
-              activeColor="bg-orange-600"
+              href={socials?.x}
+              icon={<XIcon className="w-4 h-4" />}
             />
             <SocialButton
-              href={socials?.discord}
-              icon={
-                <Disc className="w-4 h-4 hover:text-[#FF4F00] text-zinc-400" />
-              }
+              href={socials?.instagram}
+              icon={<InstagramIcon className="w-4 h-4" />}
             />
             <SocialButton
-              href={socials?.github}
-              icon={
-                <Github className="w-4 h-4 hover:text-[#FF4F00] text-zinc-400" />
-              }
-            />
-            <SocialButton
-              href={socials?.github}
-              icon={
-                <X className="w-4 h-4 hover:text-[#FF4F00] text-zinc-400" />
-              }
+              href={socials?.linkedin}
+              icon={<LinkedInIcon className="w-4 h-4" />}
             />
           </div>
         </div>
 
         {/* --- MENU LINKS AREA --- */}
 
-        <div className="lg:flex relative md:max-w-7xl flex-col mx-auto gap-5 md:gap-0 justify-center items-center md:border-x border-b md:border-[#D3D3D3] md:pb-12 rounded-b-2xl">
+        <div className="lg:flex relative md:max-w-7xl flex-col mx-auto gap-5 md:gap-0 justify-center items-center md:border-x border-b md:border-[#D3D3D3] md:pb-12 rounded-b-4xl">
           <span className="h-1.5 w-1.5 hidden md:block absolute top-0 -left-[3px] rounded-full bg-[#D3D3D3]" />
           <span className="h-1.5 w-1.5 hidden md:block absolute top-0 -right-[3px] rounded-full bg-[#D3D3D3]" />
 
@@ -202,14 +194,11 @@ const Footer: React.FC<FooterProps> = ({
           </div>
 
           {/* MOBILE VIEW (Accordion) */}
-          <div className="flex flex-col lg:hidden md:mb-20 ">
+          <div className="flex flex-col lg:hidden md:mb-20 px-0 lg:px-0 md:px-8">
             {columns.map((col, idx) => {
               const isOpen = openSection === col.title;
               return (
-                <div
-                  key={idx}
-                  className="border-b-4 border-neutral-300 border-dashed"
-                >
+                <div key={idx} className="border-b border-neutral-300 ">
                   <button
                     onClick={() => toggleSection(col.title)}
                     className="w-full py-5 flex justify-between items-center text-left focus:outline-none group"
@@ -221,17 +210,15 @@ const Footer: React.FC<FooterProps> = ({
                       className={`w-6 h-6 rounded-full flex justify-center items-center transition-colors duration-200 bg-[rgb(211,211,211)] shadow-[0_0_0_1px_rgba(61,61,61,0.12),inset_0_0.75px_0.75px_hsla(0,0%,100%,0.64)]`}
                     >
                       <ChevronDown
-                        className={`w-4 h-4 text-zinc-600 transition-transform duration-300 ${
-                          isOpen ? 'rotate-180 text-orange-600' : ''
-                        }`}
+                        className={`w-4 h-4 text-zinc-600 transition-transform duration-300 ${isOpen ? 'rotate-180 text-orange-600' : ''
+                          }`}
                       />
                     </div>
                   </button>
 
                   <div
-                    className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
-                      isOpen ? 'max-h-96' : 'max-h-0'
-                    }`}
+                    className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${isOpen ? 'max-h-96' : 'max-h-0'
+                      }`}
                   >
                     <ul className="flex flex-col gap-0 pb-5">
                       {col.links.map((link, lIdx) => {
@@ -263,10 +250,9 @@ const Footer: React.FC<FooterProps> = ({
             {email}
           </a>
         </div>
-        <p className="text-neutral-400 text-center text-[12px] md:text-sm font-medium font-sans">
+        <p className="text-neutral-400 mt-[20px] md:mt-[30px] lg:mt-[30px] text-center text-[12px] md:text-sm font-medium font-sans">
           {copyright}
         </p>
-
         <div className="w-full h-[80px] md:h-[292px] relative mt-10">
           <Image
             src="/footer.svg"

@@ -4,7 +4,29 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/libs/utils'; // Pastikan path ini benar
+interface SectionHeaderSkeletonProps {
+  className?: string;
+}
 
+export const SectionHeaderSkeleton: React.FC<SectionHeaderSkeletonProps> = ({
+  className,
+}) => {
+  return (
+    <div className={cn('w-full flex items-center gap-4 mb-6 mt-2', className)}>
+      {/* 1. Title Skeleton */}
+      {/* Menggunakan h-8 agar tingginya mirip dengan text-2xl */}
+      <div className="h-8 w-32 md:w-48 bg-zinc-200 rounded-lg animate-pulse" />
+
+      {/* 2. Divider Line */}
+      {/* Garis biarkan statis (tidak pulse) sebagai struktur layout */}
+      <div className="flex-1 h-px bg-gray-200" />
+
+      {/* 3. Badge/Counter Skeleton */}
+      {/* Menggunakan rounded-2xl agar bentuknya kapsul seperti aslinya */}
+      <div className="h-8 w-36 bg-zinc-200 rounded-2xl border border-transparent animate-pulse" />
+    </div>
+  );
+};
 interface SectionHeaderProps {
   title: string;
   href?: string;

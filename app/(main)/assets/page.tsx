@@ -89,11 +89,12 @@ function AssetsPageContent() {
         }
       />
 
-      <div className="max-w-3xl pt-20 md:pt-0 z-[800] md:z-0 bg-[#E7E7E7] md:bg-none md:rounded-none rounded-t-[39px] -mt-[69px] md:mt-[30px] md:max-w-7xl md:w-7xl mx-auto px-4 md:px-6 py-6 flex gap-8 relative">
-        <div className="hidden lg:block w-64 flex-shrink-0">
+      <div className="max-w-3xl pt-14 md:pt-0 z-[800] md:z-0 bg-[#E7E7E7] md:bg-none md:rounded-none rounded-t-[39px] -mt-[69px] md:mt-[30px] md:max-w-5xl lg:max-w-7xl md:w-full lg:w-7xl mx-auto px-4 md:px-4 lg:px-6 py-6 flex gap-4 lg:gap-8 relative">
+        {/* Sidebar - Responsive width for tablet and desktop */}
+        <div className="hidden md:block md:w-52 lg:w-64 flex-shrink-0">
           <div className="sticky top-6">
-            <div className="mb-6 pl-1">
-              <h1 className="text-[#3D3D3D] text-xl font-semibold font-['Plus_Jakarta_Sans']">
+            <div className="mb-4 lg:mb-6 pl-1">
+              <h1 className="text-[#3D3D3D] text-lg lg:text-xl font-semibold font-['Plus_Jakarta_Sans']">
                 Resources
               </h1>
             </div>

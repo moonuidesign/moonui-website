@@ -27,6 +27,7 @@ import { Note } from 'iconsax-reactjs';
 import { useMediaQuery } from 'react-responsive';
 import { SearchCommand } from './search-command'; // Pastikan path ini benar
 import { GoProCard } from '@/components/assets/sidebar'; // Pastikan path ini benar
+import { cn } from '@/libs/utils';
 
 export * from './search-command';
 
@@ -36,17 +37,23 @@ const MENU_ITEMS = [
   { label: 'Contact', href: '/contact', icon: Contact },
   { label: 'Pricing', href: '/pricing', icon: Contact },
 ];
-
+export function SkeletonNavbar({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn('animate-pulse rounded-md bg-zinc-200/80', className)}
+      {...props}
+    />
+  );
+}
 export default function Navbar() {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  // --- 1. MOUNTED CHECK ---
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
 
   // --- 2. MEDIA QUERIES ---
   const isDesktop = useMediaQuery({ query: '(min-width: 992px)' });
@@ -131,80 +138,15 @@ export default function Navbar() {
     }
   }, [isOpen]);
 
-  // =========================================================================
-  // SKELETON LOADING (Tampil saat Hydration/SSR atau Loading)
-  // =========================================================================
-  if (!isMounted) {
-    return (
-      <section className="h-24 relative z-[1000]">
-        <div className="fixed top-10 left-0 right-0 flex justify-center pt-6 pointer-events-none z-[60]">
-          {/* Container Skeleton yang meniru layout asli */}
-          <div className="relative w-full h-16 md:h-20 px-4 md:px-3 mx-auto max-w-full md:max-w-[64rem] lg:max-w-[80rem] grid grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-2">
-            {/* Background Fake (Desktop/Tablet) */}
-            <div className="hidden md:block absolute inset-0 bg-white/80 border border-gray-200/60 rounded-[9999px] -z-10 shadow-sm" />
-
-            {/* Background Fake (Mobile) */}
-            <div className="md:hidden absolute inset-0 bg-white/80 border border-gray-200/60 rounded-full -z-10 mx-2 shadow-sm" />
-
-            {/* KIRI: Logo & Mobile Search */}
-            <div className="flex justify-start items-center w-full gap-3">
-              {/* Logo Box */}
-              <div className="w-9 h-9 bg-zinc-200 rounded-lg animate-pulse shrink-0" />
-              {/* Mobile Search Button */}
-              <div className="md:hidden w-9 h-9 bg-zinc-200 rounded-full animate-pulse shrink-0" />
-            </div>
-
-            {/* TENGAH: Menu Items & Search Bar (Desktop Only) */}
-            <div className="hidden md:flex justify-center items-center gap-6 w-full px-4">
-              {/* Menu Links Ghosts */}
-              <div className="flex items-center gap-6">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="hidden lg:block w-14 h-3 bg-zinc-200 rounded animate-pulse"
-                  />
-                ))}
-                {/* Tablet Ghosts (Sedikit lebih sedikit) */}
-                <div className="lg:hidden w-12 h-3 bg-zinc-200 rounded animate-pulse" />
-                <div className="lg:hidden w-12 h-3 bg-zinc-200 rounded animate-pulse" />
-              </div>
-
-              {/* Search Bar Ghost */}
-              <div className="w-48 lg:w-64 h-9 bg-zinc-100 rounded-full animate-pulse border border-zinc-200" />
-            </div>
-
-            {/* KANAN: Profile & Actions */}
-            <div className="flex items-center justify-end w-full gap-2 md:gap-4">
-              {/* Profile Pill Ghost */}
-              <div className="flex items-center gap-3 p-1 rounded-full bg-zinc-50 border border-zinc-200">
-                <div className="w-8 h-8 md:w-9 md:h-9 bg-zinc-200 rounded-full animate-pulse shrink-0" />
-                {/* Name & Plan (XL Only) */}
-                <div className="hidden xl:flex flex-col gap-1.5 mr-2">
-                  <div className="w-20 h-2 bg-zinc-200 rounded animate-pulse" />
-                  <div className="w-12 h-1.5 bg-zinc-200 rounded animate-pulse" />
-                </div>
-              </div>
-
-              {/* Mobile Hamburger Ghost */}
-              <div className="md:hidden w-9 h-9 bg-zinc-200 rounded-full animate-pulse" />
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // =========================================================================
-  // MAIN COMPONENT
-  // =========================================================================
   return (
     <section className="h-24 relative z-[1000]">
       <SearchCommand open={isSearchOpen} setOpen={setIsSearchOpen} />
 
-      <div className="fixed top-10 left-0 right-0 flex justify-center pt-6 pointer-events-none z-[60]">
+      <div className="fixed top-10 mx-auto container left-0 right-0 flex justify-center pt-6 pointer-events-none z-[60]">
         <motion.nav
           initial={{
-            maxWidth: isDesktop ? '80rem' : isTablet ? '64rem' : '100%',
+            maxWidth: isDesktop ? '80rem' : isTablet ? '64rem' : '86rem',
+
             y: 0,
           }}
           animate={{
@@ -212,13 +154,13 @@ export default function Navbar() {
               ? isDesktop
                 ? '72rem'
                 : isTablet
-                ? '48rem'
-                : '92%'
+                  ? '48rem'
+                  : '86rem'
               : isDesktop
-              ? '80rem'
-              : isTablet
-              ? '64rem'
-              : '100%',
+                ? '80rem'
+                : isTablet
+                  ? '64rem'
+                  : '86rem',
             y: isScrolled ? -55 : 0,
           }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -227,9 +169,17 @@ export default function Navbar() {
           {/* Background Mobile Fallback */}
           <div className="md:hidden absolute inset-0 bg-white/80 backdrop-blur-md shadow-sm border border-gray-200/60 rounded-full -z-10 md:mx-2" />
 
-          {/* 1. LEFT: LOGO */}
+          {/* 1. LEFT: LOGO & MOBILE SEARCH */}
           <div className="flex justify-start items-center w-full">
-            <div className="w-9 h-9 relative p-1.5 flex items-center justify-center shrink-0">
+            <motion.div
+              className="w-9 h-9 relative p-1.5 flex items-center justify-center shrink-0"
+              animate={{
+                opacity: isMobileSearchExpanded ? 0 : 1,
+                width: isMobileSearchExpanded ? 0 : 36,
+                marginRight: isMobileSearchExpanded ? 0 : 0,
+              }}
+              transition={{ duration: 0.2 }}
+            >
               <span
                 className="absolute inset-0 bg-gradient-to-b hover:from-[#FF4F00]/0 hover:to-[#FF4F00] from-[#1B1B1B]/0 to-[#1B1B1B]/80 z-20 "
                 style={{
@@ -243,14 +193,66 @@ export default function Navbar() {
                   WebkitMaskPosition: 'center',
                 }}
               ></span>
-            </div>
+            </motion.div>
 
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="md:hidden ml-3 w-9 h-9 flex items-center justify-center border border-gray-200 rounded-full hover:bg-gray-50 text-gray-500 bg-white/50"
-            >
-              <Search size={18} />
-            </button>
+            {/* Mobile Search - Expandable on /assets */}
+            <div className="md:hidden ml-3 flex items-center">
+              {isAssetsPage ? (
+                <motion.div
+                  className="flex items-center overflow-hidden"
+                  initial={false}
+                  animate={{
+                    width: isMobileSearchExpanded ? 'calc(100vw - 120px)' : 36,
+                  }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <div
+                    className={`h-9 flex items-center gap-2 border border-gray-200 rounded-full bg-white/80 transition-all ${isMobileSearchExpanded ? 'w-full px-3' : 'w-9 justify-center'
+                      }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isMobileSearchExpanded) {
+                          setIsMobileSearchExpanded(false);
+                          setSearchValue('');
+                        } else {
+                          setIsMobileSearchExpanded(true);
+                          setTimeout(() => mobileSearchInputRef.current?.focus(), 100);
+                        }
+                      }}
+                      className="shrink-0 text-gray-500 hover:text-gray-700"
+                    >
+                      {isMobileSearchExpanded ? <X size={18} /> : <Search size={18} />}
+                    </button>
+
+                    <AnimatePresence>
+                      {isMobileSearchExpanded && (
+                        <motion.input
+                          ref={mobileSearchInputRef}
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: '100%' }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.2 }}
+                          type="text"
+                          value={searchValue}
+                          onChange={(e) => setSearchValue(e.target.value)}
+                          placeholder="Search assets..."
+                          className="bg-transparent border-none outline-none text-sm text-zinc-700 w-full placeholder:text-zinc-400 h-full"
+                        />
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              ) : (
+                <button
+                  onClick={() => setIsSearchOpen(true)}
+                  className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-full hover:bg-gray-50 text-gray-500 bg-white/50"
+                >
+                  <Search size={18} />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* 2. CENTER: MENU & SEARCH */}
@@ -263,10 +265,10 @@ export default function Navbar() {
                   isScrolled && isDesktop
                     ? '72rem'
                     : isScrolled && isTablet
-                    ? '48rem'
-                    : isScrolled
-                    ? '92%'
-                    : '100%',
+                      ? '48rem'
+                      : isScrolled
+                        ? '92%'
+                        : '100%',
                 height: '100%',
                 borderRadius: isScrolled ? '999px' : '9999px',
               }}

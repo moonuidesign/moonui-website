@@ -20,14 +20,14 @@ export const GradientTypeFilter = () => {
     ];
 
   return (
-    <div className="w-full pt-1 pb-4 bg-white rounded-2xl shadow-card-sm flex flex-col gap-2 overflow-hidden mb-4 animate-in zoom-in-95 duration-300">
-      <div className="w-full h-8 px-3 flex justify-between items-center">
-        <span className="text-[#3D3D3D] text-xs font-medium font-['Inter']">
+    <div className="w-full pt-1 pb-3 lg:pb-4 bg-white rounded-xl lg:rounded-2xl shadow-card-sm flex flex-col gap-2 overflow-hidden mb-3 lg:mb-4 animate-in zoom-in-95 duration-300">
+      <div className="w-full h-7 lg:h-8 px-3 flex justify-between items-center">
+        <span className="text-[#3D3D3D] text-[11px] lg:text-xs font-medium font-['Inter']">
           Gradient Type
         </span>
       </div>
 
-      <div className="w-full px-3 flex flex-wrap gap-2">
+      <div className="w-full px-3 flex flex-wrap gap-1.5 lg:gap-2">
         {types.map((t) => {
           const isActive = gradientTypes.includes(t.id);
           const Icon = t.icon;

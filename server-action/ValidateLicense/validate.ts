@@ -1,6 +1,7 @@
 'use server';
 import { ResponseAction } from '@/types/response-action';
 
+// Kita extend interface bawaan Lemon Squeezy dengan properti custom aplikasi kita
 export interface LemonSqueezyValidationResponse {
   valid: boolean;
   error: string | null;
@@ -25,6 +26,9 @@ export interface LemonSqueezyValidationResponse {
     customer_name: string;
     customer_email: string;
   };
+  // Properti tambahan untuk logic aplikasi (opsional di response asli, tapi kita inject)
+  app_tier?: 'pro' | 'free';
+  app_plan_type?: 'subscribe' | 'one_time';
 }
 
 export async function validateLicenseKey(
@@ -42,11 +46,13 @@ export async function validateLicenseKey(
         body: new URLSearchParams({
           license_key: licenseKey,
         }),
+        cache: 'no-store', // Pastikan tidak di-cache oleh Next.js
       },
     );
 
     const data: LemonSqueezyValidationResponse = await response.json();
-
+    console.log(data);
+    // 1. Validasi Basic dari API
     if (!response.ok || !data.valid) {
       return {
         success: false,
@@ -55,91 +61,79 @@ export async function validateLicenseKey(
       };
     }
 
-    const { status } = data.license_key;
-    console.log(data);
-    // --- Validation Logic for Store and Product ---
+    const { status, activation_usage, activation_limit } = data.license_key;
 
-    // 1. Validate Store ID (Baggy Studio)
-    // Replace with your actual Lemon Squeezy Store ID.
-    // You can find this in your Lemon Squeezy Dashboard URL or API responses.
+    // ======================================================================
+    // 2. Validasi Store, Product & Variant dengan Pesan Spesifik
+    // ======================================================================
     const EXPECTED_STORE_ID = 213520;
+    const EXPECTED_PRODUCT_ID = 632985;
 
-    if (data.meta.store_id !== EXPECTED_STORE_ID) {
+    // Mapping Variant ID ke Tier dan Plan Type
+    // - 993311: Pro (Subscription/Yearly)
+    // - 993285: Pro (Subscription/Monthly)
+    // - 993308: Pro (One-Time/Lifetime)
+    const VARIANT_CONFIG: Record<
+      number,
+      { tier: 'pro'; planType: 'subscribe' | 'one_time'; name: string }
+    > = {
+      993285: { tier: 'pro', planType: 'subscribe', name: 'Pro (Yearly)' },
+      993311: { tier: 'pro', planType: 'subscribe', name: 'Pro (Monthly)' },
+      993308: { tier: 'pro', planType: 'one_time', name: 'Pro (Lifetime)' },
+    };
+
+    const EXPECTED_VARIANT_IDS = Object.keys(VARIANT_CONFIG).map(Number);
+
+    // Validasi Store, Product & Variant sekaligus
+    const isValidStore = data.meta.store_id === EXPECTED_STORE_ID;
+    const isValidProduct = data.meta.product_id === EXPECTED_PRODUCT_ID;
+    const isValidVariant = EXPECTED_VARIANT_IDS.includes(data.meta.variant_id);
+
+    if (!isValidStore || !isValidProduct || !isValidVariant) {
       return {
         success: false,
         code: 403,
-        message:
-          'Invalid license: This license does not belong to Baggy Studio.',
+        message: 'License key ini tidak valid untuk MoonUI Pro. Pastikan Anda menggunakan lisensi yang dibeli dari MoonUI Design.',
       };
     }
 
-    // 2. Validate Product/Variant for "Pro" or "Pro Plus"
-    const variantName = data.meta.variant_name?.toLowerCase() || '';
-    const productName = data.meta.product_name?.toLowerCase() || '';
+    const variantConfig = VARIANT_CONFIG[data.meta.variant_id];
 
-    // Define valid keywords for your tiers
-    const isPro = variantName.includes('pro') || productName.includes('pro');
-    const isProPlus =
-      variantName.includes('pro plus') ||
-      variantName.includes('pro+') ||
-      variantName.includes('lifetime') ||
-      variantName.includes('unlimited') ||
-      productName.includes('pro plus');
-
-    // Check if it matches either valid tier
-    if (!isPro && !isProPlus) {
+    // ======================================================================
+    // 3. Validasi Status & Limit Penggunaan
+    // ======================================================================
+    if (status !== 'active' && status !== 'inactive') {
       return {
         success: false,
         code: 403,
-        message: `Invalid license tier: Your license is for '${data.meta.variant_name}', but only 'Pro' or 'Pro Plus' licenses are accepted.`,
+        message: `License status is "${status}". Only active or unused licenses can be activated.`,
       };
     }
 
-    // --- End Validation Logic ---
-
-    // Mapping Logic based on Variant Name or ID (Mock implementation for now)
-    // You should inspect data.meta.variant_name or data.meta.product_name
-    let tier: 'pro' | 'pro_plus' = 'pro';
-    let planType: 'subscribe' | 'one_time' = 'subscribe';
-
-    if (
-      variantName.includes('lifetime') ||
-      variantName.includes('unlimited') ||
-      variantName.includes('pro plus') ||
-      variantName.includes('pro+')
-    ) {
-      tier = 'pro_plus';
-      planType = 'one_time';
-    } else {
-      // Default to subscribe pro
-      tier = 'pro';
-      planType = 'subscribe';
-    }
-
-    if (status === 'active') {
+    // Cek apakah limit aktivasi sudah penuh
+    if (activation_limit !== null && activation_usage >= activation_limit) {
       return {
         success: false,
         code: 403,
-        message: 'Sudah diaktifkan',
+        message: `This license key has reached its activation limit of ${activation_limit}. It has already been used.`,
       };
     }
 
-    // Attach inferred types to the returned data structure if needed
-    // For now we just return the standard response but we will use this logic in verify/activate too
-    // Actually, validateLicenseKey returns LemonSqueezyValidationResponse.
-    // We should probably extend the return type or just handle this logic in activateLicense.
-    // For simplicity, let's keep it here but we need to pass it out.
-    // Since we can't easily change the return type without breaking other things,
-    // let's just make sure we capture this logic in the activation step.
+    // ======================================================================
+    // 4. Inject Tier & Plan Type berdasarkan Variant Config
+    // ======================================================================
+    data.app_tier = variantConfig.tier;
+    data.app_plan_type = variantConfig.planType;
 
-    // Correction: We will implement this logic in `activateLicense` instead
-    // where we actually write to the DB.
+    // Pesan sukses yang informatif berdasarkan plan type
+    const successMessage = variantConfig.planType === 'one_time'
+      ? `License valid! Activating ${variantConfig.name} - Lifetime access.`
+      : `License valid! Activating ${variantConfig.name} subscription.`;
 
-    console.log(data);
     return {
       success: true,
       code: 200,
-      message: 'License key is valid.',
+      message: successMessage,
       data,
     };
   } catch (error) {

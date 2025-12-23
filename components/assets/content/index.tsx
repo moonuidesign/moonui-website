@@ -30,7 +30,6 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { checkDownloadLimit } from '@/server-action/limit'; // Pastikan path import sesuai
 import { getAssetsItems } from '@/server-action/getAssetsItems';
 import { incrementAssetStats } from '@/server-action/incrementAssetStats';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 export * from './section-header';
 
@@ -60,7 +59,6 @@ export default function Content({
 
   const router = useRouter();
   const { copy } = UseCopyToClipboard();
-  const isMobile = useIsMobile();
 
   // --- STATE ---
   const [itemsPerPage, setItemsPerPage] = useState(12);
@@ -269,18 +267,32 @@ export default function Content({
   // Render No Results
   if (!loading && fetchedItems.length === 0) {
     return (
-      <div className="w-full h-64 flex flex-col items-center justify-center text-zinc-400">
-        <p className="text-lg font-medium">No {contentType || 'items'} found</p>
-        <p className="text-sm text-zinc-500 mt-1">
-          Try adjusting your search or filters to find what you're looking for.
-        </p>
-        <button
-          onClick={() => window.location.reload()}
-          className="text-orange-600 hover:underline mt-4 text-sm"
-        >
-          Clear all filters
-        </button>
-      </div>
+      <>
+        <div className="flex flex-wrap justify-between items-end gap-4">
+          <SectionHeader
+            totalItems={totalCount}
+            endIndex={Math.min(fetchedItems.length, totalCount)}
+            startIndex={0}
+            title={`${totalCount} Results`}
+            className="capitalize truncate"
+          />
+        </div>
+        <div className="w-full h-64 flex flex-col items-center justify-center text-zinc-400">
+          <p className="text-lg font-medium">
+            No {contentType || 'items'} found
+          </p>
+          <p className="text-sm text-center text-zinc-500 mt-1">
+            Try adjusting your search or filters to find what you're looking
+            for.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-orange-600 hover:underline mt-4 text-sm"
+          >
+            Clear all filters
+          </button>
+        </div>
+      </>
     );
   }
 

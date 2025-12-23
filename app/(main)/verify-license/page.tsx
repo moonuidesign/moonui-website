@@ -8,23 +8,18 @@ export default function Page() {
   const { data: session, status } = useSession();
 
   if (status === 'loading') {
-      return (
-        <div className="flex h-screen w-screen items-center justify-center bg-[#E8E8E8] dark:bg-black">
-             <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        </div>
-      );
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-[#E8E8E8] dark:bg-black">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
   }
-
-  // Logic: 
-  // 1. Logged In User -> Sees form to input NEW license key (Renewal).
-  // 2. Guest -> Sees form to input license key (New Registration).
-  // The ValidateLicenseForm handles the initial key check.
 
   return (
     <div className="bg-[#E8E8E8] h-screen">
       <div className="dark:bg-black  w-screen container mx-auto h-screen max-w-[1440px] max-h-[1024px] flex justify-center items-center">
         <div className="w-full flex h-[80%] min-h-[650px] justify-center item-center backdrop-blur-xs bg-opacity-40 rounded-xl p-5 ">
-            <ValidateLicenseForm />
+          <ValidateLicenseForm />
         </div>
       </div>
     </div>

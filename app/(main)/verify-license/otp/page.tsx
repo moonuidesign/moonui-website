@@ -2,16 +2,12 @@
 
 import { useSession } from 'next-auth/react';
 import { VerifyLicenseOTPForm } from '@/components/otp-validate';
-import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
 import { FormSkeleton } from '@/components/skeletons/form-skeleton';
 
 export default function Page() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-
-  // If loading, show loader
+  const { status } = useSession();
   if (status === 'loading') {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-[#E8E8E8] dark:bg-black">

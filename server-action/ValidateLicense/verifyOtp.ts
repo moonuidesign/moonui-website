@@ -15,8 +15,10 @@ import {
 import { ResponseAction } from '@/types/response-action';
 import redis from '@/libs/redis-local';
 import { auth } from '@/libs/auth';
-import { activateLicense } from '../Activate/activate';
 import { sendVerificationEmail } from '@/libs/mail';
+import { db } from '@/libs/drizzle';
+import { users } from '@/db/migration';
+import { eq } from 'drizzle-orm';
 
 const getOtpKey = (licenseKey: string) => `otp:${licenseKey}`;
 
@@ -63,6 +65,9 @@ export async function validateLicenseAction(
       otp,
       licenseKey,
       expiresAt,
+      result.data.app_tier!,
+      result.data.app_plan_type!,
+      result.data.meta.order_id,
     );
 
     // Use redirect (throws error, so do it last or catch it if needed, but in server action it's fine)
@@ -92,20 +97,32 @@ export async function verifyOtpAction(
 
     const { otp, signature } = validatedFields.data;
     const verificationResult = await verifyLicenseSignature(signature);
-    
+
     if (!verificationResult.valid || !verificationResult.payload) {
-      return { success: false, code: 400, message: 'Invalid verification link.' };
+      return {
+        success: false,
+        code: 400,
+        message: 'Invalid verification link.',
+      };
     }
 
     if (verificationResult.expired) {
-      return { success: false, code: 400, message: 'Verification link has expired.' };
+      return {
+        success: false,
+        code: 400,
+        message: 'Verification link has expired.',
+      };
     }
 
-    const { email, licenseKey } = verificationResult.payload;
+    const { email, licenseKey, tier, planType, orderId } = verificationResult.payload;
     const storedOtp = await redis.get(getOtpKey(licenseKey));
-    
+
     if (!storedOtp) {
-       return { success: false, code: 400, message: 'OTP has expired or invalid.' };
+      return {
+        success: false,
+        code: 400,
+        message: 'OTP has expired or invalid.',
+      };
     }
 
     if (storedOtp !== otp) {
@@ -113,32 +130,30 @@ export async function verifyOtpAction(
     }
 
     await redis.del(getOtpKey(licenseKey));
-    console.log(
-      `OTP for license ${licenseKey} verified.`,
-    );
+    console.log(`OTP for license ${licenseKey} verified.`);
 
-    // Check if user is logged in
     const session = await auth();
     if (session?.user?.id) {
-      // User is logged in, activate/extend license immediately
-      try {
-        await activateLicense(licenseKey, session.user.id);
-        return {
-          code: 200,
-          success: true,
-          data: null,
-          message: 'License activated successfully.',
-          url: '/dashboard',
-        };
-      } catch (error) {
-        console.error('Failed to activate license for logged-in user:', error);
-        return {
-          code: 500,
-          success: false,
-          message:
-            'Failed to activate license. Please contact support.',
-        };
-      }
+      return {
+        code: 400,
+        success: false,
+        message: 'Kamu sudah login, lisensi tidak dapat diaktifkan.',
+        url: '/',
+      };
+    }
+
+    // Cek apakah email sudah terdaftar di database
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+
+    if (existingUser) {
+      return {
+        code: 400,
+        success: false,
+        message: 'Email ini sudah terdaftar. Silakan login atau gunakan license key yang berbeda.',
+        url: '/verify-license',
+      };
     }
 
     const activationExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
@@ -147,8 +162,11 @@ export async function verifyOtpAction(
       'activation-pass',
       licenseKey,
       activationExpiresAt,
+      tier,
+      planType,
+      orderId,
     );
-    
+
     return {
       code: 200,
       success: true,
@@ -158,7 +176,11 @@ export async function verifyOtpAction(
     };
   } catch (error) {
     console.error('Verify OTP Error:', error);
-    return { success: false, code: 500, message: 'An unexpected error occurred.' };
+    return {
+      success: false,
+      code: 500,
+      message: 'An unexpected error occurred.',
+    };
   }
 }
 
@@ -167,44 +189,47 @@ export async function resendOtpAction(
 ): Promise<ResponseAction<{ newSignature: string }>> {
   try {
     if (!currentSignature) {
-        return {
+      return {
         code: 400,
         success: false,
         message: 'Missing signature. Please start over.',
-        };
+      };
     }
 
     const verificationResult = await verifyLicenseSignature(currentSignature);
     if (!verificationResult.valid || !verificationResult.payload) {
-        return {
+      return {
         code: 400,
         success: false,
         message: 'Invalid signature. Please start over.',
-        };
+      };
     }
 
-    const { email, licenseKey } = verificationResult.payload;
+    const { email, licenseKey, tier, planType, orderId } = verificationResult.payload;
     const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
     const newExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    
+
     // Update Redis
     await redis.set(getOtpKey(licenseKey), newOtp, 'EX', 600);
-    
+
     // Send Email
     await sendVerificationEmail(email, newOtp);
 
     const newSignature = await generateLicenseSignature(
-        email,
-        newOtp,
-        licenseKey,
-        newExpiresAt,
+      email,
+      newOtp,
+      licenseKey,
+      newExpiresAt,
+      tier,
+      planType,
+      orderId,
     );
-    
+
     return {
-        code: 200,
-        success: true,
-        message: 'A new OTP has been sent to your email.',
-        data: { newSignature },
+      code: 200,
+      success: true,
+      message: 'A new OTP has been sent to your email.',
+      data: { newSignature },
     };
   } catch (error) {
     console.error('Resend OTP Error:', error);

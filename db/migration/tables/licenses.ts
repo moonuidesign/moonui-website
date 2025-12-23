@@ -25,7 +25,7 @@ export const licenses = pgTable(
       .notNull(),
     tier: varchar('tier', {
       length: 50,
-      enum: ['pro', 'pro_plus'],
+      enum: ['pro'],
     })
       .default('pro')
       .notNull(),

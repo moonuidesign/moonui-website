@@ -294,7 +294,7 @@ export default function Bennefits() {
       </div>
 
       {/* DESKTOP VIEW */}
-      <div className="hidden md:flex flex-col items-center md:w-3xl md:overflow-hidden lg:w-6xl md:max-w-3xl lg:max-w-[1440px] px-4">
+      <div className="hidden md:flex flex-col items-center md:w-3xl md:overflow-hidden lg:w-7xl md:max-w-3xl lg:max-w-[1440px] px-4">
         <div className="flex flex-col items-center gap-8 mb-16 z-20 relative">
           <div className="inline-flex h-8 px-3 pl-2 items-center gap-1.5 rounded-[9px] bg-[#FF4F00] shadow-sm">
             <Icons.Check />
@@ -323,11 +323,10 @@ export default function Bennefits() {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`flex h-12 px-4 items-center gap-3 rounded-[15px] transition-all ${
-                  activeCategory === cat.id
-                    ? 'bg-[#EBEBEB] ring-2 ring-transparent'
-                    : 'bg-[#F7F7F7] shadow-[0_0_0_1px_#EBEBEB] hover:bg-white'
-                }`}
+                className={`flex h-12 px-4 items-center gap-3 rounded-[15px] transition-all ${activeCategory === cat.id
+                  ? 'bg-[#EBEBEB] ring-2 ring-transparent'
+                  : 'bg-[#F7F7F7] shadow-[0_0_0_1px_#EBEBEB] hover:bg-white'
+                  }`}
               >
                 <div
                   className={`size-7 p-1 rounded-[7px] flex items-center justify-center shadow-inner ${cat.bgColor}`}
@@ -373,7 +372,7 @@ export default function Bennefits() {
                 {desktopCards.map((card, index) => (
                   <div
                     key={`${card.id}-${index}`}
-                    className="absolute md:w-2xl lg:w-4xl bg-white rounded-[24px] shadow-2xl border border-white/60 cursor-pointer overflow-hidden transform transition-transform hover:brightness-105"
+                    className="absolute md:w-2xl lg:w-6xl bg-white rounded-[24px] shadow-2xl border border-white/60 cursor-pointer overflow-hidden transform transition-transform hover:brightness-105"
                   >
                     <div className="h-12 bg-[#FAFAFA] border-b border-[#EBEBEB] flex items-center justify-between px-5">
                       <div className="flex items-center gap-3">
@@ -426,7 +425,7 @@ export default function Bennefits() {
           <Icons.ArrowRight />
         </button>
       </div>
-      <div className="absolute bottom-[80px] lg:-bottom-10 z-[10] left-0 w-full h-[250px] lg:h-[500px] bg-gradient-to-t from-[#e8e8e8] via-[#e8e8e8] to-transparent pointer-events-none"></div>
+      <div className="absolute bottom-[0px] lg:-bottom-10 z-[10] left-0 w-full h-[250px] lg:h-[500px] bg-gradient-to-t from-[#e8e8e8] via-[#e8e8e8] to-transparent pointer-events-none"></div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFilter } from '@/contexts';
+import { SectionHeader } from '../assets';
 
 export function CardSkeleton({ contentType }: { contentType: string }) {
   return (
@@ -30,10 +31,21 @@ export function CardSkeleton({ contentType }: { contentType: string }) {
 export function CardGridSkeleton() {
   const { contentType } = useFilter();
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <CardSkeleton contentType={contentType} key={i} />
-      ))}
-    </div>
+    <>
+      <div className="flex flex-wrap justify-between items-end gap-4">
+        <SectionHeader
+          totalItems={0}
+          endIndex={Math.min(8, 0)}
+          startIndex={0}
+          title={`${0} Results`}
+          className="capitalize truncate"
+        />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 px-8 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <CardSkeleton contentType={contentType} key={i} />
+        ))}
+      </div>
+    </>
   );
 }

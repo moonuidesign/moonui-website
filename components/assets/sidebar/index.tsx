@@ -73,7 +73,7 @@ export default function SidebarFilter({
   return (
     <aside
       className={cn(
-        'w-64 flex flex-col gap-4 sticky top-24 h-fit pb-10',
+        'md:w-52 lg:w-64 flex flex-col gap-3 lg:gap-4 sticky top-24 h-fit pb-10',
         className,
       )}
     >

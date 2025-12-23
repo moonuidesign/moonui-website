@@ -11,14 +11,14 @@ export const TierFilter = () => {
   const tiers: TierType[] = ['free', 'pro'];
 
   return (
-    <div className="w-full pt-1 pb-4 bg-white rounded-2xl shadow-card-sm flex flex-col gap-2 overflow-hidden mb-4">
-      <div className="w-full h-8 px-3 flex justify-between items-center">
-        <span className="text-[#3D3D3D] text-xs font-medium font-['Inter']">
+    <div className="w-full pt-1 pb-3 lg:pb-4 bg-white rounded-xl lg:rounded-2xl shadow-card-sm flex flex-col gap-2 overflow-hidden mb-3 lg:mb-4">
+      <div className="w-full h-7 lg:h-8 px-3 flex justify-between items-center">
+        <span className="text-[#3D3D3D] text-[11px] lg:text-xs font-medium font-['Inter']">
           License Tier
         </span>
       </div>
 
-      <div className="w-full px-3 flex flex-col gap-2">
+      <div className="w-full px-3 flex flex-col gap-1.5 lg:gap-2">
         {/* All Option */}
         <button
           onClick={() => {
@@ -67,8 +67,8 @@ export const TierFilter = () => {
             <button
               key={tier}
               onClick={() => {
-                 // If "All" was previously selected (empty array), and we click a tier, it just adds it.
-                 toggleTier(tier)
+                // If "All" was previously selected (empty array), and we click a tier, it just adds it.
+                toggleTier(tier)
               }}
               className="group flex items-center justify-between w-full h-8 px-2 hover:bg-zinc-50 rounded-lg transition-colors"
             >

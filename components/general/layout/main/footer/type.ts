@@ -32,8 +32,8 @@ export interface FooterProps {
   email?: string;
   copyright?: string;
   socials?: {
-    twitter?: string;
-    discord?: string;
-    github?: string;
+    x?: string;
+    linkedin?: string;
+    instagram?: string;
   };
 }

@@ -19,9 +19,9 @@ export default function ContactSection() {
     const mailSubject = encodeURIComponent(`[Contact Form] ${subject}`);
     const mailBody = encodeURIComponent(
       `Full Name: ${fullname}\n` +
-        `Email: ${email}\n` +
-        `Product: ${product}\n\n` +
-        `Message:\n${message}`,
+      `Email: ${email}\n` +
+      `Product: ${product}\n\n` +
+      `Message:\n${message}`,
     );
 
     window.location.href = `mailto:${emailTujuan}?subject=${mailSubject}&body=${mailBody}`;
@@ -84,7 +84,7 @@ export default function ContactSection() {
         </p>
       </div>
 
-      <div className="-mx-4">
+      <div className="mx-2 md:mx-0 ">
         <div className="w-full max-w-[440px] rounded-3xl bg-white p-6 shadow-[0_1px_1px_0.5px_rgba(41,41,41,0.04),0_3px_3px_-1.5px_rgba(41,41,41,0.02),0_6px_6px_-3px_rgba(41,41,41,0.04),0_12px_12px_-6px_rgba(41,41,41,0.04),0_24px_24px_-12px_rgba(41,41,41,0.04),0_48px_48px_-24px_rgba(41,41,41,0.04),0_0_0_1px_rgba(41,41,41,0.04),inset_0_-1px_1px_-0.5px_rgba(51,51,51,0.06)] xl:rounded-[28px] mx-auto mt-11 md:mt-12">
           <div className="text-[18px] font-bold text-[rgb(46,46,46)]">
             Contact Form

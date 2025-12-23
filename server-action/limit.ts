@@ -22,7 +22,7 @@ export type LimitCheckResult = {
 };
 
 // --- Konstanta ---
-const FREE_TIER_LIMIT = 5; 
+const FREE_TIER_LIMIT = 5;
 const LIMIT_DURATION = 60 * 60 * 24 * 30; // 30 Hari
 
 // --- Helper: Get IP ---
@@ -72,6 +72,7 @@ export async function checkDownloadLimit(
   try {
     // 1. Auth & User Info
     const session = await auth();
+    console.log(session);
     const user = session?.user as any;
     const isLoggedIn = !!user;
     const userTier = user?.tier || 'free';
@@ -89,7 +90,7 @@ export async function checkDownloadLimit(
       if (userTier === 'free') return { success: false, message: 'Upgrade required', requiresUpgrade: true };
       return { success: true }; // Unlimited untuk User Pro di Aset Pro
     }
-    
+
     // User Pro di Aset Free -> Unlimited
     if (userTier === 'pro' || userTier === 'pro_plus') {
       return { success: true };
@@ -98,12 +99,12 @@ export async function checkDownloadLimit(
     // ============================================================
     // LOGIKA RATE LIMITING (GUEST & FREE USER)
     // ============================================================
-    
+
     // A. Jika Login (Free User) -> Gunakan User ID saja (Paling Aman)
     if (isLoggedIn) {
       const userKey = `limit:user:${user.id}:${action}`; // Key bulanan bisa ditambah format tanggal
       const count = await checkAndIncrement(userKey);
-      
+
       if (count > FREE_TIER_LIMIT) {
         return createLimitReachedResponse();
       }
@@ -112,12 +113,12 @@ export async function checkDownloadLimit(
 
     // B. Jika GUEST -> Gunakan Strategi "Double Lock" (IP + Fingerprint)
     // Kita akan cek limit IP DAN limit Fingerprint. Jika salah satu habis, tolak.
-    
+
     const ip = await getIpAddress();
-    
+
     // Buat daftar Key yang akan dicek
     const keysToCheck: string[] = [];
-    
+
     // 1. Key IP (Selalu dicek)
     const ipKey = `limit:ip:${ip}:${action}`;
     keysToCheck.push(ipKey);
@@ -134,7 +135,7 @@ export async function checkDownloadLimit(
     // --- Langkah B1: CEK Kuota Dulu (Tanpa Increment) ---
     // Kita ambil nilai saat ini dari semua key (IP dan FP) secara paralel
     const currentValues = await redis.mget(...keysToCheck);
-    
+
     // Analisis hasil
     for (const val of currentValues) {
       const count = parseInt(val || '0', 10);
@@ -147,21 +148,21 @@ export async function checkDownloadLimit(
     // --- Langkah B2: Increment Keduanya ---
     // Jika lolos pengecekan, baru kita naikkan hitungannya
     const pipeline = redis.multi();
-    
+
     keysToCheck.forEach((key) => {
       pipeline.incr(key);
       pipeline.expire(key, LIMIT_DURATION); // Refresh durasi setiap kali aktif
     });
 
     const results = await pipeline.exec();
-    
+
     // Ambil nilai tertinggi dari hasil increment untuk sisa kuota
     // results format: [[null, 1], [null, 1]] (karena ioredis return tuple [err, res])
     let maxUsage = 0;
     if (results) {
-        results.forEach(([err, res]) => {
-            if (typeof res === 'number' && res > maxUsage) maxUsage = res;
-        });
+      results.forEach(([err, res]) => {
+        if (typeof res === 'number' && res > maxUsage) maxUsage = res;
+      });
     }
 
     console.log(`[Limit Guest] IP: ${ip} | FP: ${validFingerprint ? fingerprintId : 'None'} | Usage: ${maxUsage}`);

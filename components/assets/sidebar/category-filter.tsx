@@ -24,6 +24,8 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   onToggleSub,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const [isMainCategoriesOpen, setIsMainCategoriesOpen] = useState(true);
+  const [isSubCategoriesOpen, setIsSubCategoriesOpen] = useState(true);
 
   // Get visible sub-categories (Children of active parents)
   const activeParentNodes = categories.filter((cat) =>
@@ -34,13 +36,13 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   );
 
   return (
-    <div className="w-full bg-white rounded-2xl shadow-card-sm overflow-hidden border border-gray-100 transition-all">
+    <div className="w-full bg-white rounded-xl lg:rounded-2xl shadow-card-sm overflow-hidden border border-gray-100 transition-all">
       {/* Header / Accordion Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-12 px-4 flex justify-between items-center bg-white hover:bg-gray-50 transition-colors border-b border-gray-100/50"
+        className="w-full h-10 lg:h-12 px-3 lg:px-4 flex justify-between items-center bg-white hover:bg-gray-50 transition-colors border-b border-gray-100/50"
       >
-        <span className="text-sm font-semibold text-gray-800 font-['Plus_Jakarta_Sans']">
+        <span className="text-xs lg:text-sm font-semibold text-gray-800 font-['Plus_Jakarta_Sans']">
           {title}
         </span>
         {isOpen ? (
@@ -52,58 +54,82 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
       {/* Content */}
       {isOpen && (
-        <div className="p-4 flex flex-col gap-6">
+        <div className="p-3 lg:p-4 flex flex-col gap-4 lg:gap-6">
           {/* MAIN CATEGORIES */}
           <div className="flex flex-col gap-2">
             {categories.length > 0 && (
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                Main Categories
-              </span>
+              <button
+                onClick={() => setIsMainCategoriesOpen(!isMainCategoriesOpen)}
+                className="flex items-center justify-between w-full group"
+              >
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">
+                  Main Categories
+                </span>
+                {isMainCategoriesOpen ? (
+                  <ChevronDown className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                ) : (
+                  <ChevronRight className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                )}
+              </button>
             )}
-            <div className="flex flex-wrap gap-2">
-              <CategoryChip
-                label="All"
-                isActive={activeSlugs.length === 0}
-                onClick={() => onToggle('all')}
-              />
-              <CategoryChip
-                label="News"
-                isActive={activeSlugs.includes('news')}
-                onClick={() => onToggle('news')}
-              />
-              {categories.map((cat) => (
+            {isMainCategoriesOpen && (
+              <div className="flex flex-wrap gap-2 animate-in slide-in-from-top-1 fade-in duration-200">
                 <CategoryChip
-                  key={cat.id}
-                  label={cat.name}
-                  count={cat.count}
-                  isActive={activeSlugs.includes(cat.slug)}
-                  onClick={() => onToggle(cat.slug)}
+                  label="All"
+                  isActive={activeSlugs.length === 0}
+                  onClick={() => onToggle('all')}
                 />
-              ))}
-            </div>
+                <CategoryChip
+                  label="News"
+                  isActive={activeSlugs.includes('news')}
+                  onClick={() => onToggle('news')}
+                />
+                {categories.map((cat) => (
+                  <CategoryChip
+                    key={cat.id}
+                    label={cat.name}
+                    count={cat.count}
+                    isActive={activeSlugs.includes(cat.slug)}
+                    onClick={() => onToggle(cat.slug)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* SUB CATEGORIES */}
           {visibleSubCategories.length > 0 && (
             <div className="flex flex-col gap-2 animate-in slide-in-from-top-1 fade-in duration-300">
-              <div className="flex items-center gap-1.5 border-t border-gray-100 pt-4">
-                <Layers className="h-3 w-3 text-gray-400" />
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  Sub Categories
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {visibleSubCategories.map((sub) => (
-                  <CategoryChip
-                    key={sub.id}
-                    label={sub.name}
-                    count={sub.count}
-                    isActive={activeSubSlugs.includes(sub.slug)}
-                    onClick={() => onToggleSub(sub.slug)}
-                    variant="sub"
-                  />
-                ))}
-              </div>
+              <button
+                onClick={() => setIsSubCategoriesOpen(!isSubCategoriesOpen)}
+                className="flex items-center justify-between w-full border-t border-gray-100 pt-4 group"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Layers className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">
+                    Sub Categories
+                  </span>
+                </div>
+                {isSubCategoriesOpen ? (
+                  <ChevronDown className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                ) : (
+                  <ChevronRight className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                )}
+              </button>
+              {isSubCategoriesOpen && (
+                <div className="flex flex-wrap gap-2 animate-in slide-in-from-top-1 fade-in duration-200">
+                  {visibleSubCategories.map((sub) => (
+                    <CategoryChip
+                      key={sub.id}
+                      label={sub.name}
+                      count={sub.count}
+                      isActive={activeSubSlugs.includes(sub.slug)}
+                      onClick={() => onToggleSub(sub.slug)}
+                      variant="sub"
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -134,8 +160,8 @@ function CategoryChip({
           ? 'bg-zinc-900 text-white border-zinc-900 shadow-sm'
           : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50',
         variant === 'sub' &&
-          !isActive &&
-          'bg-gray-50/50 border-gray-100 text-gray-500',
+        !isActive &&
+        'bg-gray-50/50 border-gray-100 text-gray-500',
       )}
     >
       <span>{label}</span>

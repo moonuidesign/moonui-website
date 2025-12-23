@@ -22,25 +22,36 @@ export default auth(async (req) => {
   };
 
   // =================================================================
-  // 0. Global Auth Check for Dashboard
+  // 0. Dashboard Access - Admin/SuperAdmin Only
   // =================================================================
-  if (nextUrl.pathname.startsWith('/dashboard') && !req.auth) {
-    const url = new URL('/signin', nextUrl.origin);
-    url.searchParams.set(
-      'error',
-      'You must be logged in to access the dashboard.',
-    );
-    url.searchParams.set('callbackUrl', nextUrl.href);
-    return NextResponse.redirect(url);
+  if (nextUrl.pathname.startsWith('/dashboard')) {
+    // Must be logged in
+    if (!req.auth) {
+      const url = new URL('/signin', nextUrl.origin);
+      url.searchParams.set(
+        'error',
+        'You must be logged in to access this page.',
+      );
+      url.searchParams.set('callbackUrl', nextUrl.href);
+      return NextResponse.redirect(url);
+    }
+
+    // Only admin and superadmin can access dashboard
+    if (role !== 'admin' && role !== 'superadmin') {
+      return redirectError(
+        'Access denied. Only administrators can access the dashboard.',
+        '/',
+      );
+    }
   }
 
   // =================================================================
-  // 0.1 Redirect Logged-In Users from Auth Pages
+  // 0.1 Redirect Logged-In Admin/SuperAdmin from /signin to Dashboard
   // =================================================================
   if (
     req.auth &&
-    (nextUrl.pathname.startsWith('/signin') ||
-      nextUrl.pathname.startsWith('/signup'))
+    nextUrl.pathname.startsWith('/signin') &&
+    (role === 'admin' || role === 'superadmin')
   ) {
     return NextResponse.redirect(new URL('/dashboard', nextUrl.origin));
   }
@@ -52,69 +63,93 @@ export default auth(async (req) => {
   // 1. Signature Verification Middleware
   // =================================================================
 
-  // 1a. Invite Page (@app/(auth)/invite/**)
+  // 1. Invite Page - Signature required
   if (nextUrl.pathname.startsWith('/invite')) {
     if (!signature) {
       return redirectError(
-        'Missing invitation signature. Please check your link.',
+        'Invalid invitation link. Please make sure you are using the correct link from the invitation email.',
       );
     }
     const { valid, expired } = await verifyInviteSignature(signature);
-    if (!valid) return redirectError('Invalid invitation signature.');
-    if (expired) return redirectError('Invitation link has expired.');
+    if (!valid) {
+      return redirectError(
+        'Invalid invitation signature. Please contact admin to get a new invitation link.',
+      );
+    }
+    if (expired) {
+      return redirectError(
+        'Invitation link has expired. Please contact admin to get a new invitation link.',
+      );
+    }
   }
 
-  // 1e. Signup Page (@app/(auth)/signup/**)
+  // 2. Signup Page - Signature required and must be valid
   if (nextUrl.pathname.startsWith('/signup')) {
     if (!signature) {
       return redirectError(
-        'Please verify your license first.',
+        'You must verify your license first before signing up. Enter your license key to continue.',
         '/verify-license',
       );
     }
-    // Note: We don't necessarily need to verify the signature strictly here
-    // because the page itself likely does it (or the form submission),
-    // but the requirement is just to redirect if signature is MISSING.
-    // If you want strict verification here too:
     const { valid, expired } = await verifyLicenseSignature(signature);
-    if (!valid)
-      return redirectError('Invalid license signature.', '/verify-license');
-    if (expired)
-      return redirectError('License signature expired.', '/verify-license');
+    if (!valid) {
+      return redirectError(
+        'Invalid registration session. Please verify your license again by entering your license key.',
+        '/verify-license',
+      );
+    }
+    if (expired) {
+      return redirectError(
+        'Your registration session has expired (more than 5 minutes). Please verify your license again.',
+        '/verify-license',
+      );
+    }
   }
 
-  // 1b. Reset Password Page (@app/(main)/forgot-password/reset-password/**)
+  // 3. Reset Password Page - Signature required
   if (nextUrl.pathname.startsWith('/forgot-password/reset-password')) {
     if (!signature) {
       return redirectError(
-        'Missing reset password signature.',
+        'Invalid reset password link. Please request a new reset password link.',
         '/forgot-password',
       );
     }
     const { valid, expired } = await verifyResetPasswordSignature(signature);
-    if (!valid)
-      return redirectError('Invalid reset signature.', '/forgot-password');
-    if (expired)
-      return redirectError('Reset link has expired.', '/forgot-password');
+    if (!valid) {
+      return redirectError(
+        'Invalid or already used reset password link. Please request a new link.',
+        '/forgot-password',
+      );
+    }
+    if (expired) {
+      return redirectError(
+        'Reset password link has expired. Please request a new reset password link.',
+        '/forgot-password',
+      );
+    }
   }
 
-  // 1c. Verify License OTP (@app/(main)/verify-license/otp/**)
+  // 4. Verify License OTP - Signature required and must be valid
   if (nextUrl.pathname.startsWith('/verify-license/otp')) {
     if (!signature) {
-      // Maybe redirect to verify-license init page instead of signin?
       return redirectError(
-        'Missing license verification signature.',
+        'OTP verification session not found. Please enter your license key to start the verification process.',
         '/verify-license',
       );
     }
     const { valid, expired } = await verifyLicenseSignature(signature);
-    if (!valid)
+    if (!valid) {
       return redirectError(
-        'Invalid verification signature.',
+        'Invalid OTP verification session. Please enter your license key again.',
         '/verify-license',
       );
-    if (expired)
-      return redirectError('Verification link has expired.', '/verify-license');
+    }
+    if (expired) {
+      return redirectError(
+        'OTP verification session has expired (more than 10 minutes). Please start verification again.',
+        '/verify-license',
+      );
+    }
   }
 
   // 1d. Forgot Password OTP (@app/(main)/forgot-password/otp/**)

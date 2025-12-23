@@ -71,7 +71,7 @@ export default function NavbarFilter({ onFilterClick }: NavbarFilterProps) {
             <Palette className="w-4 h-4" />
             <span className="text-sm font-medium">Gradients</span>
           </button>
-          <div className="flex lg:hidden items-center">
+          <div className="flex md:hidden items-center">
             <button
               onClick={onFilterClick}
               className="h-10 px-4 rounded-[50px] bg-white border border-gray-200  flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all"

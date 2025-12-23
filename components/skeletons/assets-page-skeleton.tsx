@@ -4,13 +4,13 @@ import { CardGridSkeleton } from './card-skeleton';
 export function AssetsPageSkeleton() {
   return (
     <div className="min-h-screen font-['Inter']">
-      <div className="max-w-3xl pt-20 md:pt-0 z-[800] md:z-0 bg-[#E7E7E7] md:bg-none md:rounded-none -mt-[69px] md:mt-[30px] md:max-w-7xl md:w-7xl mx-auto px-4 md:px-6 py-6 flex gap-8 relative">
+      <div className="max-w-3xl pt-20 md:pt-0 z-[800] md:z-0 bg-[#E7E7E7] md:bg-none md:rounded-none rounded-t-[39px] -mt-[69px] md:mt-[30px] md:max-w-5xl lg:max-w-7xl md:w-full lg:w-7xl mx-auto px-4 md:px-4 lg:px-6 py-6 flex gap-4 lg:gap-8 relative">
         {/* Sidebar Skeleton */}
-        <div className="hidden lg:block w-64 flex-shrink-0">
-          <div className="sticky top-6 flex flex-col gap-6">
+        <div className="hidden md:block md:w-52 lg:w-64 flex-shrink-0">
+          <div className="sticky top-6 flex flex-col gap-4 lg:gap-6">
             {/* Title */}
-            <div className="pl-1 mb-2">
-              <Skeleton className="h-8 w-32" />
+            <div className="pl-1 mb-2 lg:mb-4">
+              <Skeleton className="h-6 lg:h-8 w-28 lg:w-32" />
             </div>
 
             {/* Platform Switcher Skeleton */}

@@ -164,24 +164,33 @@ export function extractDataFromSignature(signatureString: string): {
 export interface LicenseVerificationPayload {
   email: string;
   otp: string;
-  licenseKey: string; // <-- Kunci lisensi ditambahkan di sini
+  licenseKey: string;
   expiresAt: number;
+  tier: 'pro' | 'free';
+  planType: 'subscribe' | 'one_time';
+  orderId: number;
 }
 
 /**
- * Menghasilkan signature yang mengikat email, OTP, dan kunci lisensi.
+ * Menghasilkan signature yang mengikat email, OTP, kunci lisensi, tier, planType, dan orderId.
  */
 export async function generateLicenseSignature(
   email: string,
   otp: string,
-  licenseKey: string, // <-- Parameter baru
+  licenseKey: string,
   expiresAt: Date,
+  tier: 'pro' | 'free',
+  planType: 'subscribe' | 'one_time',
+  orderId: number,
 ): Promise<string> {
   const payload: LicenseVerificationPayload = {
     email,
     otp,
     licenseKey,
     expiresAt: expiresAt.getTime(),
+    tier,
+    planType,
+    orderId,
   };
 
   const payloadString = JSON.stringify(payload);
