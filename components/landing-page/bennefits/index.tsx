@@ -33,7 +33,7 @@ export interface CategoryConfig {
   id: Category;
   title: string;
   subtitle: string;
-  icons: React.ReactNode;
+  icons: React.ReactElement; // Changed from React.ReactNode to React.ReactElement for cloneElement compatibility
   bgColor: string; // Tailwind class
   themeColor: string; // Hex code
   tabs: TabConfig[];
@@ -332,10 +332,10 @@ export default function Bennefits() {
                 <div
                   className={`size-7 p-1 rounded-[7px] flex items-center justify-center shadow-inner ${cat.bgColor}`}
                 >
-                  {/* Clone element to change color/size if needed, or render directly */}
-                  {React.cloneElement(cat.icons as React.ReactElement, {
-                    color: 'white', // Ensure icon is white
-                    variant: 'Bold', // Use Bold variant if supported by library
+                  {/* Cast to ReactElement to allow prop overriding without TS error */}
+                  {React.cloneElement(cat.icons as React.ReactElement<any>, {
+                    color: 'white',
+                    variant: 'Bold',
                   })}
                 </div>
                 <span className="capitalize font-medium text-base text-[#3D3D3D]">
@@ -380,14 +380,15 @@ export default function Bennefits() {
                         <div
                           className={`w-6 h-6 rounded-[6px] flex items-center justify-center text-white text-xs shadow-sm ${card.bgColor}`}
                         >
-                          {/* Correctly render icon from active config */}
-                          {React.cloneElement(
-                            activeConfig?.icons as React.ReactElement,
-                            {
-                              size: 14,
-                              color: 'white',
-                            },
-                          )}
+                          {/* Cast activeConfig.icons to ReactElement<any> to allow 'size' prop */}
+                          {activeConfig?.icons &&
+                            React.cloneElement(
+                              activeConfig.icons as React.ReactElement<any>,
+                              {
+                                size: 14,
+                                color: 'white',
+                              },
+                            )}
                         </div>
                         <div>
                           <span className="text-[#333] font-medium text-sm">

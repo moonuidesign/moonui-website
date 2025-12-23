@@ -10,7 +10,6 @@ import {
   X,
   Palette,
   Crown,
-  PlusCircle,
   FileUp,
   Sparkles,
   Image as ImageIcon,
@@ -34,13 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
+
 import { toast } from 'react-toastify';
 import Image from 'next/image';
 
@@ -58,6 +51,8 @@ import {
   GradientTierType,
 } from '@/server-action/gradient/gradient-validator';
 import DescriptionEditor from '@/components/text-editor/description-editor';
+import { updateContentGradient } from '@/server-action/gradient/update-gradient';
+import { createContentGradient } from '@/server-action/gradient/create-gradient';
 
 // --- INTERFACE DATABASE ---
 interface GradientEntity {
@@ -214,7 +209,6 @@ export default function GradientForm({
     });
     toast.success('Category Created');
   };
-
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -537,7 +531,9 @@ export default function GradientForm({
                                 className="h-9 font-mono uppercase text-sm bg-background"
                                 maxLength={7}
                                 onChange={(e) =>
-                                  txtField.onChange(e.target.value.toUpperCase())
+                                  txtField.onChange(
+                                    e.target.value.toUpperCase(),
+                                  )
                                 }
                               />
                             </FormControl>
@@ -688,9 +684,8 @@ export default function GradientForm({
                     </div>
                   </label>
 
-                   {/* Cancel Button */}
-                   {(sourceFile ||
-                    (isEditMode && gradient?.linkDownload)) && (
+                  {/* Cancel Button */}
+                  {(sourceFile || (isEditMode && gradient?.linkDownload)) && (
                     <div className="flex justify-end">
                       <Button
                         type="button"
@@ -734,7 +729,7 @@ export default function GradientForm({
                     onChange={handleImageUpload}
                   />
                   <label htmlFor="thumbnail-upload">
-                     <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
+                    <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
                       <div className="flex flex-col items-center justify-center gap-4">
                         <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
                           <ImageIcon className="h-8 w-8 text-primary" />
@@ -753,7 +748,7 @@ export default function GradientForm({
 
                   {imagePreview && (
                     <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                       <div className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30">
+                      <div className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30">
                         <div className="absolute top-2 left-2 z-10 bg-green-500/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
                           Thumbnail
                         </div>
@@ -763,7 +758,7 @@ export default function GradientForm({
                           fill
                           className="object-cover transition-transform group-hover:scale-105"
                         />
-                         <Button
+                        <Button
                           type="button"
                           variant="destructive"
                           size="icon"
@@ -820,7 +815,6 @@ export default function GradientForm({
               </div>
             </form>
           </Form>
-
         </div>
       </div>
     </>

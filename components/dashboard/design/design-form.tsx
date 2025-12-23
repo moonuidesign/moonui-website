@@ -7,7 +7,6 @@ import {
   Upload,
   Crown,
   LinkIcon,
-  PlusCircle,
   FileUp,
   Sparkles,
   Trash2,
@@ -33,13 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+
 import { toast } from 'react-toastify';
 import Image from 'next/image';
 import { TagInput } from '@/components/ui/tag-input';
@@ -48,6 +41,16 @@ import { TagInput } from '@/components/ui/tag-input';
 import { createCategoryDesign } from '@/server-action/getCategoryComponent/create';
 import { CategoryCombobox } from '@/components/dashboard/category-combobox';
 import DescriptionEditor from '@/components/text-editor/description-editor';
+import {
+  ContentDesignFormValues,
+  ContentDesignSchema,
+  DESIGN_STATUS_OPTIONS,
+  DESIGN_TIER_OPTIONS,
+  DesignStatusType,
+  DesignTierType,
+} from '@/server-action/designs/validator';
+import { updateContentDesign } from '@/server-action/designs/updateDesign';
+import { createContentDesign } from '@/server-action/designs/createDesign';
 
 // Interface untuk Data Design dari Database
 interface DesignEntity {
@@ -150,13 +153,17 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
   });
 
   const createParentCategory = async (name: string) => {
-    const res = await createCategoryDesign({ name, parentId: null, imageUrl: '' }); // Design categories might need imageUrl? Checking validator.
+    const res = await createCategoryDesign({
+      name,
+      parentId: null,
+      imageUrl: '',
+    }); // Design categories might need imageUrl? Checking validator.
     // Looking at validator.ts for Design, name is required. imageUrl optional?
     // create.ts for design: const { name, imageUrl, parentId } = validatedFields.data;
     // I should check validator.
     // Assuming imageUrl is optional or has default. If not, I might need to pass placeholder.
     // But CategoryCombobox only passes name.
-    
+
     // Let's assume standard behavior. If error, I'll see toast.
     if ('error' in res) {
       toast.error(res.error);
@@ -182,7 +189,6 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
     setLocalCategories((prev) => [...prev, res.category]);
     return res.category;
   };
-
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -405,9 +411,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                             : 'Select Sub Category'
                         }
                         searchPlaceholder="Search or create sub category..."
-                        disabled={
-                          !currentParentId || isPending
-                        }
+                        disabled={!currentParentId || isPending}
                       />
                     </FormItem>
                   </div>
@@ -847,7 +851,6 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
               </div>
             </form>
           </Form>
-
         </div>
       </div>
     </>
