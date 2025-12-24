@@ -62,7 +62,7 @@ export function ValidateLicenseForm() {
   return (
     <Card className="w-full max-w-[480px] gap-8 px-5 py-12 rounded-[40px]">
       <CardHeader className="flex justify-center items-center flex-col">
-        <CardTitle className="font-jakarta flex justify-center items-center text-[32px] font-extrabold">
+        <CardTitle className="font-['Plus_Jakarta_Sans'] flex justify-center items-center text-[32px] font-extrabold">
           Active License & Sign up
         </CardTitle>
         <CardDescription className="font-sans text-center text-[16px] flex justify-center items-center">

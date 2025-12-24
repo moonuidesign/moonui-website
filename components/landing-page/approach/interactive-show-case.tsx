@@ -84,34 +84,31 @@ const DesktopNavButton = ({
         <div className="relative z-10">
           {React.isValidElement(item.icon)
             ? React.cloneElement(
-                item.icon as React.ReactElement<{ className?: string }>,
-                {
-                  className: `w-5 h-5 transition-colors duration-200 ${
-                    isActive
-                      ? 'text-white'
-                      : 'text-neutral-500 group-hover:text-[#FF5F38]'
+              item.icon as React.ReactElement<{ className?: string }>,
+              {
+                className: `w-5 h-5 transition-colors duration-200 ${isActive
+                  ? 'text-white'
+                  : 'text-neutral-500 group-hover:text-[#FF5F38]'
                   }`,
-                },
-              )
+              },
+            )
             : item.icon}
         </div>
       </div>
       <div className="flex flex-col items-center gap-1">
         <div className="flex items-center gap-1.5 flex-wrap justify-center">
           <span
-            className={`text-[13px] font-semibold leading-tight transition-colors duration-200 ${
-              isActive ? 'text-zinc-900' : 'text-neutral-600'
-            }`}
+            className={`text-[13px] font-semibold leading-tight transition-colors duration-200 ${isActive ? 'text-zinc-900' : 'text-neutral-600'
+              }`}
           >
             {item.label}
           </span>
           {item.tag && (
             <span
-              className={`text-[9px] font-bold px-[4px] py-[1px] rounded-[4px] uppercase tracking-wide border ${
-                item.tag.variant === 'default'
-                  ? 'bg-gray-100 text-neutral-500 border-transparent'
-                  : 'bg-[#FFF0EB] text-[#FF5F38] border-[#FFD6CC]'
-              }`}
+              className={`text-[9px] font-bold px-[4px] py-[1px] rounded-[4px] uppercase tracking-wide border ${item.tag.variant === 'default'
+                ? 'bg-gray-100 text-neutral-500 border-transparent'
+                : 'bg-[#FFF0EB] text-[#FF5F38] border-[#FFD6CC]'
+                }`}
             >
               {item.tag.text}
             </span>
@@ -224,9 +221,9 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
               >
                 {React.isValidElement(activeTab.icon)
                   ? React.cloneElement(
-                      activeTab.icon as React.ReactElement<any>,
-                      { className: 'size-4' },
-                    )
+                    activeTab.icon as React.ReactElement<any>,
+                    { className: 'size-4' },
+                  )
                   : activeTab.icon}
               </motion.div>
               <div className="flex flex-col justify-center">
@@ -309,7 +306,7 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
                   <div className="flex-1 flex justify-center max-w-lg mx-auto">
                     <div className=" text-[#D3D3D3] text-[11px] md:text-xs h-7 px-3 rounded-md flex items-center justify-center gap-1.5 w-full cursor-default">
                       <span className="w-1.5 h-1.5 bg-neutral-300 rounded-full" />
-                      <span>alignui.com</span>
+                      <span>Moonui.design</span>
                     </div>
                   </div>
                   <div className="hidden md:flex gap-3 text-neutral-300">
@@ -410,13 +407,11 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
                           onClick={() => setActiveSubTabId(subTab.id)}
                           className={`
                                         flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap
-                                        ${
-                                          isActive
-                                            ? `${
-                                                subTab.color || 'bg-zinc-700'
-                                              } text-white shadow-lg ring-1 ring-white/20`
-                                            : 'bg-zinc-800/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
-                                        }
+                                        ${isActive
+                              ? `${subTab.color || 'bg-zinc-700'
+                              } text-white shadow-lg ring-1 ring-white/20`
+                              : 'bg-zinc-800/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+                            }
                                     `}
                         >
                           {subTab.icon}
@@ -458,9 +453,8 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
 
                     <button
                       onClick={onCtaClick}
-                      className={`${
-                        activeSubTabData?.color || 'bg-blue-600'
-                      } hover:opacity-90 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/20 shrink-0`}
+                      className={`${activeSubTabData?.color || 'bg-blue-600'
+                        } hover:opacity-90 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/20 shrink-0`}
                     >
                       Explore - Templates <ChevronRight size={14} />
                     </button>
@@ -502,9 +496,8 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
 
                   <button
                     onClick={onCtaClick}
-                    className={`${
-                      activeTab.buttonColor || 'bg-orange-600'
-                    } hover:opacity-90 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/20 shrink-0`}
+                    className={`${activeTab.buttonColor || 'bg-orange-600'
+                      } hover:opacity-90 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/20 shrink-0`}
                   >
                     {activeTab.ctaButtonText} <ChevronRight size={14} />
                   </button>
@@ -514,99 +507,99 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
               {/* C. STYLE: DEFAULT (Circular CTA for Base) */}
               {(!activeTab.footerStyle ||
                 activeTab.footerStyle === 'default') && (
-                <div className="flex flex-col items-center justify-end pb-4">
-                  {/* Sama dengan mobile, statis tanpa layoutId khusus */}
-                  <div className="pointer-events-auto flex flex-col items-center">
-                    <div className="relative flex items-center justify-center mb-4 group cursor-pointer">
-                      <div className="absolute w-[68px] h-[68px] rounded-full border border-neutral-200/50 -z-20" />
-                      <motion.div
-                        className="absolute w-[68px] h-[70px] rounded-full -z-10"
-                        animate={{ rotate: 360 }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          ease: 'linear',
-                        }}
-                        style={{
-                          background:
-                            'conic-gradient(from 0deg, transparent 30%, #FF5F38 90%)',
-                          maskImage:
-                            'radial-gradient(closest-side, transparent 97%, black 89%)',
-                          WebkitMaskImage:
-                            'radial-gradient(closest-side, transparent 97%, black 89%)',
-                        }}
-                      />
-                      <div className="bg-white text-[#FF5F38] px-2 py-2.5 rounded-full shadow-sm border border-neutral-100 z-10 relative">
-                        {activeTab.ctaIcon ? (
-                          activeTab.ctaIcon
-                        ) : (
-                          <div className="flex items-center justify-center font-mono text-lg font-bold">
-                            {/* 1. Kurung Kurawal Kiri '{' */}
-                            <motion.span
-                              animate={{ x: [0, 4, 4, 0] }} // Diam -> Masuk -> Tahan -> Kembali
-                              transition={{
-                                duration: 2,
-                                ease: 'easeInOut',
-                                repeat: Infinity,
-                                repeatDelay: 0.5, // Waktu berhenti sebentar sebelum ulang
-                              }}
-                              className="inline-block"
-                            >
-                              {`{`}
-                            </motion.span>
+                  <div className="flex flex-col items-center justify-end pb-4">
+                    {/* Sama dengan mobile, statis tanpa layoutId khusus */}
+                    <div className="pointer-events-auto flex flex-col items-center">
+                      <div className="relative flex items-center justify-center mb-4 group cursor-pointer">
+                        <div className="absolute w-[68px] h-[68px] rounded-full border border-neutral-200/50 -z-20" />
+                        <motion.div
+                          className="absolute w-[68px] h-[70px] rounded-full -z-10"
+                          animate={{ rotate: 360 }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: 'linear',
+                          }}
+                          style={{
+                            background:
+                              'conic-gradient(from 0deg, transparent 30%, #FF5F38 90%)',
+                            maskImage:
+                              'radial-gradient(closest-side, transparent 97%, black 89%)',
+                            WebkitMaskImage:
+                              'radial-gradient(closest-side, transparent 97%, black 89%)',
+                          }}
+                        />
+                        <div className="bg-white text-[#FF5F38] px-2 py-2.5 rounded-full shadow-sm border border-neutral-100 z-10 relative">
+                          {activeTab.ctaIcon ? (
+                            activeTab.ctaIcon
+                          ) : (
+                            <div className="flex items-center justify-center font-mono text-lg font-bold">
+                              {/* 1. Kurung Kurawal Kiri '{' */}
+                              <motion.span
+                                animate={{ x: [0, 4, 4, 0] }} // Diam -> Masuk -> Tahan -> Kembali
+                                transition={{
+                                  duration: 2,
+                                  ease: 'easeInOut',
+                                  repeat: Infinity,
+                                  repeatDelay: 0.5, // Waktu berhenti sebentar sebelum ulang
+                                }}
+                                className="inline-block"
+                              >
+                                {`{`}
+                              </motion.span>
 
-                            {/* 2. Garis Miring '/' */}
-                            <motion.span
-                              animate={{
-                                rotate: [0, 360, 360, 0], // Putar 360 -> Tahan -> Balik Putar
-                                scale: [1, 1.2, 1.2, 1], // Sedikit membesar saat berputar
-                              }}
-                              transition={{
-                                duration: 2,
-                                ease: 'easeInOut',
-                                repeat: Infinity,
-                                repeatDelay: 0.5,
-                              }}
-                              className="inline-block origin-center mx-[1px]" // mx untuk sedikit jarak
-                            >
-                              /
-                            </motion.span>
+                              {/* 2. Garis Miring '/' */}
+                              <motion.span
+                                animate={{
+                                  rotate: [0, 360, 360, 0], // Putar 360 -> Tahan -> Balik Putar
+                                  scale: [1, 1.2, 1.2, 1], // Sedikit membesar saat berputar
+                                }}
+                                transition={{
+                                  duration: 2,
+                                  ease: 'easeInOut',
+                                  repeat: Infinity,
+                                  repeatDelay: 0.5,
+                                }}
+                                className="inline-block origin-center mx-[1px]" // mx untuk sedikit jarak
+                              >
+                                /
+                              </motion.span>
 
-                            {/* 3. Kurung Kurawal Kanan '}' */}
-                            <motion.span
-                              animate={{ x: [0, -4, -4, 0] }} // Diam -> Masuk -> Tahan -> Kembali
-                              transition={{
-                                duration: 2,
-                                ease: 'easeInOut',
-                                repeat: Infinity,
-                                repeatDelay: 0.5,
-                              }}
-                              className="inline-block"
-                            >
-                              {`}`}
-                            </motion.span>
-                          </div>
-                        )}
+                              {/* 3. Kurung Kurawal Kanan '}' */}
+                              <motion.span
+                                animate={{ x: [0, -4, -4, 0] }} // Diam -> Masuk -> Tahan -> Kembali
+                                transition={{
+                                  duration: 2,
+                                  ease: 'easeInOut',
+                                  repeat: Infinity,
+                                  repeatDelay: 0.5,
+                                }}
+                                className="inline-block"
+                              >
+                                {`}`}
+                              </motion.span>
+                            </div>
+                          )}
+                        </div>
                       </div>
+                      <h3 className="text-xl font-semibold text-zinc-900 mb-1 text-center">
+                        {activeTab.ctaTitle || title}
+                      </h3>
+                      <p className="text-neutral-500 text-sm mb-5 max-w-[280px] text-center leading-relaxed">
+                        {activeTab.ctaDescription || description}
+                      </p>
+                      <button
+                        onClick={onCtaClick}
+                        className="group bg-[#1A1A1A] text-white pl-5 pr-4 py-2.5 rounded-full text-sm font-medium hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2 cursor-pointer"
+                      >
+                        {activeTab.ctaButtonText || ctaButtonText}
+                        <span className="bg-white/10 rounded-full w-5 h-5 flex items-center justify-center text-[10px] group-hover:translate-x-0.5 transition-transform">
+                          ›
+                        </span>
+                      </button>
                     </div>
-                    <h3 className="text-xl font-semibold text-zinc-900 mb-1 text-center">
-                      {activeTab.ctaTitle || title}
-                    </h3>
-                    <p className="text-neutral-500 text-sm mb-5 max-w-[280px] text-center leading-relaxed">
-                      {activeTab.ctaDescription || description}
-                    </p>
-                    <button
-                      onClick={onCtaClick}
-                      className="group bg-[#1A1A1A] text-white pl-5 pr-4 py-2.5 rounded-full text-sm font-medium hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2 cursor-pointer"
-                    >
-                      {activeTab.ctaButtonText || ctaButtonText}
-                      <span className="bg-white/10 rounded-full w-5 h-5 flex items-center justify-center text-[10px] group-hover:translate-x-0.5 transition-transform">
-                        ›
-                      </span>
-                    </button>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
         </div>

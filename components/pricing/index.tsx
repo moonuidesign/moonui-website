@@ -231,10 +231,10 @@ const PricingCard = ({
 
         {/* BUTTON */}
         <button
-          className={`w-full py-4 rounded-xl font-semibold transition-all shadow-lg active:scale-95
+          className={`w-full  py-4 rounded-xl font-semibold transition-all shadow-lg active:scale-95
           ${plan.isDark
-              ? 'bg-white text-zinc-900 hover:bg-neutral-100'
-              : 'bg-zinc-900 text-white hover:bg-zinc-800'
+              ? 'bg-white text-zinc-900 hover:bg-[#f4f00]'
+              : 'bg-zinc-900 text-white hover:bg-[#ff4f00]'
             }`}
         >
           {plan.buttonText}
@@ -301,8 +301,8 @@ const PricingSection = () => {
           <div
             key={index}
             className={`h-full ${index === 0
-                ? 'md:col-start-2 md:col-span-2 lg:col-start-auto lg:col-span-1'
-                : 'md:col-span-2 lg:col-span-1'
+              ? 'md:col-start-2 md:col-span-2 lg:col-start-auto lg:col-span-1'
+              : 'md:col-span-2 lg:col-span-1'
               }`}
           >
             <PricingCard plan={plan} isAnnual={isAnnual} />

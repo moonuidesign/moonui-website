@@ -86,84 +86,81 @@ export default function ForgotPasswordForm() {
   };
 
   return (
-    <div className="flex flex-col gap-5 justify-center items-center md:h-[calc(100vh-40vh)] w-full md:px-0 md:py-5 lg:px-10">
-      <div className="w-full flex">
-        <DynamicBreadcrumb />
-      </div>
-      <Card className="w-full h-full p-5 flex justify-center items-center flex-col">
-        <CardHeader className="w-full flex justify-center items-center text-center">
-          <CardTitle className="text-2xl">Forgot Your Password?</CardTitle>
-          <CardDescription>
-            Enter your email address and we will send you a verification code.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="w-full h-full">
-          {isSuccess ? (
-            <div className="text-center py-4">
-              <div className="mb-4 text-green-500">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="64"
-                  height="64"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mx-auto"
-                >
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Check Your Email</h3>
-              <p className="text-gray-500 mb-4">
-                We have sent a verification code to your email address.
-              </p>
-              <p className="text-gray-500 mb-4 font-bold">
-                Redirecting in {countdown} seconds...
-              </p>
-              <Button
-                className="w-full"
-                onClick={() => router.push(redirectUrl)}
+    <Card className="w-full max-w-[480px] gap-8 px-5 py-12 rounded-[40px]">
+      <CardHeader className="flex justify-center items-center flex-col">
+        <CardTitle className="font-['Plus_Jakarta_Sans'] flex justify-center items-center text-[32px] font-extrabold">
+          Forgot Password?
+        </CardTitle>
+        <CardDescription className="font-sans text-center text-[16px] flex justify-center items-center">
+          Enter your email address and we will send you a verification code.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="w-full">
+        {isSuccess ? (
+          <div className="text-center py-4">
+            <div className="mb-4 text-green-500">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mx-auto"
               >
-                Verify Code Now
-              </Button>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
             </div>
-          ) : (
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                <div className="space-y-2">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <Label htmlFor="email">Email</Label>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="youremail@example.com"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+            <h3 className="text-xl font-semibold mb-2">Check Your Email</h3>
+            <p className="text-gray-500 mb-4">
+              We have sent a verification code to your email address.
+            </p>
+            <p className="text-gray-500 mb-4 font-bold">
+              Redirecting in {countdown} seconds...
+            </p>
+            <Button
+              className="w-full"
+              onClick={() => router.push(redirectUrl)}
+            >
+              Verify Code Now
+            </Button>
+          </div>
+        ) : (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
+              <div className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label htmlFor="email">Email</Label>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="youremail@example.com"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Processing...' : 'Send Verification Code'}
-                </Button>
-              </form>
-            </Form>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Processing...' : 'Send Verification Code'}
+              </Button>
+            </form>
+          </Form>
+        )}
+      </CardContent>
+    </Card>
   );
 }

@@ -137,9 +137,29 @@ export async function activateLicense(
 
   try {
     const activatedAtDate = new Date();
-    const expiresAtDate = data.license_key.expires_at
-      ? new Date(data.license_key.expires_at)
-      : null;
+
+    // Hitung expiresAt berdasarkan planType karena API Lemon Squeezy
+    // mengembalikan null untuk subscription (dikelola otomatis oleh subscription)
+    let expiresAtDate: Date | null = null;
+
+    if (data.license_key.expires_at) {
+      // Jika API memberikan tanggal expiry (one-time purchase dengan expiry di Lemon Squeezy)
+      expiresAtDate = new Date(data.license_key.expires_at);
+    } else {
+      // Jika null (subscription atau one-time tanpa expiry setting)
+      // Hitung berdasarkan planType
+      if (planType === 'subscribe') {
+        // Subscription: 30 hari dari sekarang (akan di-renew otomatis)
+        // Atau bisa diset null dan dikelola via webhook
+        expiresAtDate = new Date(activatedAtDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+      } else {
+        // One-time: 1 tahun 1 bulan dari sekarang (standar lifetime)
+        // 13 bulan = 395 hari
+        expiresAtDate = new Date(activatedAtDate.getTime() + 395 * 24 * 60 * 60 * 1000);
+      }
+    }
+
+    console.log(`[LICENSE ACTIVATION] Calculated expiresAt: ${expiresAtDate?.toISOString()} (planType: ${planType})`);
 
     // Ambil harga langsung dari Lemon Squeezy Order API (dengan fallback)
     const amount = await getOrderTotal(orderId, planType);

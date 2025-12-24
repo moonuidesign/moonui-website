@@ -3,6 +3,7 @@ import type { NextAuthConfig } from 'next-auth';
 export const authConfig = {
   pages: {
     signIn: '/signin',
+    error: '/', // Redirect ke home page dengan error message
   },
   callbacks: {
     async jwt({ token, user, trigger, session }) {

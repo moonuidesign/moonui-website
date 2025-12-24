@@ -15,7 +15,7 @@ export default function ContactSection() {
     const message = formData.get('message');
     const product = formData.get('product');
 
-    const emailTujuan = 'hi@alignui.com';
+    const emailTujuan = 'hey@moonui.design';
     const mailSubject = encodeURIComponent(`[Contact Form] ${subject}`);
     const mailBody = encodeURIComponent(
       `Full Name: ${fullname}\n` +
@@ -76,10 +76,10 @@ export default function ContactSection() {
           <br className="hidden md:inline" />
           <span className="md:hidden"> → </span>
           <a
-            href="mailto:hi@alignui.com"
+            href="mailto:hey@moonui.design"
             className="font-medium text-[#5c5c5c]"
           >
-            hi@alignui.com
+            hey@moonui.design
           </a>
         </p>
       </div>

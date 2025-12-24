@@ -159,7 +159,11 @@ export default async function ContentPage({
       .catch((err) => console.error('[ViewCount] Failed to increment:', err));
 
     return await renderPage(currentItemRaw, unifiedType, config, name, id, user);
-  } catch (error) {
+  } catch (error: any) {
+    // Don't log notFound errors - they are expected
+    if (error?.digest?.includes('NEXT_NOT_FOUND') || error?.digest?.includes('404')) {
+      throw error;
+    }
     console.error(`[ContentPage] Failed to fetch ${name}/${id}:`, error);
     return notFound();
   }

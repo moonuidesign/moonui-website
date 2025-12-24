@@ -21,6 +21,13 @@ export default auth(async (req) => {
     return NextResponse.redirect(url);
   };
 
+  // --- Helper for info redirect with Toast message ---
+  const redirectInfo = (msg: string, redirectTo = '/') => {
+    const url = new URL(redirectTo, nextUrl.origin);
+    url.searchParams.set('info', msg);
+    return NextResponse.redirect(url);
+  };
+
   // =================================================================
   // 0. Dashboard Access - Admin/SuperAdmin Only
   // =================================================================
@@ -30,30 +37,93 @@ export default auth(async (req) => {
       const url = new URL('/signin', nextUrl.origin);
       url.searchParams.set(
         'error',
-        'You must be logged in to access this page.',
+        'Silakan login terlebih dahulu untuk mengakses halaman ini.',
       );
       url.searchParams.set('callbackUrl', nextUrl.href);
       return NextResponse.redirect(url);
     }
 
     // Only admin and superadmin can access dashboard
+    // Regular users are silently redirected to home (no error message needed)
     if (role !== 'admin' && role !== 'superadmin') {
-      return redirectError(
-        'Access denied. Only administrators can access the dashboard.',
-        '/',
-      );
+      // Silent redirect - no error message because this is expected behavior
+      return NextResponse.redirect(new URL('/', nextUrl.origin));
     }
   }
 
   // =================================================================
-  // 0.1 Redirect Logged-In Admin/SuperAdmin from /signin to Dashboard
+  // 0.1 Redirect Logged-In Users from /signin (already logged in)
   // =================================================================
-  if (
-    req.auth &&
-    nextUrl.pathname.startsWith('/signin') &&
-    (role === 'admin' || role === 'superadmin')
-  ) {
-    return NextResponse.redirect(new URL('/dashboard', nextUrl.origin));
+  if (req.auth && nextUrl.pathname.startsWith('/signin')) {
+    const userName = req.auth.user?.name || 'User';
+
+    // Admin/SuperAdmin -> Dashboard
+    if (role === 'admin' || role === 'superadmin') {
+      return redirectInfo(
+        'You are already signed in as admin. Redirecting to dashboard.',
+        '/dashboard'
+      );
+    }
+
+    // Regular user -> Homepage
+    return redirectInfo(
+      'You are already signed in. No need to sign in again.',
+      '/'
+    );
+  }
+
+  // =================================================================
+  // 0.2 Block Logged-In Users from /forgot-password/* (already logged in)
+  // =================================================================
+  if (req.auth && nextUrl.pathname.startsWith('/forgot-password')) {
+    return redirectInfo(
+      'You are already signed in. To change your password, please go to account settings.',
+      '/'
+    );
+  }
+
+  // =================================================================
+  // 0.3 Block Logged-In Users from /signup (already have account)
+  // =================================================================
+  if (req.auth && nextUrl.pathname.startsWith('/signup')) {
+    return redirectInfo(
+      'You already have an account.',
+      '/'
+    );
+  }
+
+  // =================================================================
+  // 0.4 Verify License Access Control
+  // - Guest (not logged in): Can access (for new registration)
+  // - Logged-in user with expired/free tier: Can access (for license renewal)
+  // - Logged-in user with active license (pro/pro_plus): Cannot access
+  // - Admin/SuperAdmin: Cannot access
+  // =================================================================
+  if (nextUrl.pathname.startsWith('/verify-license')) {
+    if (req.auth) {
+      const tier = req.auth.user?.tier;
+      const userName = req.auth.user?.name || 'User';
+
+      // Admin/SuperAdmin cannot access
+      if (role === 'admin' || role === 'superadmin') {
+        return redirectInfo(
+          'Admins do not need license verification.',
+          '/dashboard'
+        );
+      }
+
+      // User with active license (pro or pro_plus) cannot access
+      if (tier === 'pro' || tier === 'pro_plus') {
+        return redirectInfo(
+          'Your license is still active. No need to verify again.',
+          '/'
+        );
+      }
+
+      // User with expired/free tier CAN access for renewal
+      // Just continue to the page
+    }
+    // Guest (not logged in) can access for new registration
   }
 
   const searchParams = nextUrl.searchParams;
@@ -152,14 +222,6 @@ export default auth(async (req) => {
     }
   }
 
-  // 1d. Forgot Password OTP (@app/(main)/forgot-password/otp/**)
-  // Logic: Usually OTP pages might need a signature to identify the session/user if not using cookies
-  // The user prompt asked to protect this: @app\(main)\forgot-password\otp\**
-  // But libs/signature.ts doesn't seem to have a specific signature for "forgot password OTP" distinct from reset password?
-  // Or maybe it uses `verifyResetPasswordSignature` (ResetPasswordPayload has otp).
-  // Let's assume it uses `verifyResetPasswordSignature` as well or verify generic signature?
-  // Checking file content: `app/(main)/forgot-password/otp/page.tsx` uses `VerifyFogotPasswordOTPForm`.
-  // It probably expects a signature.
   if (nextUrl.pathname.startsWith('/forgot-password/otp')) {
     if (!signature) {
       return redirectError('Missing signature.', '/forgot-password');
@@ -176,15 +238,7 @@ export default auth(async (req) => {
   // 2. Role-Based Access Control (RBAC) - Additional Blocks
   // =================================================================
 
-  // 2a. Block 'admin' from accessing /verify-license/**
-  // (Only User or Guest should access this?)
-  // Prompt: "admin tidak bisa mengakses @app\(main)\verify-license\**"
-  if (role === 'admin' && nextUrl.pathname.startsWith('/verify-license')) {
-    return redirectError(
-      'Admins cannot access license verification.',
-      '/dashboard',
-    );
-  }
+  // Note: verify-license access control is now handled in section 0.4 above
 
   // 2b. Block 'admin' from /dashboard/invite/** (Only Super Admin)
   if (role === 'admin' && nextUrl.pathname.startsWith('/dashboard/invite')) {

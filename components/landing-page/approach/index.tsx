@@ -37,7 +37,7 @@ export const DATA_TABS: ShowcaseTabItem[] = [
     ctaTitle: 'Premium Components & Blocks',
     ctaDescription:
       'Unlock 100+ premium components and blocks for advanced projects.',
-    ctaButtonText: 'Explore - AlignUI PRO',
+    ctaButtonText: 'Explore - MoonUI PRO',
     footerStyle: 'simple-dark', // Style baru seperti gambar component & block
     buttonColor: 'bg-[#FF5F38]', // Warna Orange khusus
   },

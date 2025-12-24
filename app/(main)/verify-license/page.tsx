@@ -1,11 +1,11 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { ValidateLicenseForm } from '@/components/validate-license/form';
 import { Loader2 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 export default function Page() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   if (status === 'loading') {
     return (
@@ -15,10 +15,12 @@ export default function Page() {
     );
   }
 
+  // Semua user (guest atau logged-in) menggunakan form yang sama
+  // Pengecekan email/license dll sudah ditangani di server action validateLicenseAction
   return (
     <div className="bg-[#E8E8E8] h-screen">
-      <div className="dark:bg-black  w-screen container mx-auto h-screen max-w-[1440px] max-h-[1024px] flex justify-center items-center">
-        <div className="w-full flex h-[80%] min-h-[650px] justify-center item-center backdrop-blur-xs bg-opacity-40 rounded-xl p-5 ">
+      <div className="dark:bg-black w-screen container mx-auto h-screen max-w-[1440px] max-h-[1024px] flex justify-center items-center">
+        <div className="w-full flex h-[80%] min-h-[650px] justify-center item-center backdrop-blur-xs bg-opacity-40 rounded-xl p-5">
           <ValidateLicenseForm />
         </div>
       </div>

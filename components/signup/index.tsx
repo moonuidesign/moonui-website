@@ -8,7 +8,8 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { RegisterForm } from './formSignUp';
-
+import path from 'path';
+import fs from 'fs';
 interface RegisterPageProps {
   searchParams: {
     signature?: string;
@@ -56,6 +57,8 @@ export default async function RegisterPage({
 
   // Ekstrak data yang dibutuhkan untuk formulir
   const { email, licenseKey } = verificationResult.payload!;
+  const filePath = path.join(process.cwd(), 'public', 'term-of-use.html');
+  const htmlContent = fs.readFileSync(filePath, 'utf8');
 
   return (
     <div className="flex h-full items-center justify-center">
@@ -63,6 +66,7 @@ export default async function RegisterPage({
         signature={signature}
         email={email}
         licenseKey={licenseKey}
+        termsContent={htmlContent}
       />
     </div>
   );

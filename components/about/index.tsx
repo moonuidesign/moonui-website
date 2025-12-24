@@ -166,7 +166,7 @@ const AboutSection = () => {
               </div>
               <div>
                 <div className="text-zinc-500 text-sm font-medium leading-5">
-                  AlignUI Design System
+                  MoonUI Design System
                 </div>
                 <div className="text-zinc-400 text-xs md:text-sm font-mono leading-5">
                   Design & development perfectly aligned.
@@ -267,7 +267,7 @@ const AboutSection = () => {
             <SectionLabel>Mission and guidance.</SectionLabel>
             <div className="pb-4 md:pb-6">
               <MainHeading>
-                AlignUI helps you <br className="hidden md:block" /> design
+                MoonUI helps you <br className="hidden md:block" /> design
                 well.
               </MainHeading>
             </div>
@@ -276,7 +276,7 @@ const AboutSection = () => {
 
             <div className="pt-4 md:pt-6 flex flex-col gap-6 md:gap-8">
               <HighlightText>
-                AlignUI is a comprehensive <Bold>figma design system</Bold>
+                MoonUI is a comprehensive <Bold>figma design system</Bold>
                 for all designer levels. Our advanced component library enhances
                 workflows, enabling efficient creation of exceptional designs.
                 With a user-friendly interface and up-to-date practices, we
@@ -285,7 +285,7 @@ const AboutSection = () => {
                 levels.
               </HighlightText>
               <HighlightText>
-                AlignUI <Bold>empowers designers</Bold>, elevating the design
+                MoonUI <Bold>empowers designers</Bold>, elevating the design
                 process for everyone in the field.
               </HighlightText>
             </div>
@@ -310,7 +310,7 @@ const AboutSection = () => {
                 </div>
                 <div className="flex flex-col gap-6 text-neutral-600 text-base md:text-lg font-medium leading-7">
                   <p>
-                    At AlignUI, we are dedicated to providing UI/UX designers
+                    At MoonUI, we are dedicated to providing UI/UX designers
                     using Figma with the best and most advanced design system.
                   </p>
                   <p>
@@ -395,7 +395,7 @@ const AboutSection = () => {
               </div>
 
               <div className="flex flex-col gap-4">
-                <MainHeading>Meet the heart of AlignUI™️</MainHeading>
+                <MainHeading>Meet the heart of MoonUI™️</MainHeading>
                 <p className="text-base md:text-lg">
                   <span className="text-zinc-600 font-medium">Our team</span>
                   <span className="text-zinc-400"> creates </span>

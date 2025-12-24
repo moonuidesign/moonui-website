@@ -1,7 +1,7 @@
 import { db } from '@/libs/drizzle';
 import { licenses, users } from '@/db/migration';
 import { sendExpirationNoticeEmail } from '@/libs/mail';
-import { and, between, eq } from 'drizzle-orm';
+import { and, between, eq, lt } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -19,7 +19,26 @@ export async function GET(request: Request) {
     const startOfDay = new Date(sevenDaysFromNow.setHours(0, 0, 0, 0));
     const endOfDay = new Date(sevenDaysFromNow.setHours(23, 59, 59, 999));
 
-    // Find licenses expiring exactly 7 days from now
+    // ================================================================
+    // TASK 1: Mark expired licenses as 'expired' in database
+    // This ensures session licenseStatus is updated on next login/refresh
+    // ================================================================
+    const expiredLicenses = await db
+      .update(licenses)
+      .set({ status: 'expired' })
+      .where(
+        and(
+          eq(licenses.status, 'active'),
+          lt(licenses.expiresAt, now)
+        )
+      )
+      .returning({ id: licenses.id, userId: licenses.userId });
+
+    console.log(`Marked ${expiredLicenses.length} licenses as expired.`);
+
+    // ================================================================
+    // TASK 2: Send notification emails for licenses expiring in 7 days
+    // ================================================================
     const expiringLicenses = await db
       .select({
         licenseKey: licenses.licenseKey,
@@ -32,16 +51,12 @@ export async function GET(request: Request) {
       .leftJoin(users, eq(licenses.userId, users.id))
       .where(
         and(
-          eq(licenses.planType, 'subscribe'), // Only check subscriptions
+          eq(licenses.planType, 'subscribe'),
           eq(licenses.status, 'active'),
           between(licenses.expiresAt, startOfDay, endOfDay),
         ),
       );
-
-    console.log(
-      `Found ${expiringLicenses.length} licenses expiring in 7 days.`,
-    );
-
+    console.log(`Found ${expiringLicenses.length} licenses expiring in 7 days.`);
     const results = await Promise.allSettled(
       expiringLicenses.map(async (record) => {
         if (record.email) {
@@ -55,7 +70,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Processed ${expiringLicenses.length} expiring licenses. Sent ${sentCount} emails.`,
+      message: `Marked ${expiredLicenses.length} licenses as expired. Processed ${expiringLicenses.length} expiring licenses. Sent ${sentCount} notification emails.`,
     });
   } catch (error) {
     console.error('Cron job error:', error);

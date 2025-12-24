@@ -69,15 +69,11 @@ export async function registerWithGoogle(formData: FormData) {
   if (!signature) {
     throw new Error('Missing signature for Google sign-in.');
   }
-
   const verificationResult = await verifyLicenseSignature(signature);
   if (!verificationResult.valid || verificationResult.expired) {
     throw new Error('Invalid or expired signature for Google sign-in.');
   }
-
   const { licenseKey, email, tier, planType, orderId } = verificationResult.payload!;
-
-  // Simpan licenseKey, email, tier, planType, orderId di cookie aman sebelum redirect ke Google
   (await cookies()).set(
     ACTIVATION_COOKIE,
     JSON.stringify({ licenseKey, email, tier, planType, orderId }),

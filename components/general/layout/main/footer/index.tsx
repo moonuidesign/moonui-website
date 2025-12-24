@@ -133,12 +133,15 @@ const Footer: React.FC<FooterProps> = ({
         <div className="flex flex-col items-start justify-start md:items-center md:text-center gap-4 md:gap-6 mb-12 lg:mb-20">
           <MoonLogo />
 
-          <div className="lg:max-w-2xl max-w-lg">
+          <div className="lg:max-w-2xl max-w-lg flex items-start md:items-center  gap-0 md:gap-2 flex-col">
             <h2 className="text-[#3D3D3D] font-sans font-semibold text-[28px] leading-tight md:text-[30px] md:leading-10">
               Enhance Your Design <br className="lg:hidden" /> & Development
             </h2>
-            <p className="text-zinc-500 text-[24px]/[36px] md:text-2xl font-semibold font-sans md:leading-10">
+
+            {/* Perubahan ada di tag <p> di bawah ini */}
+            <p className="text-[#888888] text-[24px]/[36px] md:text-2xl font-semibold font-sans md:leading-10 flex items-center gap-2">
               perfectly until to the moon
+              <Image src="/ic-rocket.svg" alt="moon" width={20} height={20} />
             </p>
           </div>
 
@@ -181,7 +184,7 @@ const Footer: React.FC<FooterProps> = ({
                         <Link
                           href={extendedLink.href}
                           onClick={() => handleLinkClick(extendedLink)}
-                          className="text-zinc-500 hover:text-orange-600 text-sm font-medium font-sans leading-9 transition-colors"
+                          className="text-[#888888] hover:text-[#FF4F00] hover:underline  text-sm font-medium font-sans leading-9 transition-colors"
                         >
                           {extendedLink.label}
                         </Link>
@@ -229,7 +232,7 @@ const Footer: React.FC<FooterProps> = ({
                               href={extendedLink.href}
                               // 3. Pasang Handler onClick juga di Mobile
                               onClick={() => handleLinkClick(extendedLink)}
-                              className="text-zinc-500 hover:text-orange-600 text-sm font-medium font-sans leading-7 block py-1"
+                              className="text-[#888888] hover:text-[#FF4F00] hover:underline  text-sm font-medium font-sans leading-7 block py-1"
                             >
                               {extendedLink.label}
                             </Link>

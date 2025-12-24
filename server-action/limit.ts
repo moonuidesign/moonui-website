@@ -88,12 +88,32 @@ export async function checkDownloadLimit(
     if (assetTier !== 'free') {
       if (!isLoggedIn) return { success: false, message: 'Login required', requiresLogin: true };
       if (userTier === 'free') return { success: false, message: 'Upgrade required', requiresUpgrade: true };
+
+      // Check if license is expired
+      const licenseStatus = user?.licenseStatus;
+      if (licenseStatus === 'expired') {
+        return {
+          success: false,
+          message: 'Your license has expired. Please renew to access pro content.',
+          requiresUpgrade: true
+        };
+      }
+
       return { success: true }; // Unlimited untuk User Pro di Aset Pro
     }
 
-    // User Pro di Aset Free -> Unlimited
+    // User Pro di Aset Free -> Unlimited (but check if expired)
     if (userTier === 'pro' || userTier === 'pro_plus') {
-      return { success: true };
+      const licenseStatus = user?.licenseStatus;
+      if (licenseStatus === 'expired') {
+        return {
+          success: false,
+          message: 'Your license has expired. Please renew to access pro content.',
+          requiresUpgrade: true
+        };
+      } else {
+        return { success: true };
+      }
     }
     if (isLoggedIn) {
       const userKey = `limit:user:${user.id}:${action}`; // Key bulanan bisa ditambah format tanggal
@@ -136,9 +156,6 @@ export async function checkDownloadLimit(
     });
 
     const results = await pipeline.exec();
-
-    // Ambil nilai tertinggi dari hasil increment untuk sisa kuota
-    // results format: [[null, 1], [null, 1]] (karena ioredis return tuple [err, res])
     let maxUsage = 0;
     if (results) {
       results.forEach(([err, res]) => {

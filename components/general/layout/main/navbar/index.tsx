@@ -49,7 +49,8 @@ export function SkeletonNavbar({
   );
 }
 export default function Navbar() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const isSessionLoading = status === 'loading';
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
@@ -166,22 +167,26 @@ export default function Navbar() {
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="pointer-events-auto relative w-full h-16 md:h-20 px-4 md:px-3 grid grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-2 mx-auto"
         >
-          {/* Background Mobile Fallback */}
           <div className="md:hidden absolute inset-0 bg-white/80 backdrop-blur-md shadow-sm border border-gray-200/60 rounded-full -z-10 md:mx-2" />
-
-          {/* 1. LEFT: LOGO & MOBILE SEARCH */}
           <div className="flex justify-start items-center w-full">
             <motion.div
-              className="w-9 h-9 relative p-1.5 flex items-center justify-center shrink-0"
+              // Hapus p-1.5 karena kita akan atur ukuran child-nya saja agar otomatis di tengah
+              className="w-9 h-9 relative bg-[#1B1B1B] rounded-full flex items-center justify-center shrink-0 cursor-pointer group"
               animate={{
                 opacity: isMobileSearchExpanded ? 0 : 1,
                 width: isMobileSearchExpanded ? 0 : 36,
                 marginRight: isMobileSearchExpanded ? 0 : 0,
               }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.01 }}
             >
               <span
-                className="absolute inset-0 bg-gradient-to-b hover:from-[#FF4F00]/0 hover:to-[#FF4F00] from-[#1B1B1B]/0 to-[#1B1B1B]/80 z-20 "
+                /* PERBAIKAN:
+                  1. Hapus 'absolute inset-0'. Gunakan 'w-6 h-6' agar rapi di tengah parent (w-9 h-9).
+                  2. Default: 'from-white to-gray-500' (Agar terlihat Silver/Putih).
+                  3. Hover: 'group-hover:from-[#FF4F00] group-hover:to-[#FF4F00]' (Agar jadi Orange saat mouse masuk area kotak).
+                  4. Tambah 'transition-all duration-300' agar perubahan warna halus.
+                */
+                className="w-6 h-6 bg-gradient-to-b from-white to-gray-500 group-hover:from-[#FF4F00] group-hover:to-[#d14000] transition-all duration-300"
                 style={{
                   maskImage: "url('/logo.svg')",
                   WebkitMaskImage: "url('/logo.svg')",
@@ -328,9 +333,13 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* 3. RIGHT: ACTIONS */}
           <div className="flex items-center justify-end w-full gap-2 md:gap-4">
-            {session?.user ? (
+
+            {isSessionLoading ? (
+              <div className="hidden md:flex items-center gap-3">
+                <SkeletonNavbar className="h-9 w-9 md:w-10 md:h-10 rounded-full" />
+              </div>
+            ) : session?.user ? (
               <div className="relative z-50" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -411,9 +420,19 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-3">
-                <button className="h-9 px-4 bg-white border border-gray-200 rounded-lg text-sm font-medium text-neutral-600 hover:bg-gray-50">
+                <Link
+                  href="/signin"
+                  className="h-9 px-4 bg-white hover:text-white hover:bg-[#FF4F00] shadow-[0_1px_1px_0.5px_rgba(41,41,41,0.04),0_3px_3px_-1.5px_rgba(41,41,41,0.02),0_6px_6px_-3px_rgba(41,41,41,0.04),0_12px_12px_-6px_rgba(41,41,41,0.04),0_24px_24px_-12px_rgba(41,41,41,0.04),0_48px_48px_-24px_rgba(41,41,41,0.04),0_0_0_1px_rgba(41,41,41,0.04),inset_0_-1px_1px_-0.5px_rgba(51,51,51,0.06)] text-[#D3D3D3] py-2 border border-[#D3D3D3] rounded-full text-sm font-medium text-neutral-600  flex items-center"
+                >
                   Sign in
-                </button>
+                </Link>
+                <Link
+                  href="/Get Started"
+                  className="h-9 px-4 shadow-[0_1px_1px_0.5px_rgba(41,41,41,0.04),0_3px_3px_-1.5px_rgba(41,41,41,0.02),0_6px_6px_-3px_rgba(41,41,41,0.04),0_12px_12px_-6px_rgba(41,41,41,0.04),0_24px_24px_-12px_rgba(41,41,41,0.04),0_48px_48px_-24px_rgba(41,41,41,0.04),0_0_0_1px_rgba(41,41,41,0.04),inset_0_-1px_1px_-0.5px_rgba(51,51,51,0.06)] flex gap-2 bg-[#1B1B1B] hover:bg-[#FF4F00] text-white py-2 border border-gray-200 rounded-full text-sm font-medium text-neutral-600  flex items-center"
+                >
+                  <Image src="/ic-diamond-small.svg" width={15} height={15} alt="arrow-right" />
+                  Get Started
+                </Link>
               </div>
             )}
 
@@ -427,7 +446,6 @@ export default function Navbar() {
         </motion.nav>
       </div>
 
-      {/* --- MOBILE SIDEBAR DRAWER --- */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -448,7 +466,29 @@ export default function Navbar() {
           >
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 bg-zinc-50 sticky top-0 z-10 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-orange-600 rounded-lg"></div>
+                <div className="w-8 flex justify-center items-center h-8 bg-[#1B1B1B] rounded-lg">
+                  {/* CONTAINER LOGO */}
+                  <div
+                    /* PERBAIKAN ADA DI SINI:
+                      1. Ganti 'from-[#181818]' menjadi 'from-white' (atau warna terang).
+                      2. Ganti 'to-transparent' menjadi 'to-gray-400' agar ada efek metallic/silver seperti di gambar.
+                      3. Gunakan 'bg-gradient-to-b' (ke bawah) atau 'to-br' sesuai arah cahaya yang diinginkan.
+                    */
+                    className="w-6 h-6 bg-gradient-to-b from-white to-gray-500"
+                    style={{
+                      maskImage: 'url(/logo.svg)',
+                      WebkitMaskImage: 'url(/logo.svg)',
+                      maskSize: 'contain',
+                      WebkitMaskSize: 'contain',
+                      maskRepeat: 'no-repeat',
+                      WebkitMaskRepeat: 'no-repeat',
+                      maskPosition: 'center',
+                      WebkitMaskPosition: 'center',
+                    }}
+                    role="img"
+                    aria-label="Logo Bergradien"
+                  />
+                </div>
                 <span className="font-semibold text-gray-800">Menu</span>
               </div>
               <button
@@ -466,9 +506,7 @@ export default function Navbar() {
                 initial="closed"
                 animate="open"
               >
-                <div className="mb-4 mt-4">
-                  <GoProCard />
-                </div>
+
                 {MENU_ITEMS.map((item, i) => (
                   <div
                     key={i}
@@ -481,10 +519,24 @@ export default function Navbar() {
                   </div>
                 ))}
               </motion.div>
+
+              {isAssetsPage && (
+                <div className="mb-4 mt-4 px-6">
+                  <GoProCard />
+                </div>
+              )}
             </div>
 
             <div className="p-5 border-t border-gray-200 bg-white shrink-0 pb-8">
-              {session?.user ? (
+              {isSessionLoading ? (
+                <div className="flex items-center gap-3">
+                  <SkeletonNavbar className="w-10 h-10 rounded-full" />
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <SkeletonNavbar className="h-4 w-24" />
+                    <SkeletonNavbar className="h-3 w-32" />
+                  </div>
+                </div>
+              ) : session?.user ? (
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-200 relative">
                     {session.user.image ? (
@@ -511,9 +563,12 @@ export default function Navbar() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
-                  <button className="h-10 px-4 bg-white border border-gray-200 rounded-lg text-sm font-medium text-neutral-600 hover:bg-gray-50 w-full">
+                  <Link
+                    href="/signin"
+                    className="h-10 px-4 bg-white border border-gray-200 rounded-lg text-sm font-medium text-neutral-600 hover:bg-gray-50 w-full flex items-center justify-center"
+                  >
                     Sign in
-                  </button>
+                  </Link>
                 </div>
               )}
             </div>
