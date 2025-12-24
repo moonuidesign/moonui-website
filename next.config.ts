@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   experimental: {
     // 1. Add this line to increase the limit for Middleware interception
-    middlewareClientMaxBodySize: '50mb',
+    proxyClientMaxBodySize: '50mb',
 
     serverActions: {
       bodySizeLimit: '50mb',
