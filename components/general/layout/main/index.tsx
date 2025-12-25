@@ -122,9 +122,9 @@ export default function MainLayout({
           {children}
           <Footer
             socials={{
-              x: 'https://x.com/moonui',
-              instagram: 'https://instagram.com/moonui',
-              linkedin: 'https://linkedin.com/company/moonui',
+              x: 'https://x.com/moonuidesign',
+              instagram: 'https://instagram.com/moonuidesign',
+              linkedin: 'https://linkedin.com/company/moonuidesign',
             }}
           />
         </div>

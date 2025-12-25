@@ -6,9 +6,9 @@ import { ArrowRight2 } from 'iconsax-reactjs';
 
 const HeroSection = () => {
   return (
-    <div className=" md:pt-0 mx-auto md:max-w-7xl relative mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
-      <div className="absolute hidden md:block  h-full w-full ">
-        <Meteors minDelay={0.8} maxDelay={1.8} number={5} />
+    <div className=" md:pt-0 mx-auto w-7xl md:max-w-7xl relative mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
+      <div className="absolute hidden md:block h-full w-[1px] -z-10 left-1/2 -translate-x-1/2 overflow-visible">
+        <Meteors minDelay={0.8} maxDelay={1.8} number={1} />
       </div>
       <Image
         src="/moonNotFound.png"
