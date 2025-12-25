@@ -211,7 +211,7 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
 
           {/* Mobile Header */}
           <div className="flex md:flex lg:hidden items-center justify-between lg:p-4 relative h-[72px]">
-            <div className="absolute top-0 left-0 md:left-6 w-10 h-[3px] bg-[#FF5F38] rounded-b-[2px]" />
+            <div className="absolute top-0 -left-[2px] md:-left-[2px] w-10 h-[3px] bg-[#FF5F38] rounded-b-[2px]" />
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <motion.div
                 key={activeTab.id}
@@ -304,12 +304,12 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
                     <div className="w-2.5 h-2.5 rounded-full bg-[#28C840] border border-black/5" />
                   </div>
                   <div className="flex-1 flex justify-center max-w-lg mx-auto">
-                    <div className=" text-[#D3D3D3] text-[11px] md:text-xs h-7 px-3 rounded-md flex items-center justify-center gap-1.5 w-full cursor-default">
-                      <span className="w-1.5 h-1.5 bg-neutral-300 rounded-full" />
+                    <div className=" text-[#8F8F8F] text-[11px] md:text-xs h-7 px-3 rounded-md flex items-center justify-center gap-1.5 w-full cursor-default">
+                      <span className="w-1.5 h-1.5 bg-[#8F8F8F] rounded-full" />
                       <span>Moonui.design</span>
                     </div>
                   </div>
-                  <div className="hidden md:flex gap-3 text-neutral-300">
+                  <div className="hidden md:flex gap-3 text-[#8F8F8F]">
                     <Share size={14} /> <Plus size={14} /> <Copy size={14} />
                   </div>
                 </div>
