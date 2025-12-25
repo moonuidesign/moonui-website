@@ -17,6 +17,7 @@ import {
   LogOut,
   User,
   Settings,
+  LayoutDashboard,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -49,6 +50,7 @@ export function SkeletonNavbar({
   );
 }
 export default function Navbar() {
+  const MotionLink = motion.create(Link);
   const { data: session, status } = useSession();
   const isSessionLoading = status === 'loading';
   const [isOpen, setIsOpen] = useState(false);
@@ -169,7 +171,8 @@ export default function Navbar() {
         >
           <div className="md:hidden absolute inset-0 bg-white/80 backdrop-blur-md shadow-sm border border-gray-200/60 rounded-full -z-10 md:mx-2" />
           <div className="flex justify-start items-center w-full">
-            <motion.div
+            <MotionLink
+              href="/"
               // Hapus p-1.5 karena kita akan atur ukuran child-nya saja agar otomatis di tengah
               className="w-9 h-9 relative bg-[#1B1B1B] rounded-full flex items-center justify-center shrink-0 cursor-pointer group"
               animate={{
@@ -180,13 +183,7 @@ export default function Navbar() {
               transition={{ duration: 0.01 }}
             >
               <span
-                /* PERBAIKAN:
-                  1. Hapus 'absolute inset-0'. Gunakan 'w-6 h-6' agar rapi di tengah parent (w-9 h-9).
-                  2. Default: 'from-white to-gray-500' (Agar terlihat Silver/Putih).
-                  3. Hover: 'group-hover:from-[#FF4F00] group-hover:to-[#FF4F00]' (Agar jadi Orange saat mouse masuk area kotak).
-                  4. Tambah 'transition-all duration-300' agar perubahan warna halus.
-                */
-                className="w-6 h-6 bg-gradient-to-b from-white to-gray-500 group-hover:from-[#FF4F00] group-hover:to-[#d14000] transition-all duration-300"
+                className="w-6 h-6 bg-gradient-to-b from-white to-gray-500  transition-all duration-300"
                 style={{
                   maskImage: "url('/logo.svg')",
                   WebkitMaskImage: "url('/logo.svg')",
@@ -198,7 +195,7 @@ export default function Navbar() {
                   WebkitMaskPosition: 'center',
                 }}
               ></span>
-            </motion.div>
+            </MotionLink>
 
             {/* Mobile Search - Expandable on /assets */}
             <div className="md:hidden ml-3 flex items-center">
@@ -387,7 +384,16 @@ export default function Navbar() {
                           {session.user.email}
                         </p>
                       </div>
-
+                      {session.user.roleUser === 'admin' || session.user.roleUser === 'superadmin' && (
+                        <Link
+                          href="/dashboard"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                          onClick={() => setIsProfileOpen(false)}
+                        >
+                          <LayoutDashboard size={16} />
+                          Dashboard
+                        </Link>
+                      )}
                       <Link
                         href="/profile"
                         className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
