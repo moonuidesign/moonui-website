@@ -61,7 +61,9 @@ const defaultColumns: ExtendedFooterColumn[] = [
   },
   {
     title: 'MoonUI Design',
-    links: [{ label: 'About Us', href: '/about' }],
+    links: [{ label: 'Explore Now', href: '/about' }, {
+      label: 'Become an Affiliate', href: '/about'
+    }, { label: 'About Us', href: '/about' }],
   },
   {
     title: 'Account',
@@ -169,7 +171,7 @@ const Footer: React.FC<FooterProps> = ({
           <span className="h-1.5 w-1.5 hidden md:block absolute top-0 -right-[3px] rounded-full bg-[#D3D3D3]" />
 
           {/* DESKTOP VIEW */}
-          <div className="hidden lg:grid grid-cols-5 gap-12 md:mb-16 w-full max-w-6xl">
+          <div className="hidden md:grid grid-cols-5 gap-5 px-5 md:mb-16 w-full mx-auto container max-w-6xl">
             {columns.map((col, idx) => (
               <div key={idx} className="flex flex-col gap-5">
                 <h3 className="text-[#3D3D3D] text-xl font-bold font-sans leading-9">
@@ -197,7 +199,7 @@ const Footer: React.FC<FooterProps> = ({
           </div>
 
           {/* MOBILE VIEW (Accordion) */}
-          <div className="flex flex-col lg:hidden md:mb-20 px-0 lg:px-0 md:px-8">
+          <div className="flex flex-col md:hidden md:mb-20 px-0 lg:px-0 md:px-8">
             {columns.map((col, idx) => {
               const isOpen = openSection === col.title;
               return (

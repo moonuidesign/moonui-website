@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { TicketPercent } from 'lucide-react';
+import { ArrowRight2 } from 'iconsax-reactjs';
 
 // ==========================================
 // 1. KONFIGURASI PROMO (Hanya Visual Label)
@@ -300,7 +301,7 @@ const PricingSection = () => {
         {plans.map((plan, index) => (
           <div
             key={index}
-            className={`h-full ${index === 0
+            className={`h-full ${index === plans.length - 1
               ? 'md:col-start-2 md:col-span-2 lg:col-start-auto lg:col-span-1'
               : 'md:col-span-2 lg:col-span-1'
               }`}
@@ -312,7 +313,7 @@ const PricingSection = () => {
 
       {/* BANNER BAWAH */}
       <div className="w-full max-w-7xl">
-        <div className="w-full bg-white border border-zinc-100 rounded-[30px] p-6 md:p-8 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="w-full bg-white border border-zinc-100 rounded-[30px] p-6 md:p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
             <div className="w-24 h-16 bg-gradient-to-br from-gray-200 to-stone-300 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
               <div className="w-8 h-8 rounded-full bg-white/30" />
@@ -327,8 +328,15 @@ const PricingSection = () => {
               </p>
             </div>
           </div>
-          <button className="whitespace-nowrap bg-zinc-900 text-white px-8 py-4 rounded-2xl font-medium hover:bg-zinc-800 transition-all shadow-md active:scale-95">
-            Let’s Talk —&gt;
+          <button className="w-full md:w-auto h-12 md:h-14 px-6 md:px-8 text-base font-semibold text-white bg-zinc-800 rounded-xl shadow-button hover:bg-zinc-700 transition-colors flex justify-center items-center gap-3.5 overflow-hidden cursor-pointer group flex-shrink-0">
+            Let’s Talk
+            <div className="w-5 h-full relative flex justify-center items-center">
+              <div className="text-white left-1/2 transform -translate-x-1/2 top-1/2 -translate-y-1/2 absolute inline-flex flex-col justify-center items-center overflow-hidden">
+                <div className="flex-1 relative flex justify-center items-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight2 size={20} />
+                </div>
+              </div>
+            </div>
           </button>
         </div>
       </div>

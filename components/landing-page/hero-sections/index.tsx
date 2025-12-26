@@ -1,14 +1,15 @@
 import TextType from '@/components/TextType';
 import { AvatarGroup } from './avatar-component';
 import Image from 'next/image';
-import Meteors from '@/components/ui/meteors';
+
 import { ArrowRight2 } from 'iconsax-reactjs';
+import Meteors from '@/components/ui/meteors';
 
 const HeroSection = () => {
   return (
     <div className=" md:pt-0 mx-auto w-7xl  md:max-w-3xl lg:max-w-7xl relative mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
-      <div className="absolute hidden md:block h-full w-[1px] -z-10 left-1/2 -translate-x-1/2 overflow-visible">
-        <Meteors minDelay={0.8} maxDelay={1.8} number={1} />
+      <div className="absolute hidden md:block h-full w-full -top-[200px] -z-10 left-1/2 -translate-x-1/2 overflow-visible">
+        <Meteors number={3} />
       </div>
       <Image
         src="/moonNotFound.png"

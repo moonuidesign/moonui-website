@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'Noopla';
+    src: url('NooplaRegular.eot');
+    src: local('Noopla'), local('NooplaRegular'),
+        url('NooplaRegular.eot?#iefix') format('embedded-opentype'),
+        url('NooplaRegular.woff2') format('woff2'),
+        url('NooplaRegular.woff') format('woff'),
+        url('NooplaRegular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+

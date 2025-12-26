@@ -107,6 +107,7 @@ export default function Navbar() {
   const searchParams = useSearchParams();
   const [searchValue, setSearchValue] = useState(searchParams.get('q') || '');
   const isAssetsPage = pathname === '/assets';
+  const isRootPage = pathname === '/';
   const debouncedSearch = useDebounce(searchValue, 300);
   const debouncedSearchRef = useRef(debouncedSearch);
 
@@ -174,16 +175,16 @@ export default function Navbar() {
             <MotionLink
               href="/"
               // Hapus p-1.5 karena kita akan atur ukuran child-nya saja agar otomatis di tengah
-              className="w-9 h-9 relative bg-[#1B1B1B] rounded-full flex items-center justify-center shrink-0 cursor-pointer group"
+              className="w-[45px] h-[45px] relative z-20 rounded-full flex items-center justify-center shrink-0 cursor-pointer group outline-none focus:outline-none focus:ring-0 select-none"
               animate={{
                 opacity: isMobileSearchExpanded ? 0 : 1,
-                width: isMobileSearchExpanded ? 0 : 36,
+                width: isMobileSearchExpanded ? 0 : 45,
                 marginRight: isMobileSearchExpanded ? 0 : 0,
               }}
               transition={{ duration: 0.01 }}
             >
               <span
-                className="w-6 h-6 bg-gradient-to-b from-white to-gray-500  transition-all duration-300"
+                className="w-[45px] h-[45px] bg-[#DDDDDD] transition-all duration-300"
                 style={{
                   maskImage: "url('/logo.svg')",
                   WebkitMaskImage: "url('/logo.svg')",
@@ -196,6 +197,46 @@ export default function Navbar() {
                 }}
               ></span>
             </MotionLink>
+
+            {/* Mobile Search - Expandable on /assets */}
+            <AnimatePresence>
+              {isRootPage && !isMobileSearchExpanded && !isScrolled && (
+                <motion.div
+                  initial={{ opacity: 0, x: -30, width: 0 }}
+                  animate={{ opacity: 1, x: 0, width: 'auto' }}
+                  exit={{ opacity: 0, x: -30, width: 0 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  className="ml-2 hidden md:flex items-center whitespace-nowrap overflow-hidden relative z-10"
+                >
+                  <Image
+                    src="/logo-moonui.svg"
+                    alt="MoonUI"
+                    width={80}
+                    height={24}
+                    className="h-6 w-auto object-contain select-none"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <AnimatePresence>
+              {isRootPage && !isMobileSearchExpanded && !isScrolled && (
+                <motion.div
+                  initial={{ opacity: 0, x: -30, width: 0 }}
+                  animate={{ opacity: 1, x: 0, width: 'auto' }}
+                  exit={{ opacity: 0, x: -30, width: 0 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  className="ml-2 md:hidden flex items-center whitespace-nowrap overflow-hidden relative z-10"
+                >
+                  <Image
+                    src="/logo-moonui.svg"
+                    alt="MoonUI"
+                    width={70}
+                    height={20}
+                    className="h-5 w-auto object-contain select-none"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Mobile Search - Expandable on /assets */}
             <div className="md:hidden ml-3 flex items-center">
