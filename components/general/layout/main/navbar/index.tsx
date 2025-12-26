@@ -183,19 +183,13 @@ export default function Navbar() {
               }}
               transition={{ duration: 0.01 }}
             >
-              <span
-                className="w-[45px] h-[45px] bg-[#DDDDDD] transition-all duration-300"
-                style={{
-                  maskImage: "url('/logo.svg')",
-                  WebkitMaskImage: "url('/logo.svg')",
-                  maskSize: 'contain',
-                  WebkitMaskSize: 'contain',
-                  maskRepeat: 'no-repeat',
-                  WebkitMaskRepeat: 'no-repeat',
-                  maskPosition: 'center',
-                  WebkitMaskPosition: 'center',
-                }}
-              ></span>
+              <Image
+                src="/logo.svg"
+                alt="MoonUI"
+                width={45}
+                height={45}
+                className="w-[45px] h-[45px] transition-all duration-300"
+              />
             </MotionLink>
 
             {/* Mobile Search - Expandable on /assets */}
