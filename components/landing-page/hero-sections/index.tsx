@@ -6,13 +6,13 @@ import { ArrowRight2 } from 'iconsax-reactjs';
 
 const HeroSection = () => {
   return (
-    <div className=" md:pt-0 mx-auto w-7xl md:max-w-7xl relative mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
+    <div className=" md:pt-0 mx-auto w-7xl  md:max-w-3xl lg:max-w-7xl relative mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
       <div className="absolute hidden md:block h-full w-[1px] -z-10 left-1/2 -translate-x-1/2 overflow-visible">
         <Meteors minDelay={0.8} maxDelay={1.8} number={1} />
       </div>
       <Image
         src="/moonNotFound.png"
-        className="absolute lg:top-[21%] z-100 select-none hidden md:block scale-[1.25] pointer-events-none md:w-max-[846px] md:h-max-[839px] lg:w-max-[1318.4px] h-max-[1142px] left-[49%] md:w-[681px] md:h-[648px] lg:w-[1103px] lg:h-[1069px] -translate-x-1/2 -rotate-65"
+        className="absolute md:top-[40%] lg:top-[21%] z-100 select-none hidden md:block scale-[1.25] pointer-events-none md:w-max-[846px] md:h-max-[839px] lg:w-max-[1318.4px] h-max-[1142px] left-[49%] md:w-[681px] md:h-[648px] lg:w-[1103px] lg:h-[1069px] -translate-x-1/2 -rotate-65"
         alt="Not Found"
         draggable={false}
         style={{
@@ -23,14 +23,14 @@ const HeroSection = () => {
         height={1200}
       />
 
-      <div className="md:px-2 relative z-10  w-full md:max-w-2xl lg:max-w-4xl md:py-1.5 rounded-full md:shadow-[0px_0px_0px_1px_rgba(211,211,211,1.00)] flex-col md:w-lg lg::w-2xl md:flex-row  inline-flex md:justify-start md:items-center md:gap-3">
+      <div className="md:px-2 relative bg-[#E7E7E7] z-10  w-full md:max-w-2xl lg:max-w-4xl md:py-1.5 rounded-full md:shadow-[0px_0px_0px_1px_rgba(211,211,211,1.00)] flex-col md:w-lg lg::w-2xl md:flex-row  inline-flex md:justify-start md:items-center md:gap-3">
         <AvatarGroup />
         <div className="w-[0.01px] hidden md:flex h-4 relative">
           <div className="w-px h-4 left-0 top-0 absolute bg-[#D3D3D3]"></div>
         </div>
         <div className="text-neutral-500 text-sm font-normal font-['Inter'] leading-5">
-          Trusted by <span className="text-[#3D3D3D] font-medium">2,000+</span>{' '}
-          Figma users for seamless design!
+          Trusted by <span className="text-[#3D3D3D] font-medium">2,000+ users {" "}</span>
+          for premium design!
         </div>
       </div>
       <div className="md:pt-5  relative z-10 flex flex-col w-full lg:w-full md:w-full  justify-start items-start md:justify-center md:items-center lg:justify-center lg:items-center text-center lg:max-w-6xl lg:px-4">
@@ -55,8 +55,7 @@ const HeroSection = () => {
       <div className="lg:pt-6 relative z-10 flex flex-col justify-start items-start lg:px-4">
         <div className="flex flex-col justify-start items-center">
           <div className="text-left lg:text-center justify-center text-neutral-600 text-base font-normal font-['Inter'] lg:leading-7 lg:max-w-2xl">
-            Flexible components, consistent UI, quick development, easy
-            integration.
+            ⁠Flexible assets, consistent UI, quick MVP launch, easy integration
           </div>
         </div>
       </div>

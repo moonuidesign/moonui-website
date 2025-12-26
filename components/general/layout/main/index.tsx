@@ -42,8 +42,8 @@ export default function MainLayout({
 
             {/* Gabungkan SEMUA teks dalam satu tag <p> atau <div> */}
             <p className="text-sm ">
-              Built faster websites with{' '}
-              <span className="text-white font-medium">MoonUI</span> components!{' '}
+              Build your business faster with{' '}
+              <span className="text-white font-medium">MoonUI</span> premium design assets!{' '}
               {/* Gunakan span/link untuk Learn more di SINI, bukan dipisah */}
               <span className="text-white underline font-medium cursor-pointer hover:text-gray-200 transition-colors">
                 Learn more

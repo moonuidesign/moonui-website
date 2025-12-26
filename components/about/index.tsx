@@ -13,49 +13,7 @@ import {
 import ReflectiveCard from '../reflective-card';
 import { cn } from '@/libs/utils';
 
-// --- Floating Cursor Component (Jika file terpisah belum ada) ---
-// Jika Anda sudah punya file './floating-cursor', Anda bisa menghapus bagian ini
-// dan gunakan import { FloatingCursor } from './floating-cursor';
-import { MousePointer2 } from 'lucide-react';
-
-const FloatingCursor = ({
-  label,
-  color,
-  className,
-  direction = 'left',
-}: {
-  label: string;
-  color: string;
-  className?: string;
-  direction?: 'left' | 'right';
-}) => {
-  return (
-    <div
-      className={cn(
-        'absolute pointer-events-none z-20 flex items-start gap-2',
-        className,
-      )}
-    >
-      {/* Icon Cursor */}
-      <div className="relative drop-shadow-md" style={{ color: color }}>
-        <MousePointer2
-          className={cn(
-            'w-5 h-5 fill-current',
-            direction === 'right' && '-scale-x-100',
-          )}
-        />
-      </div>
-
-      {/* Label Tag */}
-      <div
-        className="px-3 py-1 rounded-full text-white text-xs font-bold shadow-md whitespace-nowrap"
-        style={{ backgroundColor: color }}
-      >
-        {label}
-      </div>
-    </div>
-  );
-};
+import { FloatingCursor } from './floating-cursor';
 
 // --- Sub Components ---
 
@@ -96,29 +54,52 @@ const Bold = ({
   children: React.ReactNode;
 }) => <span className={cn(className, `font-medium`)}>{children}</span>;
 const AboutSection = () => {
+  const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = React.useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Disable interaction on tablet/mobile (match lg breakpoint)
+    if (window.innerWidth < 1024) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
   return (
     <section className=" z-[800] md:z-0 bg-[#E7E7E7] md:bg-none md:rounded-none rounded-t-[39px]  flex flex-col justify-start items-center md:justify-start md:items-center  ">
-      <div className="w-full flex flex-col gap-10 md:gap-32">
-        {/* --- BLOCK 1: WHO ARE WE --- */}
-        <div className="relative px-4 flex max-w-[1440px] mx-auto container w-full flex-col items-center">
+      <div className="w-full flex flex-col gap-10 md:gap-14 lg:gap-32">
+
+        <div
+          className="relative px-4 flex max-w-[1440px] mx-auto container w-full flex-col items-center "
+        // onMouseMove={handleMouseMove}
+        // onMouseEnter={() => {
+        //   if (window.innerWidth >= 1024) setIsHovering(true);
+        // }}
+        // onMouseLeave={() => setIsHovering(false)}
+        >
           <div className="hidden lg:block absolute inset-0 pointer-events-none overflow-visible">
             <FloatingCursor
               label="Erşad"
               color="#8b5cf6" // Purple
-              className="left-[5%] top-[10%] xl:-left-[100px] xl:top-[80px]"
-              direction="left"
+              className="left-[5%] top-[10%] md:left-[280px] md:top-[80px]"
+              direction="right"
+
             />
             <FloatingCursor
               label="Sarah"
               color="#ec4899" // Pink
-              className="right-[5%] top-[25%] xl:right-[150px] xl:top-[150px]"
+              className="right-[5%] top-[25%] md:right-[450px] md:top-[150px]"
               direction="left"
+            // mouseX={mousePos.x}
+            // mouseY={mousePos.y}
+            // isHovering={isHovering}
             />
           </div>
-
-          <div className="w-full max-w-xl flex flex-col gap-6 md:gap-8 z-10">
+          <div className="w-full max-w-xl flex flex-col  gap-6 md:gap-8 z-10">
             <SectionLabel>Who are we?</SectionLabel>
-
             <div className="pb-2 md:pb-6">
               <MainHeading>
                 Shaping the future <br className="hidden md:block" /> of design.
@@ -177,15 +158,15 @@ const AboutSection = () => {
         </div>
 
         {/* --- BLOCK 2: STATS --- */}
-        <div className="w-full md:border-y px-4 md:border-[#D3D3D3] mx-auto py-4 relative max-w-6xl">
+        <div className="w-full md:border-y px-4 md:border-[#D3D3D3] mx-auto py-4 relative md:max-w-3xl lg:max-w-6xl">
           <span className="absolute  rounded-full bg-[#D3D3D3] -top-1 left-0 h-1.5 w-1.5" />
           <span className="absolute  rounded-full bg-[#D3D3D3] -top-1 right-0 h-1.5 w-1.5" />
           <span className="absolute  rounded-full bg-[#D3D3D3] -bottom-1 left-0 h-1.5 w-1.5" />
           <span className="absolute  rounded-full bg-[#D3D3D3] -bottom-1 right-0 h-1.5 w-1.5" />
 
-          <div className="max-w-[1440px] mx-auto container px-4 lg:px-0">
+          <div className="max-w-[1440px] mx-auto container px-4 md:px-4 lg:px-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 md:gap-0">
-              <div className="flex-1 relative w-full border-y border-[#D3D3D3] flex flex-row md:flex-col items-center md:items-center gap-4 border-b md:border-b-0 md:border-r py-2 md:py-0    md:last:border-r-0">
+              <div className="flex-1 relative w-full  flex flex-row md:flex-col lg:flex-col items-center md:items-center gap-4 border-b md:border-b-0 md:border-r py-2 md:py-0    md:last:border-r-0">
                 <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 left-0 h-1.5 w-1.5" />
                 <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 right-0 h-1.5 w-1.5" />
                 <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -bottom-1 left-0 h-1.5 w-1.5" />
@@ -203,7 +184,7 @@ const AboutSection = () => {
                 </div>
               </div>
               <div className="hidden md:block w-[1px] h-16 bg-[#D3D3D3]" />
-              <div className="flex-1 relative w-full border-y border-[#D3D3D3] flex flex-row md:flex-col items-center md:items-center gap-4 border-b md:border-b-0 md:border-r py-2 md:py-0    md:last:border-r-0">
+              <div className="flex-1 relative w-full flex flex-row md:flex-col lg:flex-col items-center md:items-center gap-4 border-b md:border-b-0 md:border-r py-2 md:py-0    md:last:border-r-0">
                 <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 left-0 h-1.5 w-1.5" />
                 <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 right-0 h-1.5 w-1.5" />
                 <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -bottom-1 left-0 h-1.5 w-1.5" />
@@ -221,7 +202,7 @@ const AboutSection = () => {
                 </div>
               </div>
               <div className="hidden md:block w-[1px] h-16 bg-[#D3D3D3]" />
-              <div className="flex-1 relative w-full border-y border-[#D3D3D3] flex flex-row md:flex-col items-center md:items-center gap-4 border-b md:border-b-0 md:border-r py-2 md:py-0    md:last:border-r-0">
+              <div className="flex-1 relative w-full flex flex-row md:flex-col lg:flex-col items-center md:items-center gap-4 border-b md:border-b-0 md:border-r py-2 md:py-0    md:last:border-r-0">
                 <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 left-0 h-1.5 w-1.5" />
                 <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 right-0 h-1.5 w-1.5" />
                 <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -bottom-1 left-0 h-1.5 w-1.5" />
@@ -246,23 +227,31 @@ const AboutSection = () => {
         </div>
 
         {/* --- BLOCK 3: MISSION --- */}
-        <div className="relative max-w-[1440px] px-4 md:px-0 mx-auto container w-full flex flex-col items-center gap-12 md:gap-24">
-          {/* === CURSORS ADDED HERE === */}
+        <div className="relative max-w-[1440px]  px-4 md:px-0 mx-auto container w-full flex flex-col items-center gap-12 md:gap-24"
+        // onMouseMove={handleMouseMove}
+        // onMouseEnter={() => {
+        //   if (window.innerWidth >= 1024) setIsHovering(true);
+        // }}
+        // onMouseLeave={() => setIsHovering(false)}
+        >
           <div className="hidden lg:block absolute inset-0 pointer-events-none overflow-visible">
             <FloatingCursor
-              label="Alex"
-              color="#f59e0b" // Amber
-              className="left-[2%] top-[10%] xl:-left-[100px] xl:top-[100px]"
+              label="Erşad"
+              color="#8b5cf6" // Purple
+              className="left-[5%] top-[10%] md:left-[280px] md:top-[80px]"
               direction="right"
+
             />
             <FloatingCursor
-              label="Achmad"
-              color="#10b981" // Emerald
-              className="right-[10%] top-[0%] xl:right-[100px] xl:top-[50px]"
+              label="Sarah"
+              color="#ec4899" // Pink
+              className="right-[5%] top-[25%] md:right-[450px] md:top-[200px]"
               direction="left"
+            // mouseX={mousePos.x}
+            // mouseY={mousePos.y}
+            // isHovering={isHovering}
             />
           </div>
-
           <div className="w-full max-w-xl flex flex-col gap-6">
             <SectionLabel>Mission and guidance.</SectionLabel>
             <div className="pb-4 md:pb-6">
@@ -293,7 +282,7 @@ const AboutSection = () => {
         </div>
 
         {/* Mission Grid */}
-        <div className="container mx-auto max-w-xl p-8 md:px-0 md:max-w-4xl">
+        <div className="container mx-auto max-w-xl p-8 md:px-4 md:max-w-4xl">
           <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-6 md:p-8 bg-zinc-50/50 rounded-3xl shadow-[0_0_0_1px_rgba(61,61,61,0.12),inset_0_0.75px_0.75px_hsla(0,0%,100%,0.64)] flex flex-col gap-6 md:gap-7 hover:shadow-md transition-shadow">
               <div className="w-11 h-11 bg-white rounded-xl shadow-sm border border-zinc-100 flex justify-center items-center">
@@ -369,8 +358,8 @@ const AboutSection = () => {
         </div>
 
         {/* --- BLOCK 4: TEAM SECTION --- */}
-        <div className="w-full py-10 px-4 md:px-0 mx-auto relative bg-white">
-          <div className="flex flex-col items-start gap-12 max-w-5xl container mx-auto">
+        <div className="w-full py-10 px-4 md:px-0 mx-auto  bg-white">
+          <div className="flex flex-col items-start gap-12 md:max-w-xl lg:max-w-5xl container mx-auto">
             <div className="flex flex-col gap-5 w-full">
               <div className="flex relative items-center gap-6 md:gap-10">
                 <div className="flex md:flex h-8 pl-2 pr-3 py-1.5 rounded-lg shadow-sm border border-zinc-100 items-center gap-1.5">
@@ -406,54 +395,66 @@ const AboutSection = () => {
               </div>
             </div>
 
-            <div className="w-full grid grid-cols-1 px-4 md:px-0 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="w-full grid grid-cols-1 px-4 md:px-0 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <ReflectiveCard
-                name="JANE DOE"
+                name="Achmad Qomarudin"
+                role="Product Designer"
+                email="jane@baggy.co"
+                imageSrc="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop"
+                blurStrength={0.5}
+                metalness={0.7}
+                roughness={0.7}
+                displacementStrength={15}
+                specularConstant={0.5}
+                grayscale={0.8}
+                backContent={
+                  <div className="flex flex-col gap-4">
+                    <p className="text-sm text-zinc-300">
+                      Creative developer with a love for motion graphics and
+                      interactive design.
+                    </p>
+                  </div>
+                }
+              />
+              <ReflectiveCard
+                name="Dera Ananta"
+                role="Graphic Designer"
+                email="jane@baggy.co"
+                imageSrc="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop"
+                blurStrength={0.5}
+                metalness={0.7}
+                roughness={0.7}
+                displacementStrength={15}
+                specularConstant={0.5}
+                grayscale={0.8}
+                backContent={
+                  <div className="flex flex-col gap-4">
+                    <p className="text-sm text-zinc-300">
+                      Creative developer with a love for motion graphics and
+                      interactive design.
+                    </p>
+                  </div>
+                }
+              />
+              <ReflectiveCard
+                name="Fajar Fernandi"
                 role="FULLSTACK DEVELOPER"
                 email="jane@baggy.co"
                 imageSrc="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop"
-                blurStrength={3}
-                metalness={0.8}
-                roughness={0.5}
+                blurStrength={0.5}
+                metalness={0.7}
+                roughness={0.7}
                 displacementStrength={15}
-                specularConstant={1.0}
+                specularConstant={0.5}
                 grayscale={0.8}
-              />
-              <ReflectiveCard
-                name="JANE DOE"
-                role="FULLSTACK DEVELOPER"
-                email="jane@baggy.co"
-                imageSrc="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop"
-                blurStrength={3}
-                metalness={0.8}
-                roughness={0.5}
-                displacementStrength={15}
-                specularConstant={1.0}
-                grayscale={0.8}
-              />
-              <ReflectiveCard
-                name="JANE DOE"
-                role="FULLSTACK DEVELOPER"
-                email="jane@baggy.co"
-                imageSrc="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop"
-                blurStrength={3}
-                metalness={0.8}
-                roughness={0.5}
-                displacementStrength={15}
-                specularConstant={1.0}
-                grayscale={0.8}
-              />
-              <ReflectiveCard
-                name="FAJAR FERNANDI"
-                role="FULLSTACK DEVELOPER"
-                email="fajarfernandi@baggy.co"
-                imageSrc="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop"
-                blurStrength={3}
-                metalness={0.8}
-                roughness={0.5}
-                displacementStrength={15}
-                specularConstant={1.0}
-                grayscale={0.8}
+                backContent={
+                  <div className="flex flex-col gap-4">
+                    <p className="text-sm text-zinc-300">
+                      Creative developer with a love for motion graphics and
+                      interactive design.
+                    </p>
+                  </div>
+                }
               />
             </div>
 

@@ -76,7 +76,7 @@ const NewsletterSection: React.FC<NewsletterProps> = ({
       <span className="h-1.5 w-1.5 hidden md:block absolute bottom-0 -left-[3px] rounded-full bg-[#D3D3D3]" />
       <span className="h-1.5 w-1.5 hidden md:block absolute bottom-0 -right-[3px] rounded-full bg-[#D3D3D3]" />
 
-      <div className="hidden xl:block absolute inset-0 pointer-events-none  border-x border-[#D8D8D8] w-full md:max-w-[1280px] mx-auto opacity-50" />
+      <div className="hidden xl:block absolute inset-0 pointer-events-none   w-full md:max-w-[1280px] mx-auto opacity-50" />
 
       <div className="w-full max-w-2xl relative z-10 flex flex-col items-center gap-8">
         <div className="flex flex-col md:items-center gap-4 md:text-center items-start text-start">

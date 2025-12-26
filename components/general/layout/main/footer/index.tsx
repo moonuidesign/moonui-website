@@ -133,12 +133,12 @@ const Footer: React.FC<FooterProps> = ({
         <div className="flex flex-col items-start justify-start md:items-center md:text-center gap-4 md:gap-6 mb-12 lg:mb-20">
           <MoonLogo />
 
-          <div className="lg:max-w-2xl max-w-lg flex items-start md:items-center  gap-0 md:gap-2 flex-col">
-            <h2 className="text-[#3D3D3D] font-sans font-semibold text-[28px] leading-tight md:text-[30px] md:leading-10">
-              Enhance Your Design <br className="lg:hidden" /> & Development
+          <div className="md:max-w-2xl w-3xl max-w-lg flex items-start md:items-center gap-0 md:gap-2 flex-col">
+            <h2 className="text-[#3D3D3D] flex font-sans font-semibold text-[28px] leading-tight md:text-[30px] md:leading-10">
+              {/* Ubah lg:hidden menjadi md:hidden di sini */}
+              Enhance Your Design <br className="md:hidden" /> & Development
             </h2>
 
-            {/* Perubahan ada di tag <p> di bawah ini */}
             <p className="text-[#888888] text-[24px]/[36px] md:text-2xl font-semibold font-sans md:leading-10 flex items-center gap-2">
               perfectly until to the moon
               <Image src="/ic-rocket.svg" alt="moon" width={20} height={20} />
