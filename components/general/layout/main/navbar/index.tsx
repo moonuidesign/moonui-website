@@ -107,7 +107,7 @@ export default function Navbar() {
   const searchParams = useSearchParams();
   const [searchValue, setSearchValue] = useState(searchParams.get('q') || '');
   const isAssetsPage = pathname === '/assets';
-  const isRootPage = pathname === '/';
+
   const debouncedSearch = useDebounce(searchValue, 300);
   const debouncedSearchRef = useRef(debouncedSearch);
 
@@ -194,7 +194,7 @@ export default function Navbar() {
 
             {/* Mobile Search - Expandable on /assets */}
             <AnimatePresence>
-              {isRootPage && !isMobileSearchExpanded && !isScrolled && (
+              {!isMobileSearchExpanded && !isScrolled && (
                 <motion.div
                   initial={{ opacity: 0, x: -30, width: 0 }}
                   animate={{ opacity: 1, x: 0, width: 'auto' }}
@@ -213,7 +213,7 @@ export default function Navbar() {
               )}
             </AnimatePresence>
             <AnimatePresence>
-              {isRootPage && !isMobileSearchExpanded && !isScrolled && (
+              {!isMobileSearchExpanded && !isScrolled && (
                 <motion.div
                   initial={{ opacity: 0, x: -30, width: 0 }}
                   animate={{ opacity: 1, x: 0, width: 'auto' }}
