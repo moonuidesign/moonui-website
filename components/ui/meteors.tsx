@@ -19,15 +19,22 @@ export default function Meteors({
   minDelay = 0.2,
   maxDelay = 1.2,
   minDuration = 2,
-  maxDuration = 10,
+  maxDuration = 4,
   angle = 215,
   className,
 }: MeteorsProps) {
   const [meteorStyles, setMeteorStyles] = useState<Array<React.CSSProperties>>(
     [],
   );
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const styles = [...new Array(number)].map(() => ({
       '--angle': -angle + 'deg',
       top: '-5%',
@@ -39,7 +46,9 @@ export default function Meteors({
         's',
     }));
     setMeteorStyles(styles);
-  }, [number, minDelay, maxDelay, minDuration, maxDuration, angle]);
+  }, [number, minDelay, maxDelay, minDuration, maxDuration, angle, mounted]);
+
+  if (!mounted) return null;
 
   return (
     <>
@@ -59,7 +68,7 @@ export default function Meteors({
           />
 
           {/* Meteor Head */}
-          <div className="absolute top-1/2 left-[49%] z-10 h-[9.5px] w-[9.5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-zinc-500 shadow-[0_0_0_1px_#ffffff10]" />
+          <div className="absolute top-1/2 left-[65%] z-10 h-[9.5px] w-[9.5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-zinc-500 shadow-[0_0_0_1px_#ffffff10]" />
         </span>
       ))}
     </>

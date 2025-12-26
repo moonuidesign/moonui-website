@@ -1,3 +1,4 @@
+'use client'
 import React, { FormEvent, useState, useTransition } from 'react';
 import { Mail, Check, FileText, CornerDownLeft, Loader2 } from 'lucide-react';
 import { subscribeToNewsletter } from '@/server-action/newsletter';

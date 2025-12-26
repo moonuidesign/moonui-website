@@ -128,30 +128,12 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
       setStaticData(STATIC_PAGES);
     }
 
-    // Only fetch API data when there's a search query
-    if (debouncedSearch) {
-      setLoading(true);
-      getGlobalSearchData(debouncedSearch)
-        .then((res) => setData(res))
-        .catch((err) => console.error('Global Search Error:', err))
-        .finally(() => setLoading(false));
-    } else {
-      // Reset data when no search query
-      setData({
-        templates: [],
-        templateCategories: [],
-        templateSubCategories: [],
-        components: [],
-        componentCategories: [],
-        componentSubCategories: [],
-        designs: [],
-        designCategories: [],
-        designSubCategories: [],
-        gradients: [],
-        gradientCategories: [],
-        gradientSubCategories: [],
-      });
-    }
+    // Always fetch API data (search or default)
+    setLoading(true);
+    getGlobalSearchData(debouncedSearch || '')
+      .then((res) => setData(res))
+      .catch((err) => console.error('Global Search Error:', err))
+      .finally(() => setLoading(false));
   }, [debouncedSearch, open]);
 
   const handleNavigate = (url: string) => {
@@ -427,30 +409,49 @@ function SectionGroup({
   )
     return null;
 
+  const limit = 5;
+  const limitedItems = items.slice(0, limit);
+  const limitedCategories = categories.slice(0, limit);
+  const limitedSubCategories = subCategories.slice(0, limit);
+
   return (
     <>
-      {/* Items */}
       {items.length > 0 && (
-        <Command.Group heading={title}>
-          {items.map((item) => (
+        <Command.Group>
+          <div className="flex items-center justify-between px-4 py-2">
+            <span className="text-xs font-medium text-gray-500">{title}</span>
+            <button
+              onClick={() => onViewAll(type)}
+              className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+            >
+              View all <ChevronRight className="h-3 w-3" />
+            </button>
+          </div>
+          {limitedItems.map((item) => (
             <ItemRow
               key={item.id}
               item={item}
               onSelect={() => onSelectAsset(item)}
             />
           ))}
-          <ViewAllItem
-            label={`View all ${title}`}
-            onSelect={() => onViewAll(type)}
-          />
         </Command.Group>
       )}
 
-      {/* Categories (Flex Wrap) */}
       {categories.length > 0 && (
-        <Command.Group heading={`${title} Categories`}>
+        <Command.Group>
+          <div className="flex items-center justify-between px-4 py-2">
+            <span className="text-xs font-medium text-gray-500">
+              {title} Categories
+            </span>
+            <button
+              onClick={() => onViewAll(type, true)}
+              className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+            >
+              View all <ChevronRight className="h-3 w-3" />
+            </button>
+          </div>
           <div className="flex flex-wrap gap-2 px-2 pb-2">
-            {categories.map((item) => (
+            {limitedCategories.map((item) => (
               <CategoryTag
                 key={item.id}
                 item={item}
@@ -458,18 +459,25 @@ function SectionGroup({
               />
             ))}
           </div>
-          <ViewAllItem
-            label={`View all ${title} Categories`}
-            onSelect={() => onViewAll(type, true)}
-          />
         </Command.Group>
       )}
 
       {/* Sub-Categories (Flex Wrap) */}
       {subCategories.length > 0 && (
-        <Command.Group heading={`${title} Sub-Categories`}>
+        <Command.Group>
+          <div className="flex items-center justify-between px-4 py-2">
+            <span className="text-xs font-medium text-gray-500">
+              {title} Sub-Categories
+            </span>
+            <button
+              onClick={() => onViewAll(type, false, true)}
+              className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+            >
+              View all <ChevronRight className="h-3 w-3" />
+            </button>
+          </div>
           <div className="flex flex-wrap gap-2 px-2 pb-2">
-            {subCategories.map((item) => (
+            {limitedSubCategories.map((item) => (
               <CategoryTag
                 key={item.id}
                 item={item}
@@ -478,10 +486,6 @@ function SectionGroup({
               />
             ))}
           </div>
-          <ViewAllItem
-            label={`View all ${title} Sub-Categories`}
-            onSelect={() => onViewAll(type, false, true)}
-          />
         </Command.Group>
       )}
     </>
@@ -565,19 +569,4 @@ function CategoryTag({
   );
 }
 
-function ViewAllItem({
-  label,
-  onSelect,
-}: {
-  label: string;
-  onSelect: () => void;
-}) {
-  return (
-    <Command.Item
-      onSelect={onSelect}
-      className="group flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs text-gray-500 transition-all hover:bg-gray-100 aria-selected:bg-gray-100 mt-1"
-    >
-      {label} <ChevronRight className="h-3 w-3" />
-    </Command.Item>
-  );
-}
+
