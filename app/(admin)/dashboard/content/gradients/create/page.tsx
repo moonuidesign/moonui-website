@@ -13,10 +13,8 @@ export default function CreateTemplatePage() {
 
 async function CreateGradientContent() {
   const categories = await getCategoryGradients();
-
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Tambah Gradient Baru</h1>
       <GradientForm categories={categories} />
     </div>
   );

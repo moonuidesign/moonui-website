@@ -16,7 +16,10 @@ import Highlight from '@tiptap/extension-highlight';
 // IMPORT FILE YANG KITA BUAT TADI
 import { SlashCommand } from './slash-command';
 import { EditorBubbleMenu } from './editor-buble-menu';
+import { EnterHardBreak } from './extensions/enter-hard-break';
 import { FontSize } from './font-size';
+import { BlockSpan } from './extensions/block-span';
+import { InlineH1, InlineH2, InlineH3 } from './extensions/inline-heading';
 
 interface DescriptionEditorProps {
   initialContent?: any;
@@ -30,10 +33,17 @@ interface DescriptionEditorProps {
 }
 
 // Shared extensions configuration
+import { InlineParagraph } from './extensions/inline-paragraph';
+
+// ...
+
+// Shared extensions configuration
 const getExtensions = (placeholder: string) => [
   StarterKit.configure({
     codeBlock: false,
+    paragraph: false, // Disable default paragraph
   }),
+  InlineParagraph, // Custom Paragraph with display: inline
   // --- Formatting Extensions ---
   Underline,
   Link.configure({
@@ -48,6 +58,9 @@ const getExtensions = (placeholder: string) => [
   TextStyle,
   Color,
   FontSize, // Custom extension font size !important
+  BlockSpan, // Custom Block Span
+  EnterHardBreak, // Force Enter -> <br>
+  InlineH1, InlineH2, InlineH3, // Inline Semantic Headings
 
   // --- Functional Extensions ---
   SlashCommand,
@@ -78,32 +91,44 @@ const DescriptionEditor = ({
     content: initialContent || { type: 'doc', content: [] },
     editorProps: {
       attributes: {
-        class: `prose dark:prose-invert max-w-none w-full break-words focus:outline-none px-4 py-3
-          [&_p]:text-sm [&_p]:sm:text-base [&_p]:lg:text-lg [&_p]:leading-relaxed
-          [&_li]:text-sm [&_li]:sm:text-base [&_li]:lg:text-lg [&_li]:leading-relaxed
-          [&_h1]:text-xl [&_h1]:sm:text-2xl [&_h1]:lg:text-3xl [&_h1]:font-bold [&_h1]:mb-4
-          [&_h2]:text-lg [&_h2]:sm:text-xl [&_h2]:lg:text-2xl [&_h2]:font-semibold [&_h2]:mb-3
-          [&_h3]:text-base [&_h3]:sm:text-lg [&_h3]:lg:text-xl [&_h3]:font-medium [&_h3]:mb-2
-          [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2
-          [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2
-          [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4
-          [&_code]:bg-gray-100 [&_code]:dark:bg-gray-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm
-          [&_strong]:font-semibold
-          [&_em]:italic`,
+        class: 'prose dark:prose-invert max-w-none w-full break-words focus:outline-none px-4 py-3 [&_p]:text-sm [&_p]:sm:text-base [&_p]:lg:text-lg [&_p]:leading-relaxed [&_li]:text-sm [&_li]:sm:text-base [&_li]:lg:text-lg [&_li]:leading-relaxed [&_h1]:text-xl [&_h1]:sm:text-2xl [&_h1]:lg:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-lg [&_h2]:sm:text-xl [&_h2]:lg:text-2xl [&_h2]:font-semibold [&_h2]:mb-3 [&_h3]:text-base [&_h3]:sm:text-lg [&_h3]:lg:text-xl [&_h3]:font-medium [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_code]:bg-gray-100 [&_code]:dark:bg-gray-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_strong]:font-semibold [&_em]:italic',
         style: `min-height: ${minHeight}`,
       },
     },
     onUpdate: ({ editor }) => {
       if (outputHtml) {
-        // Output HTML string
-        const html = editor.getHTML();
-        onChange(html);
+        // Output HTML string wrapped in div as requested
+        const html = editor.getHTML(); // e.g. <h1>...</h1><p>...</p>
+        // Clean empty paragraphs (often created by Tiptap split)
+        const cleanHtml = html.replace(/<p[^>]*>(\s*|<br\s*\/?>)?<\/p>/gi, '');
+        const wrappedHtml = `<div>${cleanHtml}</div>`;
+        console.log('[DescriptionEditor] outputHtml:', wrappedHtml); // DEBUG
+        onChange(wrappedHtml);
       } else {
         // Output JSON (default TipTap behavior)
-        onChange(editor.getJSON());
+        const json = editor.getJSON();
+        console.log('[DescriptionEditor] outputJSON:', json); // DEBUG
+        onChange(json);
       }
     },
   });
+
+  console.log('[DescriptionEditor] Rendering. initialContent:', initialContent); // DEBUG
+
+  // Sync initialContent changes (e.g. async data loading)
+  React.useEffect(() => {
+    if (editor && initialContent) {
+      const currentContent = outputHtml ? editor.getHTML() : editor.getJSON();
+      // Only update if content is different to avoid cursor jumps/loops
+      // Simple comparison for string, deep comparison for JSON might be needed but for now JSON is initial-only usually
+      if (JSON.stringify(currentContent) !== JSON.stringify(initialContent)) {
+        // editor.commands.setContent(initialContent); // CAUTION: This might reset cursor.
+        // Better strategy: Only set if editor is empty? Or if explicitly changed.
+        // For this specific bug (validation), the issue is likely outgoing data, not incoming.
+        // But let's ensure we are not overwriting user input.
+      }
+    }
+  }, [initialContent, editor, outputHtml]);
 
   if (!editor) {
     return null;

@@ -4,15 +4,6 @@ import { TicketPercent } from 'lucide-react';
 import { ArrowRight2 } from 'iconsax-reactjs';
 
 // ==========================================
-// 1. KONFIGURASI PROMO (Hanya Visual Label)
-// ==========================================
-const PROMO_CONFIG = {
-  isEnabled: true, // Tampilkan badge kode?
-  code: 'MOON25', // Nama Kode
-  discountText: '25% OFF', // Teks Diskon
-};
-
-// ==========================================
 // 2. DATA PAKET
 // ==========================================
 interface PricePlan {
@@ -48,7 +39,7 @@ const plans: PricePlan[] = [
   {
     title: 'MoonUI Pro',
     subtitle: 'Subscribe—annual Plan',
-    price: { monthly: 49, yearly: 499 },
+    price: { monthly: 99, yearly: 499 },
     priceDetail: 'billed per cycle',
     features: [
       'Time-Limited Offers',
@@ -65,7 +56,7 @@ const plans: PricePlan[] = [
   {
     title: 'MoonUI Pro Plus',
     subtitle: 'Life—time Access',
-    price: { monthly: 2499, yearly: 2499 },
+    price: { monthly: 1499, yearly: 1499 },
     priceDetail: 'one—time payment',
     features: [
       'No Subscriptions',
@@ -87,32 +78,51 @@ const plans: PricePlan[] = [
 const PricingCard = ({
   plan,
   isAnnual,
+  activeDiscount,
 }: {
   plan: PricePlan;
   isAnnual: boolean;
+  activeDiscount: { code: string; discount: number } | null;
 }) => {
-  // --- A. PENENTUAN HARGA TAMPIL ---
-  const displayPrice = isAnnual ? plan.price.yearly : plan.price.monthly;
+  // --- A. PENENTUAN HARGA ASLI ---
+  const originalPrice = isAnnual ? plan.price.yearly : plan.price.monthly;
 
-  // --- B. LOGIKA HARGA CORET (HEMAT ANNUAL) ---
+  // --- B. HITUNG DISKON (JIKA ADA) ---
+  let finalPrice = originalPrice;
+  const isFree = originalPrice === 0;
+
+  // Jika plan berbayar dan ada diskon aktif -> Hitung potongan
+  if (!isFree && activeDiscount) {
+    const discountAmount = (originalPrice * activeDiscount.discount) / 100;
+    finalPrice = Math.round(originalPrice - discountAmount);
+  }
+
+  // --- C. LOGIKA HARGA CORET (HEMAT ANNUAL) ---
   const isLifetime = plan.price.monthly === plan.price.yearly;
   const annualizedMonthlyPrice = plan.price.monthly * 12;
 
-  const showStrikethrough =
+  // Annual savings logic (existing)
+  const showAnnualStrikethrough =
     isAnnual &&
     !isLifetime &&
-    displayPrice > 0 &&
-    annualizedMonthlyPrice > displayPrice;
+    originalPrice > 0 &&
+    annualizedMonthlyPrice > originalPrice;
 
-  const savedAmount = annualizedMonthlyPrice - displayPrice;
+  // We should prioritize showing the 'active discount' savings if present,
+  // or combine them?
+  // Let's keep it simple:
+  // If active discount exists, we show Original Price (strikethrough) vs Final Discounted Price.
+  // If annual savings exist, that's already baked into 'originalPrice' (yearly price) vs 'annualizedMonthlyPrice'.
+  // To avoid confusion, let's focus on the Dynamic Discount Visuals.
 
-  // --- C. LOGIKA BADGE KUPON ---
-  const showCouponBadge = PROMO_CONFIG.isEnabled && displayPrice > 0;
+  const showDiscountStrikethrough = !isFree && activeDiscount;
+
+  // --- D. LOGIKA BADGE KUPON ---
+  const showCouponBadge = !isFree && activeDiscount;
 
   return (
-    // PERBAIKAN 1: Tambahkan 'h-full' agar kartu mengisi tinggi grid
     <div
-      className={`relative p-4 flex flex-col h-full rounded-[32px] overflow-hidden border transition-transform duration-300 hover:scale-[1.02] shadow-xl
+      className={`relative p-4 flex flex-col h-full rounded-[32px] overflow-hidden border transition-transform duration-300 shadow-xl
         ${plan.isDark
           ? 'bg-zinc-900 text-white border-zinc-800'
           : 'bg-white text-zinc-800 border-zinc-100'
@@ -156,7 +166,7 @@ const PricingCard = ({
                     }`}
                 >
                   <TicketPercent size={12} />
-                  <span>CODE: {PROMO_CONFIG.code}</span>
+                  <span>CODE: {activeDiscount.code}</span>
                 </div>
               </div>
             )}
@@ -198,16 +208,27 @@ const PricingCard = ({
 
         {/* --- HARGA & LABEL --- */}
         <div className="mt-4">
-          {/* 1. LABEL KUPON */}
-
-          {/* 2. AREA HARGA */}
           <div className="flex items-baseline gap-2">
             <span className="text-4xl font-bold leading-none">
-              ${displayPrice}
+              ${finalPrice}
             </span>
 
-            {/* 3. HARGA CORET */}
-            {showStrikethrough && (
+            {/* HARGA CORET (VISUAL DISKON) */}
+            {showDiscountStrikethrough && (
+              <div className="flex flex-col leading-none ml-1">
+                <span
+                  className={`text-sm line-through decoration-red-500/50 opacity-60 ${plan.isDark ? 'text-neutral-400' : 'text-neutral-500'
+                    }`}
+                >
+                  ${originalPrice}
+                </span>
+                <span className="text-[10px] text-green-600 font-bold">
+                  Save {activeDiscount?.discount}%
+                </span>
+              </div>
+            )}
+
+            {!showDiscountStrikethrough && showAnnualStrikethrough && (
               <div className="flex flex-col leading-none ml-1">
                 <span
                   className={`text-sm line-through decoration-red-500/50 opacity-60 ${plan.isDark ? 'text-neutral-400' : 'text-neutral-500'
@@ -216,10 +237,11 @@ const PricingCard = ({
                   ${annualizedMonthlyPrice}
                 </span>
                 <span className="text-[10px] text-green-600 font-bold">
-                  Save ${savedAmount}
+                  Save ${(annualizedMonthlyPrice - originalPrice)}
                 </span>
               </div>
             )}
+
           </div>
 
           <div
@@ -248,7 +270,16 @@ const PricingCard = ({
 // ==========================================
 // 4. MAIN SECTION
 // ==========================================
-const PricingSection = () => {
+interface PricingSectionProps {
+  activeDiscount?: {
+    name: string;
+    code: string;
+    discount: number;
+    isActive: boolean;
+  } | null;
+}
+
+const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
   const [isAnnual, setIsAnnual] = useState(true);
 
   return (
@@ -306,7 +337,7 @@ const PricingSection = () => {
               : 'md:col-span-2 lg:col-span-1'
               }`}
           >
-            <PricingCard plan={plan} isAnnual={isAnnual} />
+            <PricingCard plan={plan} isAnnual={isAnnual} activeDiscount={activeDiscount || null} />
           </div>
         ))}
       </div>
@@ -343,5 +374,4 @@ const PricingSection = () => {
     </section>
   );
 };
-
 export default PricingSection;

@@ -78,7 +78,7 @@ function resolveCategoryIds(
 function runTest(name: string, catSlugs: string[], subSlugs: string[], expectedIds: string[]) {
   const result = resolveCategoryIds(allCategories, catSlugs, subSlugs).sort();
   const expected = expectedIds.sort();
-  
+
   const pass = JSON.stringify(result) === JSON.stringify(expected);
   console.log(`[${pass ? 'PASS' : 'FAIL'}] ${name}`);
   if (!pass) {
@@ -92,32 +92,32 @@ console.log('--- Running Category Logic Tests ---');
 // Case 1: Select "Warm" only
 runTest(
   'Select Parent Only (Warm)',
-  ['Warm'], 
-  [], 
+  ['Warm'],
+  [],
   ['cat_warm', 'cat_conic', 'cat_radial']
 );
 
 // Case 2: Select "Conic" only (Sub only)
 runTest(
   'Select Sub Only (Conic)',
-  [], 
-  ['Conic'], 
+  [],
+  ['Conic'],
   ['cat_conic']
 );
 
 // Case 3: Select "Warm" AND "Conic" (Drill down)
 runTest(
   'Drill Down (Warm + Conic)',
-  ['Warm'], 
-  ['Conic'], 
+  ['Warm'],
+  ['Conic'],
   ['cat_conic'] // Should NOT include cat_radial or cat_warm
 );
 
 // Case 4: Select "Warm" AND "Cool" (Multi Parent)
 runTest(
   'Multi Parent (Warm + Cool)',
-  ['Warm', 'Cool'], 
-  [], 
+  ['Warm', 'Cool'],
+  [],
   ['cat_warm', 'cat_conic', 'cat_radial', 'cat_cool', 'cat_blue']
 );
 
@@ -126,8 +126,8 @@ runTest(
 // Cool -> Broad
 runTest(
   'Mixed Drill (Warm + Cool + Conic)',
-  ['Warm', 'Cool'], 
-  ['Conic'], 
+  ['Warm', 'Cool'],
+  ['Conic'],
   ['cat_conic', 'cat_cool', 'cat_blue']
 );
 

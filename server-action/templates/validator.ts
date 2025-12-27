@@ -19,26 +19,56 @@ const AssetObjectSchema = z.object({
 
 export const ContentTemplateSchema = z.object({
   title: z.string({ error: 'Judul wajib diisi' }).min(3, 'Minimal 3 karakter'),
-  description: z
-    .any()
-    .refine(
-      (val) => val && val.content && val.content.length > 0,
-      'Deskripsi wajib diisi',
-    ),
+  description: z.any().refine(
+    (val) => {
+      if (!val) return false;
+      // 1. Handle String (HTML)
+      if (typeof val === 'string') {
+        const text = val.replace(/<[^>]*>/g, '').trim();
+        return text.length > 0 || /<img|<iframe|video/i.test(val);
+      }
+      // 2. Handle Object (TipTap JSON)
+      if (typeof val === 'object' && val.content && Array.isArray(val.content)) {
+        return val.content.length > 0;
+      }
+      return false;
+    },
+    'Deskripsi wajib diisi',
+  ),
   typeContent: z.string().min(1, 'Tipe konten wajib diisi'),
-  linkTemplate: z.string().optional().or(z.literal('')), // Boleh kosong stringnya
+  linkTemplate: z.string({ error: 'Main Template File wajib diisi' }).min(1, 'Main Template File wajib diisi'), // Boleh kosong stringnya -> Tidak boleh sekarang
   categoryTemplatesId: z.string({ error: 'Kategori wajib dipilih' }).min(1),
   tier: z.enum(TEMPLATE_TIER_OPTIONS, { error: 'Tier wajib dipilih' }),
   statusContent: z.enum(TEMPLATE_STATUS_OPTIONS, {
     error: 'Status wajib dipilih',
   }),
   urlBuyOneTime: z.string().optional(),
-
+  sourceFile: z
+    .union([
+      z.instanceof(File),
+      z.string().min(1, 'File sumber wajib diisi (silakan upload file baru)'),
+    ])
+    .refine((val) => val !== null && val !== undefined, {
+      message: 'File sumber wajib diisi',
+    }),
   // Slug / Tags (Label)
   slug: z.array(z.string()).min(1, 'Minimal satu tag/label wajib diisi'),
 
   // Array untuk URL manual (bukan hasil upload file form ini)
   imagesUrl: z.array(AssetObjectSchema).optional(),
+  // Field untuk menampung File baru yang diupload
+  newImages: z.array(z.instanceof(File)).optional(),
+}).superRefine((data, ctx) => {
+  const hasExisting = data.imagesUrl && data.imagesUrl.length > 0;
+  const hasNew = data.newImages && data.newImages.length > 0;
+
+  if (!hasExisting && !hasNew) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Minimal satu gambar preview wajib diisi (thumbnail)',
+      path: ['imagesUrl'], // Show error on imagesUrl field
+    });
+  }
 });
 
 // Infer Tipe TypeScript dari Schema

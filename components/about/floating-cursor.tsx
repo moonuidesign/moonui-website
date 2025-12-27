@@ -130,8 +130,8 @@ export const FloatingCursor: React.FC<FloatingCursorProps> = ({
           {/* --- 2. Chat Bubble (Label Nama) --- */}
           <div
             className={cn(
-              'px-3 py-1 bg-white rounded-full text-white text-xs font-bold shadow-md whitespace-nowrap border-2 border-white',
-              isRight ? 'mr-2 rounded-tr-none' : 'ml-2 rounded-tl-none',
+              'px-3 py-1.5 mt-5 bg-white rounded-full text-white text-xs font-bold shadow-md whitespace-nowrap border-2 border-white',
+              isRight ? ' rounded-tr-none' : ' rounded-tl-none',
             )}
             style={{ backgroundColor: color }}
           >

@@ -20,10 +20,10 @@ import {
 type ActionResponse =
   | { success: true; message: string }
   | {
-      success: false;
-      error: string;
-      details?: Record<string, string[] | undefined>;
-    };
+    success: false;
+    error: string;
+    details?: Record<string, string[] | undefined>;
+  };
 
 interface CodeSnippets {
   react: string;
@@ -110,8 +110,7 @@ async function callAIWithRotation(
       const isRateLimit = lastError.message.includes('429');
 
       console.warn(
-        `[AI Warning] Key ...${apiKey.slice(-4)} failed (${
-          isRateLimit ? '429' : 'Err'
+        `[AI Warning] Key ...${apiKey.slice(-4)} failed (${isRateLimit ? '429' : 'Err'
         }). Switching...`,
       );
 
@@ -173,11 +172,17 @@ export async function updateContentComponent(
   }
 
   // 2. Validation
-  const validated = ContentComponentSchema.safeParse(values);
+  const valuesToValidate = { ...values };
+  if (imageFile) {
+    // @ts-ignore
+    valuesToValidate.previewImage = imageFile;
+  }
+
+  const validated = ContentComponentSchema.safeParse(valuesToValidate);
   if (!validated.success) {
     return {
       success: false,
-      error: 'Validasi data gagal.',
+      error: validated.error.issues.map((i) => i.message).join('\n'), // Detailed error
       details: validated.error.flatten().fieldErrors,
     };
   }
@@ -212,18 +217,18 @@ export async function updateContentComponent(
 
     const aiResult = await generateCodeSafely(rawHtmlInput);
 
-    // CRITICAL CHANGE: Jika AI Gagal, Update Dibatalkan Total
+    // CRITICAL CHANGE: Jika AI Gagal, jangan abort. Lanjut update data lain.
     if (!aiResult.isAiSuccess) {
-      console.error('[UpdateComponent] Aborting: AI Generation Failed.');
-      return {
-        success: false,
-        error: `Update Dibatalkan: AI sedang sibuk/limit (${
-          aiResult.errorMsg || 'Unknown'
-        }). Silakan coba lagi.`,
+      console.warn('[UpdateComponent] AI Generation Failed. Using fallback.');
+      newCodeSnippets = {
+        html: rawHtmlInput,
+        react: `/* AI Generation Failed: ${aiResult.errorMsg} */\n/* Please edit and regenerate code manually. */\n`,
+        vue: `/* AI Generation Failed */`,
+        angular: `/* AI Generation Failed */`,
       };
+    } else {
+      newCodeSnippets = aiResult.data;
     }
-
-    newCodeSnippets = aiResult.data;
   } else {
     console.log('[UpdateComponent] No new HTML provided, skipping AI.');
   }
@@ -272,17 +277,17 @@ export async function updateContentComponent(
       // Update Code jika AI dipanggil & Sukses
       ...(newCodeSnippets
         ? {
-            codeSnippets: newCodeSnippets,
-            copyComponentTextPlain: {
-              content:
-                newCodeSnippets.react.length > 50
-                  ? newCodeSnippets.react
-                  : copyComponentTextPlain,
-            },
-          }
+          codeSnippets: newCodeSnippets,
+          copyComponentTextPlain: {
+            content:
+              newCodeSnippets.react.length > 50
+                ? newCodeSnippets.react
+                : copyComponentTextPlain,
+          },
+        }
         : {
-            copyComponentTextPlain: { content: copyComponentTextPlain },
-          }),
+          copyComponentTextPlain: { content: copyComponentTextPlain },
+        }),
     };
 
     await db
@@ -295,7 +300,9 @@ export async function updateContentComponent(
     return {
       success: true,
       message: newCodeSnippets
-        ? 'Data & Code berhasil diperbarui!'
+        ? newCodeSnippets.react.includes('AI Generation Failed')
+          ? 'Data diupdate (AI Gagal - Code tidak digenerate).'
+          : 'Data & Code berhasil diperbarui!'
         : 'Data komponen berhasil diperbarui.',
     };
   } catch (error) {

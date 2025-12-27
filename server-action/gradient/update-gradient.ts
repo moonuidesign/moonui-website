@@ -33,9 +33,19 @@ export async function updateContentGradient(
     return { error: 'JSON Parse Error' };
   }
 
+  // Inject image file from formData into parsedJson for validation
+  const imageFileForValidation = formData.get('image');
+  if (imageFileForValidation instanceof File) {
+    // If new file upload, use it for validation
+    parsedJson.image = imageFileForValidation;
+  }
+
   const validated = ContentGradientSchema.safeParse(parsedJson);
   if (!validated.success) {
-    return { error: 'Validasi gagal.' };
+    const errorMessages = validated.error.issues.map((issue) => issue.message).join('\n');
+    return {
+      error: errorMessages,
+    };
   }
   const values = validated.data;
 
@@ -44,7 +54,7 @@ export async function updateContentGradient(
   let imageUrl = undefined;
   let fileSize = '';
   let fileFormat = '';
-
+  let linkDownload = undefined;
   if (imageFile instanceof File && imageFile.size > 0) {
     try {
       console.log('[UpdateGradient] Uploading New Image:', imageFile.name);
@@ -58,10 +68,8 @@ export async function updateContentGradient(
           ContentType: imageFile.type,
         }),
       );
-
-      // --- PERBAIKAN DI SINI (Gunakan Domain CDN) ---
       imageUrl = `${fileName}`;
-
+      linkDownload = `${fileName}`;
       fileSize = (imageFile.size / 1024 / 1024).toFixed(2) + ' MB';
       fileFormat = ext?.toUpperCase() || 'IMG';
     } catch (e) {
@@ -70,44 +78,6 @@ export async function updateContentGradient(
     }
   }
 
-  // Handle Source File Update
-  const sourceFile = formData.get('sourceFile');
-  let linkDownload = undefined;
-
-  if (sourceFile instanceof File && sourceFile.size > 0) {
-    try {
-      console.log(
-        '[UpdateGradient] Uploading New Source File:',
-        sourceFile.name,
-      );
-      const ext = sourceFile.name.split('.').pop();
-      const fileName = `gradients/source/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME!,
-          Key: fileName,
-          Body: Buffer.from(await sourceFile.arrayBuffer()),
-          ContentType: sourceFile.type,
-        }),
-      );
-
-      // --- PERBAIKAN DI SINI (Gunakan Domain CDN) ---
-      linkDownload = `${fileName}`;
-
-      fileSize = (sourceFile.size / 1024 / 1024).toFixed(2) + ' MB';
-      fileFormat = ext?.toUpperCase() || 'FILE';
-    } catch (e) {
-      console.error('[UpdateGradient] Source Upload Failed:', e);
-      return { error: 'Gagal upload source file baru.' };
-    }
-  } else if (imageUrl) {
-    // Jika update gambar tapi tidak update source file, update metadata size/format dari gambar
-    if (imageFile instanceof File) {
-      fileSize = (imageFile.size / 1024 / 1024).toFixed(2) + ' MB';
-      fileFormat = imageFile.name.split('.').pop()?.toUpperCase() || 'IMG';
-    }
-  }
 
   try {
     const updateData = {

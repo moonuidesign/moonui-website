@@ -111,7 +111,7 @@ const NewsletterSection: React.FC<NewsletterProps> = ({
         <div className="w-full max-w-md flex flex-col items-center gap-3">
           <form
             onSubmit={handleSubmit}
-            className="w-full h-12 pl-3 pr-2 bg-neutral-100 rounded-xl shadow-[0px_4px_8px_-1.5px_rgba(51,51,51,0.06)] ring-1 ring-zinc-200 focus-within:ring-zinc-400 focus-within:shadow-md transition-all duration-200 flex items-center gap-3"
+            className="w-full h-12 pl-3 pr-2 bg-neutral-100 rounded-xl shadow-[0px_4px_8px_-1.5px_rgba(51,51,51,0.06)] ring-1 ring-zinc-200 focus-within:ring-[#FF4F00] focus-within:shadow-md transition-all duration-200 flex items-center gap-3"
           >
             <Mail className="w-5 h-5 text-zinc-400" />
 

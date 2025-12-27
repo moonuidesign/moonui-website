@@ -46,19 +46,31 @@ export async function createContentGradient(
     return { error: 'JSON Parse Error' };
   }
 
-  // 2. Validasi
+  // 2. Prepare Data for Validation
+  // Karena 'File' tidak bisa di-stringify, kita perlu masukkan manual File dari formData ke object
+  const imageFile = formData.get('image');
+  if (imageFile instanceof File) {
+    parsedJson.image = imageFile;
+  }
+
+  // 3. Validasi
   const validated = ContentGradientSchema.safeParse(parsedJson);
   if (!validated.success) {
-    return { error: 'Validasi gagal. Cek input warna atau nama.' };
+    // Return detailed error message joined by newline or similar, or keep array if frontend handles it.
+    // User complaint "kenapa tidak detail errornya Invalid input".
+    // "Invalid input" often comes from Zod's default error map for unions or generic types if not refined.
+    // By passing the File object, the union type validation should pass or give better error.
+    const errorMessages = validated.error.issues.map((issue) => issue.message).join('\n');
+    return {
+      error: errorMessages,
+    };
   }
   const values = validated.data;
 
-  // 3. Handle Image Upload (Thumbnail Gradient)
-  const imageFile = formData.get('image');
   let imageUrl = '';
   let fileSize = '';
   let fileFormat = '';
-
+  let linkDownload = '';
   if (imageFile instanceof File && imageFile.size > 0) {
     try {
       console.log('[CreateGradient] Uploading Image:', imageFile.name);
@@ -73,10 +85,8 @@ export async function createContentGradient(
           ContentType: imageFile.type,
         }),
       );
-
-      // --- PERBAIKAN DI SINI (Gunakan Domain CDN) ---
       imageUrl = `https://${process.env.R2_PUBLIC_DOMAIN}/${fileName}`;
-
+      linkDownload = `https://${process.env.R2_PUBLIC_DOMAIN}/${fileName}`;
       fileSize = (imageFile.size / 1024 / 1024).toFixed(2) + ' MB';
       fileFormat = ext?.toUpperCase() || 'IMG';
       console.log('[CreateGradient] Image Uploaded:', imageUrl);
@@ -88,48 +98,7 @@ export async function createContentGradient(
     return { error: 'Thumbnail gradient wajib diupload.' };
   }
 
-  // Handle Source File Upload (for linkDownload)
-  const sourceFile = formData.get('sourceFile');
-  let linkDownload = '';
 
-  if (sourceFile instanceof File && sourceFile.size > 0) {
-    try {
-      console.log('[CreateGradient] Uploading Source File:', sourceFile.name);
-      const ext = sourceFile.name.split('.').pop();
-      const fileName = `gradients/source/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME!,
-          Key: fileName,
-          Body: Buffer.from(await sourceFile.arrayBuffer()),
-          ContentType: sourceFile.type,
-        }),
-      );
-
-      linkDownload = `${fileName}`;
-
-      fileSize = (sourceFile.size / 1024 / 1024).toFixed(2) + ' MB';
-      fileFormat = ext?.toUpperCase() || 'FILE';
-      console.log('[CreateGradient] Source File Uploaded:', linkDownload);
-    } catch (e) {
-      console.error('[CreateGradient] Source File Upload Failed:', e);
-      return { error: 'Gagal mengupload source file.' };
-    }
-  } else {
-    // Fallback to imageUrl
-    linkDownload = imageUrl;
-    fileSize =
-      (imageFile instanceof File ? imageFile.size / 1024 / 1024 : 0).toFixed(
-        2,
-      ) + ' MB';
-    fileFormat =
-      (imageFile instanceof File
-        ? imageFile.name.split('.').pop()?.toUpperCase()
-        : 'IMG') || 'IMG';
-  }
-
-  // 4. Generate Number
   const lastItem = await db
     .select({ number: contentGradients.number })
     .from(contentGradients)

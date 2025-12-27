@@ -7,9 +7,9 @@ import Meteors from '@/components/ui/meteors';
 
 const HeroSection = () => {
   return (
-    <div className=" md:pt-0 mx-auto w-7xl  md:max-w-3xl lg:max-w-7xl relative mb-10 gap-3  px-[24px] md:px-0  container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
+    <div className=" md:pt-0 mx-auto w-7xl  md:max-w-3xl lg:max-w-7xl relative mb-10 gap-3 md:mt-[48px] px-[24px] md:px-0   container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
       <div className="absolute hidden md:block h-full w-full -top-[200px] -z-10 left-1/2 -translate-x-1/2 overflow-visible">
-        <Meteors number={3} />
+        <Meteors minDuration={2.8} maxDuration={4.8} maxDelay={5.8} minDelay={2.5} number={5} />
       </div>
       <Image
         src="/moonNotFound.png"
@@ -24,7 +24,7 @@ const HeroSection = () => {
         height={1200}
       />
 
-      <div className="md:px-2 relative bg-[#E7E7E7] z-10  w-full md:max-w-2xl lg:max-w-4xl md:py-1.5 rounded-full md:shadow-[0px_0px_0px_1px_rgba(211,211,211,1.00)] flex-col md:w-lg lg::w-2xl md:flex-row  inline-flex md:justify-start md:items-center md:gap-3">
+      <div className="md:px-2 relative bg-[#E7E7E7] z-10  w-full md:max-w-2xl lg:max-w-xl md:py-1.5 rounded-full md:shadow-[0px_0px_0px_1px_rgba(211,211,211,1.00)] flex-col md:w-lg lg:w-[26rem] md:flex-row  inline-flex md:justify-start md:items-center md:gap-3">
         <AvatarGroup />
         <div className="w-[0.01px] hidden md:flex h-4 relative">
           <div className="w-px h-4 left-0 top-0 absolute bg-[#D3D3D3]"></div>

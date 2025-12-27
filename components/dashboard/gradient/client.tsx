@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit, Download } from 'lucide-react';
+import { Edit, Download, Eye } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { DashboardPagination } from '@/components/dashboard/dashboard-pagination';
@@ -23,7 +23,8 @@ export interface GradientItem {
   image: string;
   typeGradient: string;
   tier: string;
-  downloadCount: number;
+  downloadCount: number | null;
+  viewCount: number | null;
   createdAt: string;
   categoryName?: string;
   authorName?: string;
@@ -79,6 +80,7 @@ export default function GradientsClient({
                 <TableHead>Tier</TableHead>
                 {isSuperAdmin && <TableHead>Author</TableHead>}
                 <TableHead>Downloads</TableHead>
+                <TableHead>Views</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -121,9 +123,14 @@ export default function GradientsClient({
                         {item.authorName || 'Unknown'}
                       </TableCell>
                     )}
-                    <TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Download className="h-3 w-3" /> {item.downloadCount}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Eye className="h-3 w-3" /> {item.viewCount}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">

@@ -32,7 +32,7 @@ export async function createContentTemplate(
   }
 
   // 3. Validasi Zod
-  let parsedJson: unknown;
+  let parsedJson: any;
   try {
     parsedJson = JSON.parse(rawData);
     console.log('[CreateTemplate] Parsed JSON:', parsedJson);
@@ -41,13 +41,25 @@ export async function createContentTemplate(
     return { error: 'Format JSON tidak valid.' };
   }
 
+  // Inject 'newImages' from formData for validation
+  const newImages = formData.getAll('images');
+  if (newImages.length > 0) {
+    parsedJson.newImages = newImages.filter((f) => f instanceof File);
+  }
+  // Inject 'sourceFile' if needed (though validator for sourceFile checks File vs String)
+  const sourceFile = formData.get('sourceFile');
+  if (sourceFile instanceof File) {
+    parsedJson.sourceFile = sourceFile;
+  }
+
   const validated = ContentTemplateSchema.safeParse(parsedJson);
   if (!validated.success) {
     console.error(
       '[CreateTemplate] Validation Error:',
       validated.error.flatten(),
     );
-    return { error: 'Input tidak valid. Periksa kembali form anda.' };
+    const errorDetails = validated.error.issues.map((i) => i.message).join('\n');
+    return { error: errorDetails || 'Input tidak valid. Periksa kembali form anda.' };
   }
 
   const values = validated.data;

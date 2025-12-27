@@ -308,7 +308,7 @@ export default function Bennefits() {
             </div>
           </div>
 
-          <h1 className="text-center text-[44px] leading-[56px] tracking-[-1.3px]">
+          <h1 className="text-center text-[44px] font-['Plus_Jakarta_Sans'] leading-[56px] tracking-[-1.3px]">
             <span className="font-semibold">Ready</span>—
             <span className="font-semibold">made multi</span>—
             <span className="font-semibold">

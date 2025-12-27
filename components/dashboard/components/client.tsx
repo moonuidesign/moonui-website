@@ -85,7 +85,8 @@ export default function ComponentsClient({
                 <TableHead>Type</TableHead>
                 <TableHead>Tier</TableHead>
                 {isSuperAdmin && <TableHead>Author</TableHead>}
-                <TableHead>Stats</TableHead>
+                <TableHead>Copy</TableHead>
+                <TableHead>Views</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -125,16 +126,18 @@ export default function ComponentsClient({
                         {item.authorName || 'Unknown'}
                       </TableCell>
                     )}
-                    <TableCell>
-                      <div className="flex flex-col text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" /> {item.viewCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Copy className="h-3 w-3" /> {item.copyCount}
-                        </span>
-                      </div>
+                    <TableCell className="flex flex-col text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Copy className="h-3 w-3" /> {item.copyCount}
+                      </span>
                     </TableCell>
+                    <TableCell className="flex flex-col text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Eye className="h-3 w-3" /> {item.viewCount}
+                      </span>
+
+                    </TableCell>
+
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Link

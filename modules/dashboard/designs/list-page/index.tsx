@@ -65,6 +65,8 @@ export default async function ListDesign({
       tier: contentDesigns.tier,
       statusContent: contentDesigns.statusContent,
       createdAt: contentDesigns.createdAt,
+      downloadCount: contentDesigns.downloadCount,
+      viewCount: contentDesigns.viewCount,
       categoryName: categoryDesigns.name,
       authorName: users.name,
     })
@@ -138,6 +140,8 @@ export default async function ListDesign({
       title: item.title,
       imagesUrl: formattedImages, // Gunakan hasil formatting yang baru
       tier: item.tier,
+      downloadCount: item.downloadCount,
+      viewCount: item.viewCount,
       statusContent: item.statusContent,
       createdAt: item.createdAt ? item.createdAt.toISOString() : null,
       categoryName: item.categoryName || 'Uncategorized',

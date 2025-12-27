@@ -55,6 +55,7 @@ const defaultColumns: ExtendedFooterColumn[] = [
     title: 'Premium',
     links: [
       { label: 'Upgrade Pro', href: '/pricing' },
+      { label: 'Upgrade Pro Plus', href: '/pricing' },
 
       { label: 'Contact Support', href: '/contact' },
     ],

@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit } from 'lucide-react';
+import { Download, Edit, Eye } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { DashboardPagination } from '@/components/dashboard/dashboard-pagination';
@@ -27,6 +27,8 @@ export interface DesignItem {
   imagesUrl: images[];
   tier: string;
   statusContent: string;
+  downloadCount: number | null;
+  viewCount: number | null;
   createdAt: string | null;
   categoryName: string | null;
   authorName?: string;
@@ -86,6 +88,8 @@ export default function DesignsClient({
                 <TableHead>Category</TableHead>
                 <TableHead>Tier</TableHead>
                 {isSuperAdmin && <TableHead>Author</TableHead>}
+                <TableHead>Downloads</TableHead>
+                <TableHead>Views</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -129,6 +133,16 @@ export default function DesignsClient({
                         {item.authorName || 'Unknown'}
                       </TableCell>
                     )}
+                    <TableCell className="flex flex-col text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Download className="h-3 w-3" /> {item.downloadCount}
+                      </span>
+                    </TableCell>
+                    <TableCell className="flex flex-col text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Eye className="h-3 w-3" /> {item.viewCount}
+                      </span>
+                    </TableCell>
                     <TableCell>
                       <Badge
                         variant={
