@@ -19,9 +19,9 @@ const ColorItemSchema = z.object({
 
 export const ContentGradientSchema = z.object({
   name: z.string().min(3, 'Min 3 characters'),
-  colors: z.array(ColorItemSchema).min(2, 'Min 2 colors'),
+  colors: z.array(ColorItemSchema).min(1, 'Min 1 color'),
   typeGradient: z.enum(GRADIENT_TYPE_OPTIONS),
-  categoryGradientsId: z.string().min(1, 'Category required'),
+  categoryGradientsId: z.string().min(1, 'Kategori wajib dipilih'),
   description: z.any().refine(
     (val) => {
       if (!val) return false;

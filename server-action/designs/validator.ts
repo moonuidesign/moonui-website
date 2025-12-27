@@ -28,14 +28,15 @@ export const ContentDesignSchema = z.object({
     },
     'Deskripsi wajib diisi (minimal teks atau gambar)',
   ),
-  categoryDesignsId: z.string({ error: 'Kategori wajib dipilih' }).min(1),
+  categoryDesignsId: z.string({ error: 'Kategori wajib dipilih' }).min(1, 'Kategori wajib dipilih'),
   tier: z.enum(DESIGN_TIER_OPTIONS, { error: 'Tier wajib dipilih' }),
   statusContent: z.enum(DESIGN_STATUS_OPTIONS, {
     error: 'Status wajib dipilih',
   }),
   urlBuyOneTime: z.string().optional(),
   slug: z.array(z.string()).min(1, 'Minimal satu tag/label wajib diisi'),
-  imagesUrl: z.array(z.string()).min(1, 'Minimal satu gambar/thumbnail wajib diisi'),
+  imagesUrl: z.array(z.string()).optional(),
+  newImages: z.array(z.instanceof(File)).optional(),
   sourceFile: z
     .union([
       z.instanceof(File),
@@ -44,6 +45,17 @@ export const ContentDesignSchema = z.object({
     .refine((val) => val !== null && val !== undefined, {
       message: 'File sumber wajib diisi',
     }),
+}).superRefine((data, ctx) => {
+  const hasExisting = data.imagesUrl && data.imagesUrl.length > 0;
+  const hasNew = data.newImages && data.newImages.length > 0;
+
+  if (!hasExisting && !hasNew) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Minimal satu gambar/thumbnail wajib diisi',
+      path: ['imagesUrl'],
+    });
+  }
 });
 
 export type ContentDesignFormValues = z.infer<typeof ContentDesignSchema>;

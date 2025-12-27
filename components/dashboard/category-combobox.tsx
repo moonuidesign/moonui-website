@@ -81,7 +81,7 @@ export function CategoryCombobox({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            'justify-between h-14 bg-muted/30 border-border/60 hover:border-border transition-colors text-base font-normal',
+            'justify-between bg-muted/30 border-border/60 hover:border-border transition-colors text-base font-normal',
             width,
             !value && 'text-muted-foreground',
           )}

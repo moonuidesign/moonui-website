@@ -149,6 +149,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
       urlBuyOneTime: design?.urlBuyOneTime ?? '',
       slug: Array.isArray(design?.slug) ? (design?.slug as string[]) : [],
       imagesUrl: design?.imagesUrl ?? [],
+      newImages: [],
       sourceFile: design?.linkDownload || '', // Set default to existing link or empty string
     },
   });
@@ -213,8 +214,10 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
         validPreviews.push(URL.createObjectURL(file));
       });
 
-      setSelectedFiles((prev) => [...prev, ...validFiles]);
+      const updatedFiles = [...selectedFiles, ...validFiles];
+      setSelectedFiles(updatedFiles);
       setNewPreviews((prev) => [...prev, ...validPreviews]);
+      form.setValue('newImages', updatedFiles, { shouldValidate: true });
 
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
@@ -225,9 +228,10 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
   };
 
   const removeNewImage = (index: number) => {
-    URL.revokeObjectURL(newPreviews[index]);
+    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
     setNewPreviews((prev) => prev.filter((_, i) => i !== index));
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setSelectedFiles(updatedFiles);
+    form.setValue('newImages', updatedFiles, { shouldValidate: true });
   };
 
   const getFileNameFromUrl = (url: string) => {
@@ -380,24 +384,33 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                 <div className="space-y-8">
                   {/* Category Logic */}
                   <div className="grid grid-cols-2 gap-6">
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-foreground mb-3 block">
-                        Category
-                      </FormLabel>
-                      <CategoryCombobox
-                        categories={parentCategories}
-                        value={currentParentId}
-                        onChange={(val) => {
-                          form.setValue('categoryDesignsId', val, {
-                            shouldValidate: true,
-                          });
-                        }}
-                        onCreate={createParentCategory}
-                        placeholder="Select Category"
-                        searchPlaceholder="Search or create category..."
-                        disabled={isPending}
-                      />
-                    </FormItem>
+                    <FormField
+                      control={form.control}
+                      name="categoryDesignsId"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                            Category
+                          </FormLabel>
+                          <FormControl>
+                            <CategoryCombobox
+                              categories={parentCategories}
+                              value={currentParentId}
+                              onChange={(val) => {
+                                form.setValue('categoryDesignsId', val, {
+                                  shouldValidate: true,
+                                });
+                              }}
+                              onCreate={createParentCategory}
+                              placeholder="Select Category"
+                              searchPlaceholder="Search or create category..."
+                              disabled={isPending}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-foreground mb-3 block">
@@ -436,7 +449,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                         <FormControl>
                           <Input
                             placeholder="e.g. Modern Dashboard UI"
-                            className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                            className="bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
                             {...field}
                           />
                         </FormControl>
@@ -459,7 +472,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
+                              <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
@@ -494,7 +507,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
+                              <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
@@ -546,10 +559,10 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                       </FormControl>
                       <FormMessage />
                       {/* VISUAL DEBUGGER */}
-                      <div className="mt-2 p-2 bg-slate-950 text-slate-400 text-xs rounded border border-slate-800 font-mono overflow-auto max-h-40 whitespace-pre-wrap">
+                      {/* <div className="mt-2 p-2 bg-slate-950 text-slate-400 text-xs rounded border border-slate-800 font-mono overflow-auto max-h-40 whitespace-pre-wrap">
                         <p className="font-bold text-slate-200 mb-1">DEBUG: Description Value</p>
                         {String(field.value)}
-                      </div>
+                      </div> */}
                     </FormItem>
                   )}
                 />
@@ -659,8 +672,8 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                           />
                           <label htmlFor="source-file-upload">
                             <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${!field.value && form.formState.errors.sourceFile
-                                ? 'border-destructive/50 bg-destructive/5'
-                                : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                              ? 'border-destructive/50 bg-destructive/5'
+                              : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
                               }`}>
                               <div className="flex flex-col items-center justify-center gap-4">
                                 {field.value instanceof File ? (
@@ -749,32 +762,46 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                 </div>
 
                 <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    id="thumbnail-upload"
-                    onChange={handleImageUpload}
+                  <FormField
+                    control={form.control}
+                    name="imagesUrl"
+                    render={() => (
+                      <FormItem>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          id="thumbnail-upload"
+                          onChange={handleImageUpload}
+                        />
+                        <label htmlFor="thumbnail-upload">
+                          <FormControl>
+                            <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${form.formState.errors.imagesUrl
+                              ? 'border-destructive/50 bg-destructive/5'
+                              : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                              }`}>
+                              <div className="flex flex-col items-center justify-center gap-4">
+                                <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
+                                  <ImageIcon className="h-8 w-8 text-primary" />
+                                </div>
+                                <div className="space-y-2">
+                                  <p className="text-base font-medium text-foreground">
+                                    Click to upload images
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Recommended: 16:9 aspect ratio
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </FormControl>
+                        </label>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <label htmlFor="thumbnail-upload">
-                    <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
-                      <div className="flex flex-col items-center justify-center gap-4">
-                        <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                          <ImageIcon className="h-8 w-8 text-primary" />
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-base font-medium text-foreground">
-                            Click to upload images
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Recommended: 16:9 aspect ratio
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
 
                   <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {/* Existing Images */}
@@ -845,7 +872,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                   type="submit"
                   disabled={isPending}
                   size="lg"
-                  className="w-full h-14 text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
+                  className="w-full text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
                 >
                   {isPending ? (
                     <span className="flex items-center gap-2">
@@ -877,7 +904,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
             </form>
           </Form>
         </div>
-      </div>
+      </div >
     </>
   );
 }

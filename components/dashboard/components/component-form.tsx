@@ -479,7 +479,7 @@ export default function ComponentForm({
                         <FormControl>
                           <Input
                             placeholder="e.g. Navbar Pro"
-                            className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                            className="bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
                             {...field}
                           />
                         </FormControl>
@@ -502,7 +502,7 @@ export default function ComponentForm({
                             defaultValue={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
+                              <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
@@ -534,7 +534,7 @@ export default function ComponentForm({
                             defaultValue={field.value || 'free'}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
+                              <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
@@ -842,10 +842,10 @@ export default function ComponentForm({
                           </FormControl>
                           <FormMessage />
                           {/* VISUAL DEBUGGER */}
-                          <div className="mt-2 p-2 bg-slate-950 text-slate-400 text-xs rounded border border-slate-800 font-mono overflow-auto max-h-40 whitespace-pre-wrap">
+                          {/* <div className="mt-2 p-2 bg-slate-950 text-slate-400 text-xs rounded border border-slate-800 font-mono overflow-auto max-h-40 whitespace-pre-wrap">
                             <p className="font-bold text-slate-200 mb-1">DEBUG: Description Value</p>
                             {String(field.value)}
-                          </div>
+                          </div> */}
                         </FormItem>
                       );
                     }}
@@ -885,7 +885,7 @@ export default function ComponentForm({
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                            className="bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
                             placeholder="e.g. https://..."
                             {...field}
                           />
@@ -909,31 +909,45 @@ export default function ComponentForm({
                 </div>
 
                 <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    id="image-upload"
-                    onChange={handleImageUpload}
+                  <FormField
+                    control={form.control}
+                    name="previewImage"
+                    render={() => (
+                      <FormItem>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          id="image-upload"
+                          onChange={handleImageUpload}
+                        />
+                        <label htmlFor="image-upload">
+                          <FormControl>
+                            <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${form.formState.errors.previewImage
+                              ? 'border-destructive/50 bg-destructive/5'
+                              : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                              }`}>
+                              <div className="flex flex-col items-center justify-center gap-4">
+                                <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
+                                  <Upload className="h-8 w-8 text-primary" />
+                                </div>
+                                <div className="space-y-2">
+                                  <p className="text-base font-medium text-foreground">
+                                    Click to upload thumbnail
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    PNG, JPG, WEBP up to 5MB
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </FormControl>
+                        </label>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <label htmlFor="image-upload">
-                    <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
-                      <div className="flex flex-col items-center justify-center gap-4">
-                        <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                          <Upload className="h-8 w-8 text-primary" />
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-base font-medium text-foreground">
-                            Click to upload thumbnail
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            PNG, JPG, WEBP up to 5MB
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
 
                   {/* Preview Image */}
                   {activeImagePreview && (
@@ -974,7 +988,7 @@ export default function ComponentForm({
                   type="submit"
                   disabled={isPending}
                   size="lg"
-                  className="w-full h-14 text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
+                  className="w-full text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
                 >
                   {isPending ? (
                     <span className="flex items-center gap-2">
@@ -1007,7 +1021,7 @@ export default function ComponentForm({
           </Form>
 
         </div>
-      </div>
+      </div >
     </>
   );
 }

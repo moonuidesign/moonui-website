@@ -111,5 +111,5 @@ export default withSentryConfig(nextConfig, {
   tunnelRoute: "/monitoring",
 
   // Enables automatic instrumentation of Vercel Cron Monitors.
-  automaticVercelMonitors: true,
+  // automaticVercelMonitors: true,
 });

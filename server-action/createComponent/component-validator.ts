@@ -48,7 +48,7 @@ export const ContentComponentSchema = z
     copyComponentTextHTML: z.string().min(1, 'Data Clipboard kosong'),
     copyComponentTextPlain: z.string().min(1, 'Data Teks kosong'),
     rawHtmlInput: z.string().min(10, 'HTML input wajib diisi'),
-    categoryComponentsId: z.string({ error: 'Pilih Kategori' }).min(1),
+    categoryComponentsId: z.string({ error: 'Pilih Kategori' }).min(1, 'Pilih Kategori'),
     subCategoryComponentsId: z.string().optional(),
   })
   .superRefine((data, ctx) => {

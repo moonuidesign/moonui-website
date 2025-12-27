@@ -406,24 +406,33 @@ export default function TemplateForm({
 
               <div className="space-y-8">
                 <div className="grid grid-cols-2 gap-6">
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-foreground mb-3 block">
-                      Category
-                    </FormLabel>
-                    <CategoryCombobox
-                      categories={parentCategories}
-                      value={currentParentId}
-                      onChange={(val) => {
-                        form.setValue('categoryTemplatesId', val, {
-                          shouldValidate: true,
-                        });
-                      }}
-                      onCreate={createParentCategory}
-                      placeholder="Select Category"
-                      searchPlaceholder="Search or create category..."
-                      disabled={isPending}
-                    />
-                  </FormItem>
+                  <FormField
+                    control={form.control}
+                    name="categoryTemplatesId"
+                    render={() => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                          Category
+                        </FormLabel>
+                        <FormControl>
+                          <CategoryCombobox
+                            categories={parentCategories}
+                            value={currentParentId}
+                            onChange={(val) => {
+                              form.setValue('categoryTemplatesId', val, {
+                                shouldValidate: true,
+                              });
+                            }}
+                            onCreate={createParentCategory}
+                            placeholder="Select Category"
+                            searchPlaceholder="Search or create category..."
+                            disabled={isPending}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-foreground mb-3 block">
@@ -462,7 +471,7 @@ export default function TemplateForm({
                       <FormControl>
                         <Input
                           placeholder="Modern Dashboard UI Kit"
-                          className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                          className="bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
                           {...field}
                         />
                       </FormControl>
@@ -484,7 +493,7 @@ export default function TemplateForm({
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
+                          <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                             <SelectValue placeholder="Select content type" />
                           </SelectTrigger>
                         </FormControl>
@@ -528,10 +537,10 @@ export default function TemplateForm({
                     </FormControl>
                     <FormMessage />
                     {/* VISUAL DEBUGGER */}
-                    <div className="mt-2 p-2 bg-slate-950 text-slate-400 text-xs rounded border border-slate-800 font-mono overflow-auto max-h-40 whitespace-pre-wrap">
+                    {/* <div className="mt-2 p-2 bg-slate-950 text-slate-400 text-xs rounded border border-slate-800 font-mono overflow-auto max-h-40 whitespace-pre-wrap">
                       <p className="font-bold text-slate-200 mb-1">DEBUG: Description Value</p>
                       {String(field.value)}
-                    </div>
+                    </div> */}
                   </FormItem>
                 )}
               />
@@ -653,7 +662,7 @@ export default function TemplateForm({
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
+                          <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                             <SelectValue />
                           </SelectTrigger>
                         </FormControl>
@@ -688,7 +697,7 @@ export default function TemplateForm({
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
+                          <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                             <SelectValue />
                           </SelectTrigger>
                         </FormControl>
@@ -842,32 +851,46 @@ export default function TemplateForm({
               </div>
 
               <div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
+                <FormField
+                  control={form.control}
+                  name="imagesUrl"
+                  render={() => (
+                    <FormItem>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label htmlFor="image-upload">
+                        <FormControl>
+                          <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${form.formState.errors.imagesUrl
+                            ? 'border-destructive/50 bg-destructive/5'
+                            : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                            }`}>
+                            <div className="flex flex-col items-center justify-center gap-4">
+                              <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
+                                <Upload className="h-8 w-8 text-primary" />
+                              </div>
+                              <div className="space-y-2">
+                                <p className="text-base font-medium text-foreground">
+                                  Click to upload preview images
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  PNG, JPG, WEBP up to 10MB each
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </FormControl>
+                      </label>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <label htmlFor="image-upload">
-                  <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
-                    <div className="flex flex-col items-center justify-center gap-4">
-                      <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                        <Upload className="h-8 w-8 text-primary" />
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-base font-medium text-foreground">
-                          Click to upload preview images
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          PNG, JPG, WEBP up to 10MB each
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </label>
 
                 {(imagePreviews.length > 0 || existingImages.length > 0) && (
                   <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -935,7 +958,7 @@ export default function TemplateForm({
                 type="submit"
                 disabled={isPending}
                 size="lg"
-                className="w-full h-14 text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
+                className="w-full text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
               >
                 {isPending ? (
                   <span className="flex items-center gap-2">
@@ -967,6 +990,6 @@ export default function TemplateForm({
           </form>
         </Form>
       </div>
-    </div>
+    </div >
   );
 }
