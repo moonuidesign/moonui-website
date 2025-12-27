@@ -181,7 +181,9 @@ export default function ComponentForm({
       tier: component?.tier ?? 'free',
       slug: Array.isArray(component?.slug) ? (component?.slug as string[]) : [],
       description: parseDescription(component?.description),
+      previewImage: component?.imageUrl || '',
     },
+    mode: 'onChange', // Enable strict validation feedback
   });
 
   const watchedHTML = useWatch({
@@ -319,7 +321,9 @@ export default function ComponentForm({
       if (!file.type.startsWith('image/'))
         return toast.error('Format harus gambar');
       if (file.size > 5 * 1024 * 1024) return toast.error('Max 5MB');
+      if (file.size > 5 * 1024 * 1024) return toast.error('Max 5MB');
       setSelectedFile(file);
+      form.setValue('previewImage', file, { shouldValidate: true });
       const reader = new FileReader();
       reader.onload = (ev) =>
         setUploadedImagePreview(ev.target?.result as string);
@@ -677,8 +681,8 @@ export default function ComponentForm({
                         type="button"
                         onClick={() => setRawInputTab('code')}
                         className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${rawInputTab === 'code'
-                            ? 'bg-muted shadow-sm text-foreground'
-                            : 'text-muted-foreground hover:text-foreground'
+                          ? 'bg-muted shadow-sm text-foreground'
+                          : 'text-muted-foreground hover:text-foreground'
                           }`}
                       >
                         Code
@@ -687,8 +691,8 @@ export default function ComponentForm({
                         type="button"
                         onClick={() => setRawInputTab('preview')}
                         className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${rawInputTab === 'preview'
-                            ? 'bg-muted shadow-sm text-primary'
-                            : 'text-muted-foreground hover:text-primary'
+                          ? 'bg-muted shadow-sm text-primary'
+                          : 'text-muted-foreground hover:text-primary'
                           }`}
                       >
                         Review
@@ -818,25 +822,33 @@ export default function ComponentForm({
                   <FormField
                     control={form.control}
                     name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium text-foreground">
-                          Description
-                        </FormLabel>
-                        <FormControl>
-                          <div className="rounded-lg border border-border/60 bg-muted/30 p-4 hover:border-border transition-colors">
-                            <DescriptionEditor
-                              initialContent={field.value}
-                              onChange={(value) => field.onChange(value)}
-                              outputHtml={true}
-                              placeholder="Write a description for this component..."
-                              minHeight="150px"
-                            />
+                    render={({ field }) => {
+                      console.log('[ComponentForm] Description Field Value:', field.value); // DEBUG
+                      return (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-foreground">
+                            Description
+                          </FormLabel>
+                          <FormControl>
+                            <div className="rounded-lg border border-border/60 bg-muted/30 p-4 hover:border-border transition-colors">
+                              <DescriptionEditor
+                                initialContent={field.value}
+                                onChange={(value) => field.onChange(value)}
+                                outputHtml={true}
+                                placeholder="Write a description for this component..."
+                                minHeight="150px"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                          {/* VISUAL DEBUGGER */}
+                          <div className="mt-2 p-2 bg-slate-950 text-slate-400 text-xs rounded border border-slate-800 font-mono overflow-auto max-h-40 whitespace-pre-wrap">
+                            <p className="font-bold text-slate-200 mb-1">DEBUG: Description Value</p>
+                            {String(field.value)}
                           </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                        </FormItem>
+                      );
+                    }}
                   />
 
                   <FormField

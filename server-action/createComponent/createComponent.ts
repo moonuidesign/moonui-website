@@ -25,7 +25,7 @@ const GEMINI_API_KEYS = [
   (key): key is string => typeof key === 'string' && key.trim().length > 0,
 );
 
-const AI_MODEL = 'google/gemini-2.0-flash-exp:free';
+const AI_MODEL = 'google/gemini-2.5-flash-preview-09-2025';
 const AI_BASE_URL = 'https://openrouter.ai/api/v1';
 
 interface CodeSnippets {
@@ -100,8 +100,7 @@ async function callAIWithRotation(
       const isRateLimit = lastError.message.includes('429');
 
       console.warn(
-        `[AI Warning] Key ...${apiKey.slice(-4)} failed (${
-          isRateLimit ? '429' : 'Err'
+        `[AI Warning] Key ...${apiKey.slice(-4)} failed (${isRateLimit ? '429' : 'Err'
         }). Switching...`,
       );
 
@@ -158,14 +157,22 @@ export async function createContentComponent(
   console.log('[CreateComponent] Started');
 
   // 1. Auth & Validasi
+  // 1. Auth & Validasi
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: 'Unauthorized' };
 
-  const validated = ContentComponentSchema.safeParse(values);
+  // Manual inject imageFile to validation object
+  const valuesToValidate = { ...values };
+  if (imageFile) {
+    // @ts-ignore - we know schema accepts File now, allowing loose type for validation step
+    valuesToValidate.previewImage = imageFile;
+  }
+
+  const validated = ContentComponentSchema.safeParse(valuesToValidate);
   if (!validated.success) {
     return {
       success: false,
-      error: 'Validasi gagal',
+      error: validated.error.issues.map((i) => i.message).join('\n'), // Detailed error
       details: validated.error.flatten().fieldErrors,
     };
   }
@@ -200,18 +207,19 @@ export async function createContentComponent(
   if (rawHtmlInput && rawHtmlInput.trim().length > 0) {
     const aiResult = await generateCodeSafely(rawHtmlInput);
 
-    // CRITICAL CHANGE: Jika AI Gagal, return success: false
+    // CRITICAL CHANGE: Jika AI Gagal, jangan abort. Lanjut ke save dengan code snippet manual.
     if (!aiResult.isAiSuccess) {
-      console.error('[CreateComponent] Aborting: AI Generation Failed.');
-      return {
-        success: false,
-        error: `Gagal membuat komponen: AI sedang sibuk/limit (${
-          aiResult.errorMsg || 'Unknown'
-        }). Silakan coba beberapa saat lagi.`,
+      console.warn('[CreateComponent] AI Generation Failed (Rate Limit). Using fallback data.');
+      codeSnippets = {
+        html: rawHtmlInput,
+        react: `/* AI Generation Failed: ${aiResult.errorMsg} */\n/* Please edit and regenerate code manually. */\n\nexport default function Component() {\n  return (\n    <div dangerouslySetInnerHTML={{ __html: \`${rawHtmlInput.replace(/`/g, '\\`')}\` }} />\n  );\n}`,
+        vue: `<!-- AI Generation Failed -->\n<template>\n  <div v-html="htmlContent"></div>\n</template>\n<script setup>\nconst htmlContent = \`${rawHtmlInput.replace(/`/g, '\\`')}\`;\n</script>`,
+        angular: `/* AI Generation Failed */\n@Component({\n  selector: 'app-component',\n  template: \`${rawHtmlInput.replace(/`/g, '\\`')}\`\n})\nexport class Component {}`,
       };
+      // Mark for warning return later
+    } else {
+      codeSnippets = aiResult.data;
     }
-
-    codeSnippets = aiResult.data;
   }
 
   // 3. UPLOAD IMAGE (Hanya jalan jika AI sukses)
@@ -249,10 +257,7 @@ export async function createContentComponent(
       codeSnippets,
       copyComponentTextHTML: { content: copyComponentTextHTML },
       copyComponentTextPlain: {
-        content:
-          codeSnippets.react.length > 50
-            ? codeSnippets.react
-            : copyComponentTextPlain,
+        content: copyComponentTextPlain,
       },
       categoryComponentsId: finalCategoryId,
       tier,
@@ -266,7 +271,9 @@ export async function createContentComponent(
 
     return {
       success: true,
-      message: 'Komponen berhasil dibuat & Code Generated!',
+      message: codeSnippets.react.includes('AI Generation Failed')
+        ? 'Komponen dibuat (AI Busy/Limit - Code kosong). Silakan edit manual.'
+        : 'Komponen berhasil dibuat & Code Generated!',
     };
   } catch (error) {
     console.error('[DB Error]', error);

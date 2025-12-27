@@ -99,6 +99,20 @@
       "when": 1765930995302,
       "tag": "0013_new_luke_cage",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1766761865165,
+      "tag": "0014_worthless_trauma",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1766823130742,
+      "tag": "0015_illegal_jack_power",
+      "breakpoints": true
     }
   ]
 }

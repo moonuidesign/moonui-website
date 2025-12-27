@@ -29,13 +29,25 @@ export async function updateContentTemplate(
     return { error: 'Data tidak valid' };
   }
 
-  let parsedJson: unknown;
+  let parsedJson: any;
   try {
     parsedJson = JSON.parse(rawData);
     console.log('[UpdateTemplate] Parsed JSON:', parsedJson);
   } catch (e) {
     console.error('[UpdateTemplate] JSON Parse Error:', e);
     return { error: 'JSON Parse Error' };
+  }
+
+  // Inject 'newImages' for validation
+  const newImages = formData.getAll('images');
+  if (newImages.length > 0) {
+    parsedJson.newImages = newImages.filter((f) => f instanceof File);
+  }
+
+  // Inject 'sourceFile' if new one is uploaded
+  const mainFile = formData.get('mainFile');
+  if (mainFile instanceof File) {
+    parsedJson.sourceFile = mainFile;
   }
 
   // 2. Validasi
@@ -45,13 +57,11 @@ export async function updateContentTemplate(
       '[UpdateTemplate] Validation Error:',
       validated.error.flatten(),
     );
-    return { error: 'Validasi form gagal.' };
+    return { error: validated.error.issues.map((i) => i.message).join('\n') };
   }
   const values = validated.data;
   console.log('[UpdateTemplate] Validated Values:', values);
 
-  // Handle Main File Update
-  const mainFile = formData.get('mainFile');
   let linkDownloadUrl = '';
   let fileSize = '';
   let fileFormat = '';

@@ -51,7 +51,7 @@ export default function MainLayout({
             </p>
           </div>
         </div>
-        <div className=" z-[800] md:z-0 bg-[#E7E7E7] md:bg-none md:rounded-none rounded-t-[39px] -mt-[69px] md:mt-0 relative  overflow-hidden h-fit">
+        <div className=" z-[800] md:z-0 bg-[#E7E7E7] md:bg-none md:rounded-none rounded-t-[39px] -mt-[69px] md:-mt-[48px] relative  overflow-hidden h-fit">
           <Suspense
             fallback={
               <section className="h-24 relative z-[1000]">

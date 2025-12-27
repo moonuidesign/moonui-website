@@ -12,12 +12,22 @@ export type DesignStatusType = (typeof DESIGN_STATUS_OPTIONS)[number];
 
 export const ContentDesignSchema = z.object({
   title: z.string({ error: 'Judul wajib diisi' }).min(3, 'Minimal 3 karakter'),
-  description: z
-    .any()
-    .refine(
-      (val) => val && val.content && val.content.length > 0,
-      'Deskripsi wajib diisi',
-    ),
+  description: z.any().refine(
+    (val) => {
+      if (!val) return false;
+      // 1. Handle String (HTML)
+      if (typeof val === 'string') {
+        const text = val.replace(/<[^>]*>/g, '').trim();
+        return text.length > 0 || /<img|<iframe|video/i.test(val);
+      }
+      // 2. Handle Object (TipTap JSON)
+      if (typeof val === 'object' && val.content && Array.isArray(val.content)) {
+        return val.content.length > 0;
+      }
+      return false;
+    },
+    'Deskripsi wajib diisi (minimal teks atau gambar)',
+  ),
   categoryDesignsId: z.string({ error: 'Kategori wajib dipilih' }).min(1),
   tier: z.enum(DESIGN_TIER_OPTIONS, { error: 'Tier wajib dipilih' }),
   statusContent: z.enum(DESIGN_STATUS_OPTIONS, {
@@ -25,7 +35,15 @@ export const ContentDesignSchema = z.object({
   }),
   urlBuyOneTime: z.string().optional(),
   slug: z.array(z.string()).min(1, 'Minimal satu tag/label wajib diisi'),
-  imagesUrl: z.array(z.string()).optional(),
+  imagesUrl: z.array(z.string()).min(1, 'Minimal satu gambar/thumbnail wajib diisi'),
+  sourceFile: z
+    .union([
+      z.instanceof(File),
+      z.string().min(1, 'File sumber wajib diisi (silakan upload file baru)'),
+    ])
+    .refine((val) => val !== null && val !== undefined, {
+      message: 'File sumber wajib diisi',
+    }),
 });
 
 export type ContentDesignFormValues = z.infer<typeof ContentDesignSchema>;

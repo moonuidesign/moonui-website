@@ -38,7 +38,7 @@ export const FontSize = Extension.create<FontSizeOptions>({
               }
               // Kita paksa pakai !important agar menang lawan CSS Tailwind
               return {
-                style: `font-size: ${attributes.fontSize} !important`,
+                style: `font-size: ${attributes.fontSize}`,
               };
             },
           },
@@ -51,17 +51,17 @@ export const FontSize = Extension.create<FontSizeOptions>({
     return {
       setFontSize:
         (fontSize) =>
-        ({ chain }) => {
-          return chain().setMark('textStyle', { fontSize }).run();
-        },
+          ({ chain }) => {
+            return chain().setMark('textStyle', { fontSize }).run();
+          },
       unsetFontSize:
         () =>
-        ({ chain }) => {
-          return chain()
-            .setMark('textStyle', { fontSize: null })
-            .removeEmptyTextStyle()
-            .run();
-        },
+          ({ chain }) => {
+            return chain()
+              .setMark('textStyle', { fontSize: null })
+              .removeEmptyTextStyle()
+              .run();
+          },
     };
   },
 });

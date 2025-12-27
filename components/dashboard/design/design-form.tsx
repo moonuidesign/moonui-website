@@ -84,7 +84,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
   const [newPreviews, setNewPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [sourceFile, setSourceFile] = useState<File | null>(null);
+  // REMOVED local sourceFile state in favor of form control
   const sourceFileInputRef = useRef<HTMLInputElement>(null);
 
   const isEditMode = !!design;
@@ -149,8 +149,12 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
       urlBuyOneTime: design?.urlBuyOneTime ?? '',
       slug: Array.isArray(design?.slug) ? (design?.slug as string[]) : [],
       imagesUrl: design?.imagesUrl ?? [],
+      sourceFile: design?.linkDownload || '', // Set default to existing link or empty string
     },
   });
+
+  // Watch sourceFile for UI updates
+  const sourceFileValue = useWatch({ control: form.control, name: 'sourceFile' });
 
   const createParentCategory = async (name: string) => {
     const res = await createCategoryDesign({
@@ -255,9 +259,11 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
         formData.append('images', file);
       });
 
-      if (sourceFile) {
-        formData.append('sourceFile', sourceFile);
+      // Handle Source File
+      if (values.sourceFile instanceof File) {
+        formData.append('sourceFile', values.sourceFile);
       }
+      // If valid string (existing URL), it's already in JSON 'data' via ...values
 
       const promise = async () => {
         let result;
@@ -293,7 +299,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
             setExistingImages([]);
             setNewPreviews([]);
             setSelectedFiles([]);
-            setSourceFile(null);
+            // sourceFile reset handled by form.reset()
             if (fileInputRef.current) fileInputRef.current.value = '';
             if (sourceFileInputRef.current)
               sourceFileInputRef.current.value = '';
@@ -301,7 +307,10 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
             // Edit mode reset partial
             setSelectedFiles([]);
             setNewPreviews([]);
-            setSourceFile(null);
+            // Keep sourceFile as is (string) or reset if needed? 
+            // Usually we don't reset sourceFile field in edit mode unless we want to revert changes.
+            // But if upload success, the new file is now "existing". 
+            // Ideally we'd update the form with new data, but full refresh might be better or router.refresh() 
             if (fileInputRef.current) fileInputRef.current.value = '';
             if (sourceFileInputRef.current)
               sourceFileInputRef.current.value = '';
@@ -536,6 +545,11 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                         </div>
                       </FormControl>
                       <FormMessage />
+                      {/* VISUAL DEBUGGER */}
+                      <div className="mt-2 p-2 bg-slate-950 text-slate-400 text-xs rounded border border-slate-800 font-mono overflow-auto max-h-40 whitespace-pre-wrap">
+                        <p className="font-bold text-slate-200 mb-1">DEBUG: Description Value</p>
+                        {String(field.value)}
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -614,105 +628,113 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                   <div className="h-px flex-1 bg-border/40" />
                   <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <FileUp className="w-3.5 h-3.5" />
-                    Source File
+                    Source File <span className="text-destructive">*</span>
                   </h2>
                   <div className="h-px flex-1 bg-border/40" />
                 </div>
 
-                <div>
-                  <input
-                    ref={sourceFileInputRef}
-                    type="file"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        if (file.size > 100 * 1024 * 1024) {
-                          toast.error('File maksimal 100MB');
-                          return;
-                        }
-                        setSourceFile(file);
-                        toast.success(`File ${file.name} siap diupload`);
-                      }
-                    }}
-                    className="hidden"
-                    id="source-file-upload"
-                  />
-                  <label htmlFor="source-file-upload">
-                    <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
-                      <div className="flex flex-col items-center justify-center gap-4">
-                        {sourceFile ? (
-                          <div className="flex flex-col items-center gap-4">
-                            <div className="rounded-full bg-primary/10 p-4">
-                              <Upload className="h-8 w-8 text-primary" />
+                <FormField
+                  control={form.control}
+                  name="sourceFile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div>
+                          <input
+                            ref={sourceFileInputRef}
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                if (file.size > 100 * 1024 * 1024) {
+                                  toast.error('File maksimal 100MB');
+                                  return;
+                                }
+                                field.onChange(file); // Update form state
+                                toast.success(`File ${file.name} siap diupload`);
+                              }
+                            }}
+                            className="hidden"
+                            id="source-file-upload"
+                          />
+                          <label htmlFor="source-file-upload">
+                            <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${!field.value && form.formState.errors.sourceFile
+                                ? 'border-destructive/50 bg-destructive/5'
+                                : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                              }`}>
+                              <div className="flex flex-col items-center justify-center gap-4">
+                                {field.value instanceof File ? (
+                                  <div className="flex flex-col items-center gap-4">
+                                    <div className="rounded-full bg-primary/10 p-4">
+                                      <Upload className="h-8 w-8 text-primary" />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <p className="text-base font-medium text-foreground">
+                                        {field.value.name}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        {(field.value.size / 1024 / 1024).toFixed(2)} MB
+                                      </p>
+                                    </div>
+                                  </div>
+                                ) : typeof field.value === 'string' && field.value !== '' ? (
+                                  <div className="flex flex-col items-center gap-4">
+                                    <div className="rounded-full bg-emerald-500/10 p-4">
+                                      <FileText className="h-8 w-8 text-emerald-600" />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <p className="text-base font-medium text-foreground">
+                                        Existing File:{' '}
+                                        {getFileNameFromUrl(field.value)}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        Click to replace with a new file
+                                      </p>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
+                                      <Upload className="h-8 w-8 text-primary" />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <p className="text-base font-medium text-foreground">
+                                        Click to upload source file
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        ZIP, RAR, FIG (Max 100MB)
+                                      </p>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                            <div className="space-y-2">
-                              <p className="text-base font-medium text-foreground">
-                                {sourceFile.name}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {(sourceFile.size / 1024 / 1024).toFixed(2)} MB
-                              </p>
-                            </div>
-                          </div>
-                        ) : isEditMode && design?.linkDownload ? (
-                          <div className="flex flex-col items-center gap-4">
-                            <div className="rounded-full bg-emerald-500/10 p-4">
-                              <FileText className="h-8 w-8 text-emerald-600" />
-                            </div>
-                            <div className="space-y-2">
-                              <p className="text-base font-medium text-foreground">
-                                Existing File:{' '}
-                                {getFileNameFromUrl(design.linkDownload)}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Click to replace with a new file
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                              <Upload className="h-8 w-8 text-primary" />
-                            </div>
-                            <div className="space-y-2">
-                              <p className="text-base font-medium text-foreground">
-                                Click to upload source file
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                ZIP, RAR, FIG (Max 100MB)
-                              </p>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </label>
+                          </label>
 
-                  {(sourceFile || (isEditMode && design?.linkDownload)) && (
-                    <div className="flex justify-end">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (sourceFile) {
-                            setSourceFile(null);
-                            if (sourceFileInputRef.current)
-                              sourceFileInputRef.current.value = '';
-                          } else {
-                            toast.info(
-                              'Cannot remove existing file without replacing.',
-                            );
-                          }
-                        }}
-                        className="mt-3 h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                        {sourceFile ? 'Cancel Upload' : 'Clear File Selection'}
-                      </Button>
-                    </div>
+                          {field.value && (
+                            <div className="flex justify-end">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  field.onChange(''); // Reset to empty string
+                                  if (sourceFileInputRef.current)
+                                    sourceFileInputRef.current.value = '';
+                                }}
+                                className="mt-3 h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                                {field.value instanceof File ? 'Cancel Upload' : 'Remove File'}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
+                />
               </section>
 
               {/* SECTION 6: IMAGES */}

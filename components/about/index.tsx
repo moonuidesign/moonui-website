@@ -82,14 +82,14 @@ const AboutSection = () => {
         >
           <div className="hidden lg:block absolute inset-0 pointer-events-none overflow-visible">
             <FloatingCursor
-              label="Erşad"
-              color="#8b5cf6" // Purple
+              label="Achmad"
+              color="#ff4f00" // Purple
               className="left-[5%] top-[10%] md:left-[280px] md:top-[80px]"
               direction="right"
 
             />
             <FloatingCursor
-              label="Sarah"
+              label="Fajar"
               color="#ec4899" // Pink
               className="right-[5%] top-[25%] md:right-[450px] md:top-[150px]"
               direction="left"
@@ -236,15 +236,15 @@ const AboutSection = () => {
         >
           <div className="hidden lg:block absolute inset-0 pointer-events-none overflow-visible">
             <FloatingCursor
-              label="Erşad"
+              label="Dera"
               color="#8b5cf6" // Purple
               className="left-[5%] top-[10%] md:left-[280px] md:top-[80px]"
               direction="right"
 
             />
             <FloatingCursor
-              label="Sarah"
-              color="#ec4899" // Pink
+              label="Achmad"
+              color="#ff4f00" // Pink
               className="right-[5%] top-[25%] md:right-[450px] md:top-[200px]"
               direction="left"
             // mouseX={mousePos.x}

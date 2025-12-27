@@ -1,3 +1,4 @@
+import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -60,8 +61,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        // This is your Cloudflare R2 / S3 bucket domain
         hostname: 'e030a9ca75da2d22f1cdc516446cca19.r2.dev',
+      },
+      // Cloudflare R2 / S3 bucket domain from user's code
+      {
+        protocol: 'https',
+        hostname: '**', // Allow all for now if dynamic, but ideally specific
       },
     ],
   },
@@ -90,4 +95,21 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // For all available options, see:
+  // https://github.com/getsentry/sentry-webpack-plugin#options
+
+  // Suppresses source map uploading logs during build
+  silent: true,
+  org: "moonui",
+  project: "moonui-website",
+
+  // For all available options, see:
+  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+
+  // Route browser requests to Sentry through the Next.js rewrite to circumvent ad-blockers.
+  tunnelRoute: "/monitoring",
+
+  // Enables automatic instrumentation of Vercel Cron Monitors.
+  automaticVercelMonitors: true,
+});

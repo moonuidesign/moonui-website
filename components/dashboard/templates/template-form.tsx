@@ -107,9 +107,7 @@ export default function TemplateForm({
   };
 
   // --- STATE UNTUK EXISTING DATA (EDIT MODE) ---
-  const [existingMainFile, setExistingMainFile] = useState<string | null>(
-    template?.linkDonwload || null,
-  );
+  // existingMainFile merged into form sourceFile default value
 
   const [existingImages, setExistingImages] = useState<AssetItem[]>(
     Array.isArray(template?.imagesUrl)
@@ -120,7 +118,8 @@ export default function TemplateForm({
   // --- STATE UNTUK NEW UPLOAD ---
   const [imagePreviews, setImagePreviews] = useState<string[]>([]); // Preview Blob URL
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // File object baru (Images)
-  const [mainFile, setMainFile] = useState<File | null>(null); // Main file object baru
+
+  // Removed mainFile state in favor of useForm sourceFile
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mainFileInputRef = useRef<HTMLInputElement>(null);
@@ -158,10 +157,14 @@ export default function TemplateForm({
       tier: defaultTier,
       statusContent: defaultStatus,
       urlBuyOneTime: template?.urlBuyOneTime ?? '',
-      imagesUrl: existingImages, // Validation pass
+      imagesUrl: existingImages, // Validation pass if not empty
+      newImages: [], // New files validation
       slug: Array.isArray(template?.slug) ? (template?.slug as string[]) : [],
+      sourceFile: template?.linkDonwload || '', // Map existing main file url to sourceFile
     },
   });
+
+  const sourceFileValue = useWatch({ control: form.control, name: 'sourceFile' });
 
   // --- HELPER FUNCTIONS ---
   const getFileNameFromUrl = (url: string) => {
@@ -190,7 +193,9 @@ export default function TemplateForm({
         toast.warning('Beberapa file dilewati karena lebih dari 10MB');
       }
 
-      setSelectedFiles((prev) => [...prev, ...validFiles]);
+      const mergedFiles = [...selectedFiles, ...validFiles];
+      setSelectedFiles(mergedFiles);
+      form.setValue('newImages', mergedFiles, { shouldValidate: true });
 
       const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
       setImagePreviews((prev) => [...prev, ...newPreviews]);
@@ -199,7 +204,10 @@ export default function TemplateForm({
 
   // 2. Remove New Image
   const handleRemoveNewImage = (index: number) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(updatedFiles);
+    form.setValue('newImages', updatedFiles, { shouldValidate: true });
+
     setImagePreviews((prev) => {
       const newPreviews = [...prev];
       URL.revokeObjectURL(newPreviews[index]); // Cleanup memory
@@ -215,10 +223,8 @@ export default function TemplateForm({
     form.setValue('imagesUrl', updated, { shouldDirty: true });
   };
 
-  // 4. Remove Existing Main File
-  const handleRemoveExistingMainFile = () => {
-    setExistingMainFile(null);
-  };
+  // 4. Remove Existing Main File (Now handled via form reset to empty string)
+  // const handleRemoveExistingMainFile = ...
 
   // 5. Create Categories Logic
   const createParentCategory = async (name: string) => {
@@ -326,13 +332,23 @@ export default function TemplateForm({
           formData.append('images', file); // Pastikan key-nya 'images' (sesuai server action: formData.getAll('images'))
         });
 
-        // 2. Handle Main Template File
-        if (mainFile) {
-          formData.append('mainFile', mainFile);
-        } else if (existingMainFile) {
-          // Jika server action butuh flag khusus untuk existing file, handle di sini.
-          // Tapi jika hanya butuh 'data', field ini mungkin opsional tergantung logic update Anda.
-          formData.append('existingMainFileUrl', existingMainFile);
+        // 2. Handle Main Template File (sourceFile)
+        if (values.sourceFile instanceof File) {
+          formData.append('sourceFile', values.sourceFile);
+        }
+        // If string, it's already in 'data' payload via existing link mapping if needed, 
+        // but server action 'data' usually doesn't need the file URL explicitly if not changing.
+        // However, validator might check it. Validator checks 'sourceFile' in formData or just presence?
+        // The validator we updated checks 'sourceFile' field which is usually a File object in FormData.
+        // BUT for update, if we don't send a new file, we might not send 'sourceFile' key in FormData at all?
+        // Wait, our updated validator uses `z.union([z.instanceof(File), z.string()])`.
+        // So we should pass the string if it's an existing file?
+        // Server actions usually parse formData using `Object.fromEntries` or `zfd`. 
+        // If we strictly rely on `formData.get('sourceFile')` it returns string or File.
+        // If it's existing, we want to pass the URL string so validator passes.
+        if (typeof values.sourceFile === 'string' && values.sourceFile) {
+          // We append it so the validator receiving formData sees it.
+          formData.append('sourceFile', values.sourceFile);
         }
 
         // ---------------------------------------------------------
@@ -511,6 +527,11 @@ export default function TemplateForm({
                       </div>
                     </FormControl>
                     <FormMessage />
+                    {/* VISUAL DEBUGGER */}
+                    <div className="mt-2 p-2 bg-slate-950 text-slate-400 text-xs rounded border border-slate-800 font-mono overflow-auto max-h-40 whitespace-pre-wrap">
+                      <p className="font-bold text-slate-200 mb-1">DEBUG: Description Value</p>
+                      {String(field.value)}
+                    </div>
                   </FormItem>
                 )}
               />
@@ -696,106 +717,117 @@ export default function TemplateForm({
                 <div className="h-px flex-1 bg-border/40" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <FileUp className="w-3.5 h-3.5" />
-                  Main Template File
+                  Main Template File <span className="text-destructive">*</span>
                 </h2>
                 <div className="h-px flex-1 bg-border/40" />
               </div>
 
-              <div>
-                <input
-                  ref={mainFileInputRef}
-                  type="file"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      if (file.size > 100 * 1024 * 1024) {
-                        toast.error('File maksimal 100MB');
-                        return;
-                      }
-                      setMainFile(file);
-                      toast.success(`File ${file.name} siap diupload`);
-                    }
-                  }}
-                  className="hidden"
-                  id="main-file-upload"
-                />
-                <label htmlFor="main-file-upload">
-                  <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
-                    <div className="flex flex-col items-center justify-center gap-4">
-                      {mainFile ? (
-                        // NEW FILE SELECTED
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="rounded-full bg-primary/10 p-4">
-                            <Upload className="h-8 w-8 text-primary" />
+              <FormField
+                control={form.control}
+                name="sourceFile"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div>
+                        <input
+                          ref={mainFileInputRef}
+                          type="file"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 100 * 1024 * 1024) {
+                                toast.error('File maksimal 100MB');
+                                return;
+                              }
+                              field.onChange(file);
+                              toast.success(`File ${file.name} siap diupload`);
+                            }
+                          }}
+                          className="hidden"
+                          id="main-file-upload"
+                        />
+                        <label htmlFor="main-file-upload">
+                          <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${!field.value && form.formState.errors.sourceFile
+                            ? 'border-destructive/50 bg-destructive/5'
+                            : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                            }`}>
+                            <div className="flex flex-col items-center justify-center gap-4">
+                              {field.value instanceof File ? (
+                                // NEW FILE SELECTED
+                                <div className="flex flex-col items-center gap-4">
+                                  <div className="rounded-full bg-primary/10 p-4">
+                                    <Upload className="h-8 w-8 text-primary" />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <p className="text-base font-medium text-foreground">
+                                      {field.value.name}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {(field.value.size / 1024 / 1024).toFixed(2)} MB
+                                    </p>
+                                  </div>
+                                </div>
+                              ) : typeof field.value === 'string' && field.value !== '' ? (
+                                // EXISTING FILE
+                                <div className="flex flex-col items-center gap-4">
+                                  <div className="rounded-full bg-emerald-500/10 p-4">
+                                    <FileText className="h-8 w-8 text-emerald-600" />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <p className="text-base font-medium text-foreground">
+                                      Existing File:{' '}
+                                      {getFileNameFromUrl(field.value)}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      Click to replace with a new file
+                                    </p>
+                                  </div>
+                                </div>
+                              ) : (
+                                // EMPTY
+                                <>
+                                  <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
+                                    <Upload className="h-8 w-8 text-primary" />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <p className="text-base font-medium text-foreground">
+                                      Click to upload main template file
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      Max file size: 100MB
+                                    </p>
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           </div>
-                          <div className="space-y-2">
-                            <p className="text-base font-medium text-foreground">
-                              {mainFile.name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {(mainFile.size / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                          </div>
-                        </div>
-                      ) : existingMainFile ? (
-                        // EXISTING FILE
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="rounded-full bg-emerald-500/10 p-4">
-                            <FileText className="h-8 w-8 text-emerald-600" />
-                          </div>
-                          <div className="space-y-2">
-                            <p className="text-base font-medium text-foreground">
-                              Existing File:{' '}
-                              {getFileNameFromUrl(existingMainFile)}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Click to replace with a new file
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        // EMPTY
-                        <>
-                          <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                            <Upload className="h-8 w-8 text-primary" />
-                          </div>
-                          <div className="space-y-2">
-                            <p className="text-base font-medium text-foreground">
-                              Click to upload main template file
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Max file size: 100MB
-                            </p>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </label>
+                        </label>
 
-                {(mainFile || existingMainFile) && (
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        if (mainFile) {
-                          setMainFile(null);
-                          if (mainFileInputRef.current)
-                            mainFileInputRef.current.value = '';
-                        } else if (existingMainFile) {
-                          handleRemoveExistingMainFile();
-                        }
-                      }}
-                      className="mt-3 h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                      {mainFile ? 'Cancel Upload' : 'Remove Existing File'}
-                    </Button>
-                  </div>
+                        {field.value && (
+                          <div className="flex justify-end">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                field.onChange('');
+                                if (mainFileInputRef.current)
+                                  mainFileInputRef.current.value = '';
+                                // if (existingMainFile) handleRemoveExistingMainFile(); -> No longer needed as state is gone
+                              }}
+                              className="mt-3 h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                              {field.value instanceof File ? 'Cancel Upload' : 'Remove Existing File'}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
+              />
             </section>
 
             {/* --- PREVIEW IMAGES --- */}

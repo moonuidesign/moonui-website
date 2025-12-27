@@ -28,6 +28,7 @@ export const contentGradients = pgTable('content_gradients', {
   urlBuyOneTime: text('url_buy_one_time'),
   linkDownload: text('link_download').notNull(),
   downloadCount: integer('download_count').default(0).notNull(),
+  viewCount: integer('view_count').default(0).notNull(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),

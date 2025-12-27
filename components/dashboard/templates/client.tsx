@@ -92,7 +92,8 @@ export default function TemplatesClient({
                 <TableHead>Tier</TableHead>
                 {isSuperAdmin && <TableHead>Author</TableHead>}
                 <TableHead>Status</TableHead>
-                <TableHead>Stats</TableHead>
+                <TableHead>Downloads</TableHead>
+                <TableHead>Views</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -149,16 +150,18 @@ export default function TemplatesClient({
                         {item.statusContent}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" /> {item.viewCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Download className="h-3 w-3" />{' '}
-                          {item.downloadCount || 0}
-                        </span>
-                      </div>
+                    <TableCell className=" text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Eye className="h-3 w-3" /> {item.viewCount}
+                      </span>
+                    </TableCell>
+                    <TableCell className=" text-xs text-muted-foreground">
+
+                      <span className="flex items-center gap-1">
+                        <Download className="h-3 w-3" />{' '}
+                        {item.downloadCount || 0}
+                      </span>
+
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
@@ -211,12 +214,13 @@ export default function TemplatesClient({
             ))
           )}
         </div>
-      )}
+      )
+      }
 
       <DashboardPagination
         currentPage={pagination.currentPage}
         totalPages={pagination.totalPages}
       />
-    </div>
+    </div >
   );
 }

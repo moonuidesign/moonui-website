@@ -12,6 +12,8 @@ import { ColorFilter } from './color-filter';
 import { GradientTypeFilter } from './gradient-type-filter';
 import { CategoryFilter } from './category-filter';
 import { PlatformSwitcher } from './platform-switcher';
+import { GoProCard } from './go-pro-card';
+import { useSession } from 'next-auth/react';
 
 // Re-exports
 export * from './applied-filter';
@@ -46,7 +48,7 @@ export default function SidebarFilter({
     toggleCategory,
     toggleSubCategory,
   } = useFilter();
-
+  const session = useSession();
   let currentCategories: NavCategoryItem[] = [];
   let currentTitle = '';
 
@@ -92,6 +94,8 @@ export default function SidebarFilter({
         onToggle={toggleCategory}
         onToggleSub={toggleSubCategory}
       />
+
+      {!session.data?.user && <GoProCard />}
     </aside>
   );
 }

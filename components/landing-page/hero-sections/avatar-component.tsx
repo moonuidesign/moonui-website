@@ -7,7 +7,7 @@ export const AvatarGroup = () => (
       <Image
         key={i}
         // Class sesuai request: size, rounded, dan ring
-        className="size-7 md:size-6 rounded-full object-cover ring-2 ring-ln-gray-25 bg-[#A7CDAE]"
+        className="size-7 md:size-6 rounded-full object-cover bg-[#A7CDAE]"
         width={24}
         height={24}
         src={`/user-${i + 1}.webp.png`} // Pastikan path gambar sesuai
