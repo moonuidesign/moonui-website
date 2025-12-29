@@ -6,9 +6,9 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
   experimental: {
-    proxyClientMaxBodySize: '50mb',
+    proxyClientMaxBodySize: '150mb',
     serverActions: {
-      bodySizeLimit: '50mb',
+      bodySizeLimit: '150mb',
     },
     scrollRestoration: true,
     optimizeCss: true,
