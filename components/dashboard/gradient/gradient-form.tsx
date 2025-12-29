@@ -3,19 +3,7 @@
 import { useState, useTransition, useRef, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
-import {
-  Plus,
-  Trash2,
-  Upload,
-  X,
-  Palette,
-  Crown,
-  FileUp,
-  Sparkles,
-  Image as ImageIcon,
-  FileText,
-  Link as LinkIcon,
-} from 'lucide-react';
+import { Plus, Trash2, X, Palette, Crown, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -54,6 +42,7 @@ import {
 import DescriptionEditor from '@/components/text-editor/description-editor';
 import { updateContentGradient } from '@/server-action/gradient/update-gradient';
 import { createContentGradient } from '@/server-action/gradient/create-gradient';
+import { useRouter } from 'next/navigation';
 
 // --- INTERFACE DATABASE ---
 interface GradientEntity {
@@ -74,16 +63,10 @@ type GradientFormProps = {
   gradient?: GradientEntity | null;
 };
 
-export default function GradientForm({
-  categories,
-  gradient,
-}: GradientFormProps) {
+export default function GradientForm({ categories, gradient }: GradientFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [localCategories, setLocalCategories] =
-    useState<Category[]>(categories);
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    gradient?.image || null,
-  );
+  const [localCategories, setLocalCategories] = useState<Category[]>(categories);
+  const [imagePreview, setImagePreview] = useState<string | null>(gradient?.image || null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -115,11 +98,7 @@ export default function GradientForm({
   const defaultValues = useMemo<ContentGradientFormValues>(() => {
     // 1. Handle Colors
     let safeColors = [{ value: '#4F46E5' }, { value: '#EC4899' }];
-    if (
-      gradient?.colors &&
-      Array.isArray(gradient.colors) &&
-      gradient.colors.length > 0
-    ) {
+    if (gradient?.colors && Array.isArray(gradient.colors) && gradient.colors.length > 0) {
       safeColors = gradient.colors as { value: string }[];
     }
 
@@ -134,10 +113,7 @@ export default function GradientForm({
 
     // 3. Handle Tier (Strict Check)
     let safeTier: GradientTierType = 'free';
-    if (
-      gradient?.tier &&
-      GRADIENT_TIER_OPTIONS.includes(gradient.tier as GradientTierType)
-    ) {
+    if (gradient?.tier && GRADIENT_TIER_OPTIONS.includes(gradient.tier as GradientTierType)) {
       safeTier = gradient.tier as GradientTierType;
     }
 
@@ -200,8 +176,6 @@ export default function GradientForm({
     return res.category;
   };
 
-
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -214,7 +188,7 @@ export default function GradientForm({
     }
   };
 
-
+  const router = useRouter();
 
   const onSubmit = (values: ContentGradientFormValues) => {
     startTransition(async () => {
@@ -253,17 +227,9 @@ export default function GradientForm({
           },
         })
         .then(() => {
-          if (!isEditMode) {
-            form.reset();
-            setImagePreview(null);
-            setSelectedFile(null);
-            setSourceFile(null);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            if (sourceFileInputRef.current)
-              sourceFileInputRef.current.value = '';
-          }
+          router.push('/dashboard/content/gradients');
         })
-        .catch(() => { });
+        .catch(() => {});
     });
   };
 
@@ -275,9 +241,7 @@ export default function GradientForm({
     name: 'categoryGradientsId',
   });
 
-  const selectedCategory = localCategories.find(
-    (c) => c.id === watchedCategoryId,
-  );
+  const selectedCategory = localCategories.find((c) => c.id === watchedCategoryId);
   let currentParentId = '';
   let currentChildId = '';
 
@@ -291,19 +255,17 @@ export default function GradientForm({
     }
   }
 
-  const childCategories = localCategories.filter(
-    (c) => c.parentId === currentParentId,
-  );
+  const childCategories = localCategories.filter((c) => c.parentId === currentParentId);
 
   return (
     <>
-      <div className="min-h-screen bg-background">
+      <div className="bg-background min-h-screen">
         <div className="mx-auto max-w-2xl px-6 py-16">
           <div className="mb-16">
-            <h1 className="text-5xl font-bold tracking-tight text-foreground mb-4 text-balance">
+            <h1 className="text-foreground mb-4 text-5xl font-bold tracking-tight text-balance">
               {isEditMode ? 'Edit Gradient' : 'Create New Gradient'}
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="text-muted-foreground text-lg leading-relaxed">
               {isEditMode
                 ? 'Update your gradient configuration.'
                 : 'Publish a new gradient to the collection.'}
@@ -311,18 +273,14 @@ export default function GradientForm({
           </div>
 
           <Form {...form}>
-            <form
-              onSubmit={(e) => form.handleSubmit(onSubmit)(e)}
-              className="space-y-16"
-            >
-
+            <form onSubmit={(e) => form.handleSubmit(onSubmit)(e)} className="space-y-16">
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                     Basic Information
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <div className="space-y-8">
@@ -332,7 +290,7 @@ export default function GradientForm({
                       name="categoryGradientsId"
                       render={() => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                          <FormLabel className="text-foreground mb-3 block text-sm font-medium">
                             Category
                           </FormLabel>
                           <FormControl>
@@ -356,7 +314,7 @@ export default function GradientForm({
                     />
 
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                      <FormLabel className="text-foreground mb-3 block text-sm font-medium">
                         Sub Category
                       </FormLabel>
                       <CategoryCombobox
@@ -386,13 +344,13 @@ export default function GradientForm({
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-foreground">
+                        <FormLabel className="text-foreground text-sm font-medium">
                           Gradient Name
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g. Sunset Vibes"
-                            className="bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                            className="bg-muted/30 border-border/60 hover:border-border text-base transition-colors"
                             {...field}
                           />
                         </FormControl>
@@ -407,13 +365,10 @@ export default function GradientForm({
                       name="typeGradient"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-foreground">
+                          <FormLabel className="text-foreground text-sm font-medium">
                             Type
                           </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                                 <SelectValue />
@@ -421,11 +376,7 @@ export default function GradientForm({
                             </FormControl>
                             <SelectContent>
                               {GRADIENT_TYPE_OPTIONS.map((t) => (
-                                <SelectItem
-                                  key={t}
-                                  value={t}
-                                  className="capitalize"
-                                >
+                                <SelectItem key={t} value={t} className="capitalize">
                                   {t}
                                 </SelectItem>
                               ))}
@@ -441,14 +392,11 @@ export default function GradientForm({
                       name="tier"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center gap-2 text-sm font-medium text-foreground">
-                            <Crown className="w-3.5 h-3.5" />
+                          <FormLabel className="text-foreground flex items-center gap-2 text-sm font-medium">
+                            <Crown className="h-3.5 w-3.5" />
                             Access Tier
                           </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                                 <SelectValue />
@@ -456,11 +404,7 @@ export default function GradientForm({
                             </FormControl>
                             <SelectContent>
                               {GRADIENT_TIER_OPTIONS.map((t) => (
-                                <SelectItem
-                                  key={t}
-                                  value={t}
-                                  className="capitalize"
-                                >
+                                <SelectItem key={t} value={t} className="capitalize">
                                   {t}
                                 </SelectItem>
                               ))}
@@ -477,20 +421,20 @@ export default function GradientForm({
               {/* SECTION: COLORS */}
               <section className="space-y-8">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="h-px flex-1 bg-border/40" />
-                    <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                      <Palette className="w-3.5 h-3.5" />
+                  <div className="flex flex-1 items-center gap-4">
+                    <div className="bg-border/40 h-px flex-1" />
+                    <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                      <Palette className="h-3.5 w-3.5" />
                       Color Palette
                     </h2>
-                    <div className="h-px flex-1 bg-border/40" />
+                    <div className="bg-border/40 h-px flex-1" />
                   </div>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => append({ value: '#000000' })}
-                    className="ml-4 h-8 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5"
+                    className="text-primary hover:text-primary/80 hover:bg-primary/5 ml-4 h-8 text-xs font-medium"
                   >
                     <Plus className="mr-1.5 h-3.5 w-3.5" />
                     Add Color
@@ -501,16 +445,16 @@ export default function GradientForm({
                   {fields.map((field, index) => (
                     <div
                       key={field.id}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-muted/20"
+                      className="border-border/60 bg-muted/20 flex items-center gap-3 rounded-lg border p-3"
                     >
                       <FormField
                         control={form.control}
                         name={`colors.${index}.value`}
                         render={({ field: colorField }) => (
-                          <div className="w-10 h-10 rounded-full overflow-hidden border border-border/40 shadow-sm cursor-pointer relative shrink-0">
+                          <div className="border-border/40 relative h-10 w-10 shrink-0 cursor-pointer overflow-hidden rounded-full border shadow-sm">
                             <input
                               type="color"
-                              className="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 cursor-pointer p-0 border-0"
+                              className="absolute inset-0 -top-1/4 -left-1/4 h-[150%] w-[150%] cursor-pointer border-0 p-0"
                               {...colorField}
                             />
                           </div>
@@ -520,17 +464,13 @@ export default function GradientForm({
                         control={form.control}
                         name={`colors.${index}.value`}
                         render={({ field: txtField }) => (
-                          <FormItem className="space-y-0 flex-1">
+                          <FormItem className="flex-1 space-y-0">
                             <FormControl>
                               <Input
                                 {...txtField}
-                                className="h-9 font-mono uppercase text-sm bg-background"
+                                className="bg-background h-9 font-mono text-sm uppercase"
                                 maxLength={7}
-                                onChange={(e) =>
-                                  txtField.onChange(
-                                    e.target.value.toUpperCase(),
-                                  )
-                                }
+                                onChange={(e) => txtField.onChange(e.target.value.toUpperCase())}
                               />
                             </FormControl>
                           </FormItem>
@@ -545,9 +485,9 @@ export default function GradientForm({
                             ? remove(index)
                             : toast.warning('Minimum 1 color required')
                         }
-                        className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-9 w-9"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
@@ -557,11 +497,11 @@ export default function GradientForm({
               {/* SECTION: DESCRIPTION & TAGS */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                     Description & Tags
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <FormField
@@ -570,7 +510,7 @@ export default function GradientForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <div className="rounded-lg border border-border/60 bg-muted/30 p-4 hover:border-border transition-colors">
+                        <div className="border-border/60 bg-muted/30 hover:border-border rounded-lg border p-4 transition-colors">
                           <DescriptionEditor
                             initialContent={field.value as any}
                             onChange={field.onChange}
@@ -601,7 +541,7 @@ export default function GradientForm({
                           className="bg-muted/30"
                         />
                       </FormControl>
-                      <FormDescription className="text-xs text-muted-foreground/80 mt-3">
+                      <FormDescription className="text-muted-foreground/80 mt-3 text-xs">
                         Press Enter to add tags
                       </FormDescription>
                       <FormMessage />
@@ -610,17 +550,15 @@ export default function GradientForm({
                 />
               </section>
 
-
-
               {/* SECTION: THUMBNAIL */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5" />
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                    <Sparkles className="h-3.5 w-3.5" />
                     Thumbnail
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <div>
@@ -639,19 +577,22 @@ export default function GradientForm({
                         />
                         <label htmlFor="thumbnail-upload">
                           <FormControl>
-                            <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${form.formState.errors.image
-                              ? 'border-destructive/50 bg-destructive/5'
-                              : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
-                              }`}>
+                            <div
+                              className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${
+                                form.formState.errors.image
+                                  ? 'border-destructive/50 bg-destructive/5'
+                                  : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                              }`}
+                            >
                               <div className="flex flex-col items-center justify-center gap-4">
-                                <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                                  <ImageIcon className="h-8 w-8 text-primary" />
+                                <div className="bg-primary/10 rounded-full p-4 transition-transform group-hover:scale-110">
+                                  <ImageIcon className="text-primary h-8 w-8" />
                                 </div>
                                 <div className="space-y-2">
-                                  <p className="text-base font-medium text-foreground">
+                                  <p className="text-foreground text-base font-medium">
                                     Click to upload thumbnail
                                   </p>
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className="text-muted-foreground text-sm">
                                     Recommended: 16:9 aspect ratio
                                   </p>
                                 </div>
@@ -666,8 +607,8 @@ export default function GradientForm({
 
                   {imagePreview && (
                     <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      <div className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30">
-                        <div className="absolute top-2 left-2 z-10 bg-green-500/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                      <div className="group border-border/60 bg-muted/30 relative aspect-video overflow-hidden rounded-lg border">
+                        <div className="absolute top-2 left-2 z-10 rounded bg-green-500/80 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm">
                           Thumbnail
                         </div>
                         <Image
@@ -685,10 +626,9 @@ export default function GradientForm({
                             setImagePreview(null);
                             setSelectedFile(null);
                             form.setValue('image', '', { shouldValidate: true });
-                            if (fileInputRef.current)
-                              fileInputRef.current.value = '';
+                            if (fileInputRef.current) fileInputRef.current.value = '';
                           }}
-                          className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                          className="absolute top-2 right-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -703,11 +643,11 @@ export default function GradientForm({
                   type="submit"
                   disabled={isPending}
                   size="lg"
-                  className="w-full text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
+                  className="bg-primary hover:bg-primary/90 w-full text-base font-semibold transition-all"
                 >
                   {isPending ? (
                     <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
                         <circle
                           className="opacity-25"
                           cx="12"
@@ -726,16 +666,14 @@ export default function GradientForm({
                       {isEditMode ? 'Updating...' : 'Creating...'}
                     </span>
                   ) : (
-                    <span>
-                      {isEditMode ? 'Update Gradient' : 'Publish Gradient'}
-                    </span>
+                    <span>{isEditMode ? 'Update Gradient' : 'Publish Gradient'}</span>
                   )}
                 </Button>
               </div>
             </form>
           </Form>
         </div>
-      </div >
+      </div>
     </>
   );
 }
