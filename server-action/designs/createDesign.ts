@@ -11,9 +11,7 @@ import { AssetItem } from '../templates/validator';
 
 type ActionResponse = { success: string } | { error: string };
 
-export async function createContentDesign(
-  formData: FormData,
-): Promise<ActionResponse> {
+export async function createContentDesign(formData: FormData): Promise<ActionResponse> {
   console.log('[CreateDesign] Started');
   const session = await auth();
   if (!session?.user?.id) {
@@ -25,9 +23,7 @@ export async function createContentDesign(
 
   const rawData = formData.get('data');
   if (!rawData || typeof rawData !== 'string') {
-    console.error(
-      '[CreateDesign] Invalid Data: data field missing or not string',
-    );
+    console.error('[CreateDesign] Invalid Data: data field missing or not string');
     return { error: 'Data form rusak atau tidak valid.' };
   }
 
@@ -40,12 +36,23 @@ export async function createContentDesign(
     return { error: 'Format JSON tidak valid.' };
   }
 
+  // Inject 'newImages' from formData for validation
+  const newImages = formData.getAll('images');
+  if (newImages.length > 0) {
+    // @ts-expect-error: parsedJson is typed as unknown/any but we are injecting a property for validation
+    parsedJson.newImages = newImages.filter((f) => f instanceof File);
+  }
+
+  // Inject 'sourceFile' if needed
+  const sourceFile = formData.get('sourceFile');
+  if (sourceFile instanceof File) {
+    // @ts-expect-error: parsedJson is typed as unknown/any but we are injecting a property for validation
+    parsedJson.sourceFile = sourceFile;
+  }
+
   const validated = ContentDesignSchema.safeParse(parsedJson);
   if (!validated.success) {
-    console.error(
-      '[CreateDesign] Validation Error:',
-      validated.error.flatten(),
-    );
+    console.error('[CreateDesign] Validation Error:', validated.error.flatten());
     return { error: 'Input tidak valid. Periksa kembali form anda.' };
   }
 
@@ -77,24 +84,17 @@ export async function createContentDesign(
           uploadedImageUrls.push({ url: assetUrl });
           console.log('[CreateDesign] Image Uploaded:', assetUrl);
         } catch (e) {
-          console.error(
-            '[CreateDesign] Upload Failed for file:',
-            imageFile.name,
-            e,
-          );
+          console.error('[CreateDesign] Upload Failed for file:', imageFile.name, e);
         }
       }
     }
   }
 
   if (uploadedImageUrls.length === 0) {
-    // Optional: if image is required, return error here.
     console.error('[CreateDesign] No Image Files Provided or Upload Failed');
     return { error: 'Minimal satu gambar design wajib diupload.' };
   }
 
-  // Handle Source File Upload (for linkDownload)
-  const sourceFile = formData.get('sourceFile');
   let linkDownload = '';
   let fileSize = '';
   let fileFormat = '';
@@ -124,15 +124,10 @@ export async function createContentDesign(
     }
   } else {
     // Fallback to first imageUrl if sourceFile not provided.
-    console.log(
-      '[CreateDesign] No Source File, using first Image URL as fallback',
-    );
+    console.log('[CreateDesign] No Source File, using first Image URL as fallback');
     const firstImage = imageFiles[0] instanceof File ? imageFiles[0] : null;
-    fileSize =
-      (firstImage ? firstImage.size / 1024 / 1024 : 0).toFixed(2) + ' MB';
-    fileFormat =
-      (firstImage ? firstImage.name.split('.').pop()?.toUpperCase() : 'IMG') ||
-      'IMG';
+    fileSize = (firstImage ? firstImage.size / 1024 / 1024 : 0).toFixed(2) + ' MB';
+    fileFormat = (firstImage ? firstImage.name.split('.').pop()?.toUpperCase() : 'IMG') || 'IMG';
   }
 
   try {

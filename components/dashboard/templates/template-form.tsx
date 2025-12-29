@@ -507,10 +507,10 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
                     </FormControl>
                     <FormMessage />
                     {/* VISUAL DEBUGGER */}
-                    {/* <div className="mt-2 p-2 bg-slate-950 text-slate-400 text-xs rounded border border-slate-800 font-mono overflow-auto max-h-40 whitespace-pre-wrap">
-                      <p className="font-bold text-slate-200 mb-1">DEBUG: Description Value</p>
+                    <div className="mt-2 max-h-40 overflow-auto rounded border border-slate-800 bg-slate-950 p-2 font-mono text-xs whitespace-pre-wrap text-slate-400">
+                      <p className="mb-1 font-bold text-slate-200">DEBUG: Description Value</p>
                       {String(field.value)}
-                    </div> */}
+                    </div>
                   </FormItem>
                 )}
               />

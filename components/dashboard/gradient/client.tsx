@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { ContentToolbar } from '@/components/dashboard/content/content-toolbar';
 import { ResourceCard } from '@/components/card';
 import {
@@ -12,10 +12,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit, Download, Eye } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Edit, Download, Eye, MoreHorizontal, Trash, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { DashboardPagination } from '@/components/dashboard/dashboard-pagination';
+import { toast } from 'react-toastify';
+import { deleteContentGradient } from '@/server-action/gradients/deleteGradient';
 
 export interface GradientItem {
   id: string;
@@ -48,6 +57,20 @@ export default function GradientsClient({
   isSuperAdmin,
 }: GradientsClientProps) {
   const [view, setView] = useState<'table' | 'card'>('table');
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this gradient? This action cannot be undone.')) {
+      startTransition(async () => {
+        const res = await deleteContentGradient(id);
+        if (res.error) {
+          toast.error(res.error);
+        } else {
+          toast.success(res.success);
+        }
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -69,7 +92,7 @@ export default function GradientsClient({
       />
 
       {view === 'table' ? (
-        <div className="border rounded-md">
+        <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -87,10 +110,7 @@ export default function GradientsClient({
             <TableBody>
               {data.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={isSuperAdmin ? 8 : 7}
-                    className="text-center h-24"
-                  >
+                  <TableCell colSpan={isSuperAdmin ? 9 : 8} className="h-24 text-center">
                     No gradients found.
                   </TableCell>
                 </TableRow>
@@ -99,7 +119,7 @@ export default function GradientsClient({
                   <TableRow key={item.id}>
                     <TableCell>
                       {item.image ? (
-                        <div className="relative w-12 h-12 rounded overflow-hidden bg-gray-100">
+                        <div className="relative h-12 w-12 overflow-hidden rounded bg-gray-100">
                           <Image
                             src={item.image}
                             alt={item.name}
@@ -109,40 +129,57 @@ export default function GradientsClient({
                           />
                         </div>
                       ) : (
-                        <div className="w-12 h-12 rounded bg-gray-200" />
+                        <div className="h-12 w-12 rounded bg-gray-200" />
                       )}
                     </TableCell>
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>{item.categoryName || '-'}</TableCell>
-                    <TableCell className="capitalize">
-                      {item.typeGradient}
-                    </TableCell>
+                    <TableCell className="capitalize">{item.typeGradient}</TableCell>
                     <TableCell className="capitalize">{item.tier}</TableCell>
                     {isSuperAdmin && (
-                      <TableCell className="text-xs text-muted-foreground">
+                      <TableCell className="text-muted-foreground text-xs">
                         {item.authorName || 'Unknown'}
                       </TableCell>
                     )}
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-xs">
                       <span className="flex items-center gap-1">
                         <Download className="h-3 w-3" /> {item.downloadCount}
                       </span>
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-xs">
                       <span className="flex items-center gap-1">
                         <Eye className="h-3 w-3" /> {item.viewCount}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Link
-                          href={`/dashboard/content/gradients/edit/${item.id}`}
-                        >
-                          <Button size="icon" variant="ghost">
-                            <Edit className="h-4 w-4" />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
-                        </Link>
-                      </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <Link href={`/dashboard/content/gradients/edit/${item.id}`}>
+                            <DropdownMenuItem>
+                              <Edit className="mr-2 h-4 w-4" /> Edit
+                            </DropdownMenuItem>
+                          </Link>
+                          <Link href={`/gradients/${item.id}`} target="_blank">
+                            <DropdownMenuItem>
+                              <ExternalLink className="mr-2 h-4 w-4" /> View Public
+                            </DropdownMenuItem>
+                          </Link>
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(item.id)}
+                            className="text-destructive focus:text-destructive"
+                            disabled={isPending}
+                          >
+                            <Trash className="mr-2 h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))
@@ -151,14 +188,14 @@ export default function GradientsClient({
           </Table>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {data.length === 0 ? (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
+            <div className="text-muted-foreground col-span-full py-12 text-center">
               No gradients found.
             </div>
           ) : (
             data.map((item) => (
-              <div key={item.id} className="relative group">
+              <div key={item.id} className="group relative">
                 <ResourceCard
                   id={item.id}
                   title={item.name}
@@ -169,16 +206,31 @@ export default function GradientsClient({
                 />
                 {/* Author badge for card view if superadmin */}
                 {isSuperAdmin && item.authorName && (
-                  <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-sm">
+                  <div className="absolute top-2 left-2 rounded-full bg-black/50 px-2 py-1 text-[10px] text-white backdrop-blur-sm">
                     {item.authorName}
                   </div>
                 )}
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Link href={`/dashboard/content/gradients/edit/${item.id}`}>
-                    <Button size="sm" variant="secondary" className="shadow-sm">
-                      Edit
-                    </Button>
-                  </Link>
+                <div className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="icon" variant="secondary" className="h-8 w-8 shadow-sm">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <Link href={`/dashboard/content/gradients/edit/${item.id}`}>
+                        <DropdownMenuItem>
+                          <Edit className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
+                      </Link>
+                      <DropdownMenuItem
+                        onClick={() => handleDelete(item.id)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash className="mr-2 h-4 w-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             ))

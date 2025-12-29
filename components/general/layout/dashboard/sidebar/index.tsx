@@ -116,7 +116,7 @@ export function SidebarDashboard({
         },
         {
           title: 'Design',
-          url: '/dashboard/content/design',
+          url: '/dashboard/content/designs',
         },
       ],
     },
@@ -172,7 +172,7 @@ export function SidebarDashboard({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -199,8 +199,7 @@ export function SidebarDashboard({
 
                 // Check active state for top-level item
                 const isItemActive =
-                  safeUrl !== '#' &&
-                  (pathname === safeUrl || pathname.startsWith(safeUrl + '/'));
+                  safeUrl !== '#' && (pathname === safeUrl || pathname.startsWith(safeUrl + '/'));
 
                 // Check if any sub-item is active for accordion behavior
                 const hasActiveSubItem = item.items?.some((subItem) => {
@@ -228,26 +227,20 @@ export function SidebarDashboard({
                         <SidebarMenuSub>
                           {item.items.map((subItem) => (
                             <SidebarMenuItem key={subItem.title}>
-                              {subItem.subItems &&
-                              subItem.subItems.length > 0 ? (
+                              {subItem.subItems && subItem.subItems.length > 0 ? (
                                 // Second level sub-items
                                 <div className="group-data-[collapsible=icon]:hidden">
                                   <SidebarMenuButton
                                     tooltip={subItem.title}
                                     isActive={subItem.subItems.some(
-                                      (deepSubItem) =>
-                                        pathname.startsWith(
-                                          deepSubItem.url || '',
-                                        ), // FIX: Add fallback
+                                      (deepSubItem) => pathname.startsWith(deepSubItem.url || ''), // FIX: Add fallback
                                     )}
                                   >
                                     <span>{subItem.title}</span>
                                   </SidebarMenuButton>
                                   <SidebarMenuSub>
                                     {subItem.subItems.map((deepSubItem) => (
-                                      <SidebarMenuSubItem
-                                        key={deepSubItem.title}
-                                      >
+                                      <SidebarMenuSubItem key={deepSubItem.title}>
                                         <SidebarMenuSubButton
                                           asChild
                                           isActive={pathname.startsWith(
@@ -268,9 +261,7 @@ export function SidebarDashboard({
                                 <SidebarMenuButton
                                   asChild
                                   tooltip={subItem.title}
-                                  isActive={pathname.startsWith(
-                                    subItem.url || '',
-                                  )} // FIX: Add fallback
+                                  isActive={pathname.startsWith(subItem.url || '')} // FIX: Add fallback
                                 >
                                   {/* FIX: Add fallback for Link href */}
                                   <Link href={subItem.url || '#'}>

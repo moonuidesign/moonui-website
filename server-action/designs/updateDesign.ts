@@ -12,10 +12,7 @@ import { AssetItem } from '../templates/validator';
 
 type ActionResponse = { success: string } | { error: string };
 
-export async function updateContentDesign(
-  id: string,
-  formData: FormData,
-): Promise<ActionResponse> {
+export async function updateContentDesign(id: string, formData: FormData): Promise<ActionResponse> {
   console.log('[UpdateDesign] Started for ID:', id);
   const session = await auth();
   if (!session?.user?.id) {
@@ -38,12 +35,23 @@ export async function updateContentDesign(
     return { error: 'JSON Parse Error' };
   }
 
+  // Inject 'newImages' from formData for validation
+  const newImages = formData.getAll('images');
+  if (newImages.length > 0) {
+    // @ts-expect-error: Injecting newImages for validation
+    parsedJson.newImages = newImages.filter((f) => f instanceof File);
+  }
+
+  // Inject 'sourceFile' if needed
+  const sourceFile = formData.get('sourceFile');
+  if (sourceFile instanceof File) {
+    // @ts-expect-error: Injecting sourceFile for validation
+    parsedJson.sourceFile = sourceFile;
+  }
+
   const validated = ContentDesignSchema.safeParse(parsedJson);
   if (!validated.success) {
-    console.error(
-      '[UpdateDesign] Validation Error:',
-      validated.error.flatten(),
-    );
+    console.error('[UpdateDesign] Validation Error:', validated.error.flatten());
     return { error: 'Validasi form gagal.' };
   }
   const values = validated.data;
@@ -76,11 +84,7 @@ export async function updateContentDesign(
           });
           console.log('[UpdateDesign] New Image URL:', assetUrl);
         } catch (e) {
-          console.error(
-            '[UpdateDesign] Image Upload Failed for:',
-            imageFile.name,
-            e,
-          );
+          console.error('[UpdateDesign] Image Upload Failed for:', imageFile.name, e);
         }
       }
     }
@@ -91,8 +95,6 @@ export async function updateContentDesign(
   const existingImages = values.imagesUrl || [];
   const finalImagesUrl = [...existingImages, ...newImageUrls];
 
-  // Handle Source File Update
-  const sourceFile = formData.get('sourceFile');
   let linkDownload: string | undefined = undefined;
   let fileSize = '';
   let fileFormat = '';
@@ -133,17 +135,12 @@ export async function updateContentDesign(
       urlBuyOneTime: values.urlBuyOneTime,
       updatedAt: new Date(),
       imagesUrl: finalImagesUrl, // Always update imagesUrl with the final list
-      ...(linkDownload
-        ? { linkDownload, size: fileSize, format: fileFormat }
-        : {}),
+      ...(linkDownload ? { linkDownload, size: fileSize, format: fileFormat } : {}),
     };
 
     console.log('[UpdateDesign] Updating DB with:', updateData);
 
-    await db
-      .update(contentDesigns)
-      .set(updateData)
-      .where(eq(contentDesigns.id, id));
+    await db.update(contentDesigns).set(updateData).where(eq(contentDesigns.id, id));
 
     console.log('[UpdateDesign] DB Update Success');
     revalidatePath('/dashboard/designs');
