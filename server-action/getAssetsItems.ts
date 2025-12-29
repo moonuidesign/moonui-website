@@ -23,6 +23,7 @@ interface FilterParams {
   gradientTypes?: string[];
   selectedColors?: string[];
   searchQuery?: string;
+  sortBy?: 'recent' | 'popular';
 }
 
 interface PaginationParams {
@@ -50,7 +51,10 @@ export async function getAssetsItems(
     gradientTypes = [],
     selectedColors = [],
     searchQuery = '',
+    sortBy = 'recent',
   } = filters;
+
+  console.log('Fetching items with sortBy:', sortBy);
 
   // 1. Define base tables and their mapping
   const sources = [
@@ -63,6 +67,7 @@ export async function getAssetsItems(
       hasStatus: true,
       hasTool: true,
       hasColors: false,
+      countField: contentComponents.copyCount,
     },
     {
       type: 'templates',
@@ -73,6 +78,7 @@ export async function getAssetsItems(
       hasStatus: true,
       hasTool: true,
       hasColors: false,
+      countField: contentTemplates.downloadCount,
     },
     {
       type: 'gradients',
@@ -83,6 +89,7 @@ export async function getAssetsItems(
       hasStatus: false,
       hasTool: false,
       hasColors: true,
+      countField: contentGradients.downloadCount,
     },
     {
       type: 'designs',
@@ -93,6 +100,7 @@ export async function getAssetsItems(
       hasStatus: true,
       hasTool: false,
       hasColors: false,
+      countField: contentDesigns.downloadCount,
     },
   ];
 
@@ -225,6 +233,7 @@ export async function getAssetsItems(
           id: source.table.id,
           createdAt: (source.table as any).createdAt,
           type: sql<string>`${source.type}`,
+          count: sql<number>`COALESCE(${source.countField}, 0)`,
         })
         .from(source.table);
 
@@ -239,6 +248,12 @@ export async function getAssetsItems(
     const allIds = results.flat();
 
     allIds.sort((a, b) => {
+      if (sortBy === 'popular') {
+        const countA = Number(a.count) || 0;
+        const countB = Number(b.count) || 0;
+        if (countA !== countB) return countB - countA;
+      }
+      // Fallback to recent if counts are equal or sortBy is recent
       const dateA = new Date(a.createdAt as any).getTime();
       const dateB = new Date(b.createdAt as any).getTime();
       return dateB - dateA;
@@ -324,6 +339,7 @@ export async function getAssetsItems(
         author: item.user?.name || 'MoonUI Team',
         categorySlug: item.category?.name || 'Uncategorized',
         type: type,
+        count: item.copyCount || item.downloadCount || 0,
       };
 
       // Transformasi sesuai tipe
@@ -365,10 +381,16 @@ export async function getAssetsItems(
       return { ...common, ...(mappings[type] || {}) };
     });
 
-    const finalSorted = normalizedItems.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
+    const finalSorted = normalizedItems.sort((a, b) => {
+      if (sortBy === 'popular') {
+        const countA = Number(a.count) || 0;
+        const countB = Number(b.count) || 0;
+        if (countA !== countB) return countB - countA;
+      }
+      return (
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    });
 
     return { items: finalSorted, totalCount };
   } catch (error) {
