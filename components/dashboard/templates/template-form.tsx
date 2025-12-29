@@ -4,16 +4,7 @@ import type React from 'react';
 import { useState, useTransition, useRef, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
-import {
-  Upload,
-  X,
-  LinkIcon,
-  Trash2,
-  Crown,
-  FileUp,
-  Sparkles,
-  FileText,
-} from 'lucide-react';
+import { Upload, X, LinkIcon, Trash2, Crown, FileUp, Sparkles, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -78,14 +69,10 @@ type TemplateFormProps = {
   template?: TemplateEntity | null;
 };
 
-export default function TemplateForm({
-  categories,
-  template,
-}: TemplateFormProps) {
+export default function TemplateForm({ categories, template }: TemplateFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [localCategories, setLocalCategories] =
-    useState<Category[]>(categories);
+  const [localCategories, setLocalCategories] = useState<Category[]>(categories);
   const isEditMode = !!template;
 
   // --- HELPER: Parse Description ---
@@ -110,9 +97,7 @@ export default function TemplateForm({
   // existingMainFile merged into form sourceFile default value
 
   const [existingImages, setExistingImages] = useState<AssetItem[]>(
-    Array.isArray(template?.imagesUrl)
-      ? (template?.imagesUrl as AssetItem[])
-      : [],
+    Array.isArray(template?.imagesUrl) ? (template?.imagesUrl as AssetItem[]) : [],
   );
 
   // --- STATE UNTUK NEW UPLOAD ---
@@ -133,16 +118,13 @@ export default function TemplateForm({
 
   // --- FORM INITIALIZATION ---
   const defaultTier: TemplateTierType =
-    template?.tier &&
-      TEMPLATE_TIER_OPTIONS.includes(template.tier as TemplateTierType)
+    template?.tier && TEMPLATE_TIER_OPTIONS.includes(template.tier as TemplateTierType)
       ? (template.tier as TemplateTierType)
       : 'free';
 
   const defaultStatus: TemplateStatusType =
     template?.statusContent &&
-      TEMPLATE_STATUS_OPTIONS.includes(
-        template.statusContent as TemplateStatusType,
-      )
+    TEMPLATE_STATUS_OPTIONS.includes(template.statusContent as TemplateStatusType)
       ? (template.statusContent as TemplateStatusType)
       : 'draft';
 
@@ -164,9 +146,6 @@ export default function TemplateForm({
     },
   });
 
-  const sourceFileValue = useWatch({ control: form.control, name: 'sourceFile' });
-
-  // --- HELPER FUNCTIONS ---
   const getFileNameFromUrl = (url: string) => {
     if (!url) return '';
     try {
@@ -185,9 +164,7 @@ export default function TemplateForm({
       const newFiles = Array.from(e.target.files);
 
       // Validasi sederhana (opsional)
-      const validFiles = newFiles.filter(
-        (file) => file.size <= 10 * 1024 * 1024,
-      ); // Max 10MB
+      const validFiles = newFiles.filter((file) => file.size <= 10 * 1024 * 1024); // Max 10MB
 
       if (validFiles.length !== newFiles.length) {
         toast.warning('Beberapa file dilewati karena lebih dari 10MB');
@@ -277,9 +254,7 @@ export default function TemplateForm({
     control: form.control,
     name: 'categoryTemplatesId',
   });
-  const selectedCategory = localCategories.find(
-    (c) => c.id === watchedCategoryId,
-  );
+  const selectedCategory = localCategories.find((c) => c.id === watchedCategoryId);
 
   let currentParentId = '';
   let currentChildId = '';
@@ -294,9 +269,7 @@ export default function TemplateForm({
     }
   }
 
-  const childCategories = localCategories.filter(
-    (c) => c.parentId === currentParentId,
-  );
+  const childCategories = localCategories.filter((c) => c.parentId === currentParentId);
 
   // --- SUBMIT HANDLER ---
   const onSubmit = (values: ContentTemplateFormValues) => {
@@ -336,14 +309,14 @@ export default function TemplateForm({
         if (values.sourceFile instanceof File) {
           formData.append('sourceFile', values.sourceFile);
         }
-        // If string, it's already in 'data' payload via existing link mapping if needed, 
+        // If string, it's already in 'data' payload via existing link mapping if needed,
         // but server action 'data' usually doesn't need the file URL explicitly if not changing.
         // However, validator might check it. Validator checks 'sourceFile' in formData or just presence?
         // The validator we updated checks 'sourceFile' field which is usually a File object in FormData.
         // BUT for update, if we don't send a new file, we might not send 'sourceFile' key in FormData at all?
         // Wait, our updated validator uses `z.union([z.instanceof(File), z.string()])`.
         // So we should pass the string if it's an existing file?
-        // Server actions usually parse formData using `Object.fromEntries` or `zfd`. 
+        // Server actions usually parse formData using `Object.fromEntries` or `zfd`.
         // If we strictly rely on `formData.get('sourceFile')` it returns string or File.
         // If it's existing, we want to pass the URL string so validator passes.
         if (typeof values.sourceFile === 'string' && values.sourceFile) {
@@ -368,7 +341,7 @@ export default function TemplateForm({
           toast.error(res.error);
         } else {
           toast.success(res.success || 'Template saved successfully');
-          router.push('/dashboard/templates');
+          router.push('/dashboard/content/templates');
           router.refresh();
         }
       } catch (error) {
@@ -379,14 +352,14 @@ export default function TemplateForm({
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-2xl px-6 py-16">
         {/* Header Section */}
         <div className="mb-16">
-          <h1 className="text-5xl font-bold tracking-tight text-foreground mb-4 text-balance">
+          <h1 className="text-foreground mb-4 text-5xl font-bold tracking-tight text-balance">
             {isEditMode ? 'Edit Template' : 'Create New Template'}
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed">
+          <p className="text-muted-foreground text-lg leading-relaxed">
             {isEditMode
               ? 'Update your template information and assets below'
               : 'Complete the form to publish your new template to the marketplace'}
@@ -397,11 +370,11 @@ export default function TemplateForm({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-16">
             <section className="space-y-8">
               <div className="flex items-center gap-4">
-                <div className="h-px flex-1 bg-border/40" />
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="bg-border/40 h-px flex-1" />
+                <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                   Basic Information
                 </h2>
-                <div className="h-px flex-1 bg-border/40" />
+                <div className="bg-border/40 h-px flex-1" />
               </div>
 
               <div className="space-y-8">
@@ -411,7 +384,7 @@ export default function TemplateForm({
                     name="categoryTemplatesId"
                     render={() => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                        <FormLabel className="text-foreground mb-3 block text-sm font-medium">
                           Category
                         </FormLabel>
                         <FormControl>
@@ -435,7 +408,7 @@ export default function TemplateForm({
                   />
 
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                    <FormLabel className="text-foreground mb-3 block text-sm font-medium">
                       Sub Category
                     </FormLabel>
                     <CategoryCombobox
@@ -465,13 +438,13 @@ export default function TemplateForm({
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-foreground">
+                      <FormLabel className="text-foreground text-sm font-medium">
                         Template Title
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Modern Dashboard UI Kit"
-                          className="bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                          className="bg-muted/30 border-border/60 hover:border-border text-base transition-colors"
                           {...field}
                         />
                       </FormControl>
@@ -485,13 +458,10 @@ export default function TemplateForm({
                   name="typeContent"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-foreground">
+                      <FormLabel className="text-foreground text-sm font-medium">
                         Content Type
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                             <SelectValue placeholder="Select content type" />
@@ -512,11 +482,11 @@ export default function TemplateForm({
             {/* --- DESCRIPTION --- */}
             <section className="space-y-8">
               <div className="flex items-center gap-4">
-                <div className="h-px flex-1 bg-border/40" />
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="bg-border/40 h-px flex-1" />
+                <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                   Description
                 </h2>
-                <div className="h-px flex-1 bg-border/40" />
+                <div className="bg-border/40 h-px flex-1" />
               </div>
 
               <FormField
@@ -525,7 +495,7 @@ export default function TemplateForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <div className="rounded-lg border border-border/60 bg-muted/30 p-4 hover:border-border transition-colors">
+                      <div className="border-border/60 bg-muted/30 hover:border-border rounded-lg border p-4 transition-colors">
                         <DescriptionEditor
                           initialContent={field.value as any}
                           onChange={field.onChange}
@@ -537,10 +507,10 @@ export default function TemplateForm({
                     </FormControl>
                     <FormMessage />
                     {/* VISUAL DEBUGGER */}
-                    {/* <div className="mt-2 p-2 bg-slate-950 text-slate-400 text-xs rounded border border-slate-800 font-mono overflow-auto max-h-40 whitespace-pre-wrap">
-                      <p className="font-bold text-slate-200 mb-1">DEBUG: Description Value</p>
+                    <div className="mt-2 max-h-40 overflow-auto rounded border border-slate-800 bg-slate-950 p-2 font-mono text-xs whitespace-pre-wrap text-slate-400">
+                      <p className="mb-1 font-bold text-slate-200">DEBUG: Description Value</p>
                       {String(field.value)}
-                    </div> */}
+                    </div>
                   </FormItem>
                 )}
               />
@@ -549,11 +519,11 @@ export default function TemplateForm({
             {/* --- TAGS --- */}
             <section className="space-y-8">
               <div className="flex items-center gap-4">
-                <div className="h-px flex-1 bg-border/40" />
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="bg-border/40 h-px flex-1" />
+                <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                   Tags
                 </h2>
-                <div className="h-px flex-1 bg-border/40" />
+                <div className="bg-border/40 h-px flex-1" />
               </div>
 
               <FormField
@@ -569,7 +539,7 @@ export default function TemplateForm({
                         className="bg-muted/30"
                       />
                     </FormControl>
-                    <FormDescription className="text-xs text-muted-foreground/80 mt-3">
+                    <FormDescription className="text-muted-foreground/80 mt-3 text-xs">
                       Press Enter to add tags
                     </FormDescription>
                     <FormMessage />
@@ -581,12 +551,12 @@ export default function TemplateForm({
             {/* --- LINKS --- */}
             <section className="space-y-8">
               <div className="flex items-center gap-4">
-                <div className="h-px flex-1 bg-border/40" />
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <LinkIcon className="w-3.5 h-3.5" />
+                <div className="bg-border/40 h-px flex-1" />
+                <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                  <LinkIcon className="h-3.5 w-3.5" />
                   External Links
                 </h2>
-                <div className="h-px flex-1 bg-border/40" />
+                <div className="bg-border/40 h-px flex-1" />
               </div>
 
               <div className="space-y-8">
@@ -595,15 +565,15 @@ export default function TemplateForm({
                   name="linkTemplate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-foreground">
+                      <FormLabel className="text-foreground text-sm font-medium">
                         Preview / Demo Link
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <LinkIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
+                          <LinkIcon className="text-muted-foreground/60 absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2" />
                           <Input
                             placeholder="https://example.com/preview"
-                            className="h-14 pl-12 bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                            className="bg-muted/30 border-border/60 hover:border-border h-14 pl-12 text-base transition-colors"
                             {...field}
                           />
                         </div>
@@ -618,15 +588,15 @@ export default function TemplateForm({
                   name="urlBuyOneTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-foreground">
+                      <FormLabel className="text-foreground text-sm font-medium">
                         Purchase Link
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <LinkIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
+                          <LinkIcon className="text-muted-foreground/60 absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2" />
                           <Input
                             placeholder="https://example.com/buy"
-                            className="h-14 pl-12 bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                            className="bg-muted/30 border-border/60 hover:border-border h-14 pl-12 text-base transition-colors"
                             {...field}
                           />
                         </div>
@@ -641,11 +611,11 @@ export default function TemplateForm({
             {/* --- PUBLISHING SETTINGS --- */}
             <section className="space-y-8">
               <div className="flex items-center gap-4">
-                <div className="h-px flex-1 bg-border/40" />
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="bg-border/40 h-px flex-1" />
+                <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                   Publishing Settings
                 </h2>
-                <div className="h-px flex-1 bg-border/40" />
+                <div className="bg-border/40 h-px flex-1" />
               </div>
 
               <div className="grid gap-8 sm:grid-cols-2">
@@ -654,13 +624,8 @@ export default function TemplateForm({
                   name="statusContent"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-foreground">
-                        Status
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
+                      <FormLabel className="text-foreground text-sm font-medium">Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                             <SelectValue />
@@ -668,11 +633,7 @@ export default function TemplateForm({
                         </FormControl>
                         <SelectContent>
                           {TEMPLATE_STATUS_OPTIONS.map((opt) => (
-                            <SelectItem
-                              key={opt}
-                              value={opt}
-                              className="capitalize"
-                            >
+                            <SelectItem key={opt} value={opt} className="capitalize">
                               {opt}
                             </SelectItem>
                           ))}
@@ -688,14 +649,11 @@ export default function TemplateForm({
                   name="tier"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center gap-2 text-sm font-medium text-foreground">
-                        <Crown className="w-3.5 h-3.5" />
+                      <FormLabel className="text-foreground flex items-center gap-2 text-sm font-medium">
+                        <Crown className="h-3.5 w-3.5" />
                         Access Tier
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                             <SelectValue />
@@ -703,11 +661,7 @@ export default function TemplateForm({
                         </FormControl>
                         <SelectContent>
                           {TEMPLATE_TIER_OPTIONS.map((opt) => (
-                            <SelectItem
-                              key={opt}
-                              value={opt}
-                              className="capitalize"
-                            >
+                            <SelectItem key={opt} value={opt} className="capitalize">
                               {opt.replace('_', ' ')}
                             </SelectItem>
                           ))}
@@ -723,12 +677,12 @@ export default function TemplateForm({
             {/* --- MAIN TEMPLATE FILE --- */}
             <section className="space-y-8">
               <div className="flex items-center gap-4">
-                <div className="h-px flex-1 bg-border/40" />
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <FileUp className="w-3.5 h-3.5" />
+                <div className="bg-border/40 h-px flex-1" />
+                <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                  <FileUp className="h-3.5 w-3.5" />
                   Main Template File <span className="text-destructive">*</span>
                 </h2>
-                <div className="h-px flex-1 bg-border/40" />
+                <div className="bg-border/40 h-px flex-1" />
               </div>
 
               <FormField
@@ -756,22 +710,25 @@ export default function TemplateForm({
                           id="main-file-upload"
                         />
                         <label htmlFor="main-file-upload">
-                          <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${!field.value && form.formState.errors.sourceFile
-                            ? 'border-destructive/50 bg-destructive/5'
-                            : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
-                            }`}>
+                          <div
+                            className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${
+                              !field.value && form.formState.errors.sourceFile
+                                ? 'border-destructive/50 bg-destructive/5'
+                                : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                            }`}
+                          >
                             <div className="flex flex-col items-center justify-center gap-4">
                               {field.value instanceof File ? (
                                 // NEW FILE SELECTED
                                 <div className="flex flex-col items-center gap-4">
-                                  <div className="rounded-full bg-primary/10 p-4">
-                                    <Upload className="h-8 w-8 text-primary" />
+                                  <div className="bg-primary/10 rounded-full p-4">
+                                    <Upload className="text-primary h-8 w-8" />
                                   </div>
                                   <div className="space-y-2">
-                                    <p className="text-base font-medium text-foreground">
+                                    <p className="text-foreground text-base font-medium">
                                       {field.value.name}
                                     </p>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-muted-foreground text-sm">
                                       {(field.value.size / 1024 / 1024).toFixed(2)} MB
                                     </p>
                                   </div>
@@ -783,11 +740,10 @@ export default function TemplateForm({
                                     <FileText className="h-8 w-8 text-emerald-600" />
                                   </div>
                                   <div className="space-y-2">
-                                    <p className="text-base font-medium text-foreground">
-                                      Existing File:{' '}
-                                      {getFileNameFromUrl(field.value)}
+                                    <p className="text-foreground text-base font-medium">
+                                      Existing File: {getFileNameFromUrl(field.value)}
                                     </p>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-muted-foreground text-sm">
                                       Click to replace with a new file
                                     </p>
                                   </div>
@@ -795,14 +751,14 @@ export default function TemplateForm({
                               ) : (
                                 // EMPTY
                                 <>
-                                  <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                                    <Upload className="h-8 w-8 text-primary" />
+                                  <div className="bg-primary/10 rounded-full p-4 transition-transform group-hover:scale-110">
+                                    <Upload className="text-primary h-8 w-8" />
                                   </div>
                                   <div className="space-y-2">
-                                    <p className="text-base font-medium text-foreground">
+                                    <p className="text-foreground text-base font-medium">
                                       Click to upload main template file
                                     </p>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-muted-foreground text-sm">
                                       Max file size: 100MB
                                     </p>
                                   </div>
@@ -820,14 +776,15 @@ export default function TemplateForm({
                               size="sm"
                               onClick={() => {
                                 field.onChange('');
-                                if (mainFileInputRef.current)
-                                  mainFileInputRef.current.value = '';
+                                if (mainFileInputRef.current) mainFileInputRef.current.value = '';
                                 // if (existingMainFile) handleRemoveExistingMainFile(); -> No longer needed as state is gone
                               }}
-                              className="mt-3 h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10 mt-3 h-9 text-xs"
                             >
                               <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                              {field.value instanceof File ? 'Cancel Upload' : 'Remove Existing File'}
+                              {field.value instanceof File
+                                ? 'Cancel Upload'
+                                : 'Remove Existing File'}
                             </Button>
                           </div>
                         )}
@@ -842,12 +799,12 @@ export default function TemplateForm({
             {/* --- PREVIEW IMAGES --- */}
             <section className="space-y-8">
               <div className="flex items-center gap-4">
-                <div className="h-px flex-1 bg-border/40" />
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5" />
+                <div className="bg-border/40 h-px flex-1" />
+                <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                  <Sparkles className="h-3.5 w-3.5" />
                   Preview Images
                 </h2>
-                <div className="h-px flex-1 bg-border/40" />
+                <div className="bg-border/40 h-px flex-1" />
               </div>
 
               <div>
@@ -867,19 +824,22 @@ export default function TemplateForm({
                       />
                       <label htmlFor="image-upload">
                         <FormControl>
-                          <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${form.formState.errors.imagesUrl
-                            ? 'border-destructive/50 bg-destructive/5'
-                            : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
-                            }`}>
+                          <div
+                            className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${
+                              form.formState.errors.imagesUrl
+                                ? 'border-destructive/50 bg-destructive/5'
+                                : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                            }`}
+                          >
                             <div className="flex flex-col items-center justify-center gap-4">
-                              <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                                <Upload className="h-8 w-8 text-primary" />
+                              <div className="bg-primary/10 rounded-full p-4 transition-transform group-hover:scale-110">
+                                <Upload className="text-primary h-8 w-8" />
                               </div>
                               <div className="space-y-2">
-                                <p className="text-base font-medium text-foreground">
+                                <p className="text-foreground text-base font-medium">
                                   Click to upload preview images
                                 </p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-muted-foreground text-sm">
                                   PNG, JPG, WEBP up to 10MB each
                                 </p>
                               </div>
@@ -898,9 +858,9 @@ export default function TemplateForm({
                     {existingImages.map((img, index) => (
                       <div
                         key={`existing-${index}`}
-                        className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30"
+                        className="group border-border/60 bg-muted/30 relative aspect-video overflow-hidden rounded-lg border"
                       >
-                        <div className="absolute top-2 left-2 z-10 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                        <div className="absolute top-2 left-2 z-10 rounded bg-black/60 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm">
                           Existing
                         </div>
                         <Image
@@ -914,7 +874,7 @@ export default function TemplateForm({
                           variant="destructive"
                           size="icon"
                           onClick={() => handleRemoveExistingImage(index)}
-                          className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                          className="absolute top-2 right-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -925,9 +885,9 @@ export default function TemplateForm({
                     {imagePreviews.map((preview, index) => (
                       <div
                         key={`new-${index}`}
-                        className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30"
+                        className="group border-border/60 bg-muted/30 relative aspect-video overflow-hidden rounded-lg border"
                       >
-                        <div className="absolute top-2 left-2 z-10 bg-green-500/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                        <div className="absolute top-2 left-2 z-10 rounded bg-green-500/80 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm">
                           New
                         </div>
                         <Image
@@ -941,7 +901,7 @@ export default function TemplateForm({
                           variant="destructive"
                           size="icon"
                           onClick={() => handleRemoveNewImage(index)}
-                          className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                          className="absolute top-2 right-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -958,11 +918,11 @@ export default function TemplateForm({
                 type="submit"
                 disabled={isPending}
                 size="lg"
-                className="w-full text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
+                className="bg-primary hover:bg-primary/90 w-full text-base font-semibold transition-all"
               >
                 {isPending ? (
                   <span className="flex items-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
                       <circle
                         className="opacity-25"
                         cx="12"
@@ -981,15 +941,13 @@ export default function TemplateForm({
                     {isEditMode ? 'Updating...' : 'Creating...'}
                   </span>
                 ) : (
-                  <span>
-                    {isEditMode ? 'Update Template' : 'Publish Template'}
-                  </span>
+                  <span>{isEditMode ? 'Update Template' : 'Publish Template'}</span>
                 )}
               </Button>
             </div>
           </form>
         </Form>
       </div>
-    </div >
+    </div>
   );
 }

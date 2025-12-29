@@ -51,6 +51,7 @@ import {
 } from '@/server-action/designs/validator';
 import { updateContentDesign } from '@/server-action/designs/updateDesign';
 import { createContentDesign } from '@/server-action/designs/createDesign';
+import { useRouter } from 'next/navigation';
 
 // Interface untuk Data Design dari Database
 interface DesignEntity {
@@ -73,13 +74,10 @@ type DesignFormProps = {
 
 export default function DesignForm({ categories, design }: DesignFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [localCategories, setLocalCategories] =
-    useState<Category[]>(categories);
+  const [localCategories, setLocalCategories] = useState<Category[]>(categories);
 
   // --- STATE FILE UPLOADS ---
-  const [existingImages, setExistingImages] = useState<string[]>(
-    design?.imagesUrl || [],
-  );
+  const [existingImages, setExistingImages] = useState<string[]>(design?.imagesUrl || []);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [newPreviews, setNewPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -133,7 +131,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
 
   const defaultStatus: DesignStatusType =
     design?.statusContent &&
-      DESIGN_STATUS_OPTIONS.includes(design.statusContent as DesignStatusType)
+    DESIGN_STATUS_OPTIONS.includes(design.statusContent as DesignStatusType)
       ? (design.statusContent as DesignStatusType)
       : 'draft';
 
@@ -154,9 +152,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
     },
   });
 
-  // Watch sourceFile for UI updates
-  const sourceFileValue = useWatch({ control: form.control, name: 'sourceFile' });
-
+  const router = useRouter();
   const createParentCategory = async (name: string) => {
     const res = await createCategoryDesign({
       name,
@@ -303,24 +299,24 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
             setExistingImages([]);
             setNewPreviews([]);
             setSelectedFiles([]);
-            // sourceFile reset handled by form.reset()
+
             if (fileInputRef.current) fileInputRef.current.value = '';
-            if (sourceFileInputRef.current)
-              sourceFileInputRef.current.value = '';
+            if (sourceFileInputRef.current) sourceFileInputRef.current.value = '';
+            router.push('/dashboard/content/designs');
           } else {
             // Edit mode reset partial
             setSelectedFiles([]);
             setNewPreviews([]);
-            // Keep sourceFile as is (string) or reset if needed? 
+            // Keep sourceFile as is (string) or reset if needed?
             // Usually we don't reset sourceFile field in edit mode unless we want to revert changes.
-            // But if upload success, the new file is now "existing". 
-            // Ideally we'd update the form with new data, but full refresh might be better or router.refresh() 
+            // But if upload success, the new file is now "existing".
+            // Ideally we'd update the form with new data, but full refresh might be better or router.refresh()
             if (fileInputRef.current) fileInputRef.current.value = '';
-            if (sourceFileInputRef.current)
-              sourceFileInputRef.current.value = '';
+            if (sourceFileInputRef.current) sourceFileInputRef.current.value = '';
+            router.push('/dashboard/content/designs');
           }
         })
-        .catch(() => { });
+        .catch(() => {});
     });
   };
 
@@ -330,9 +326,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
     name: 'categoryDesignsId',
   });
 
-  const selectedCategory = localCategories.find(
-    (c) => c.id === watchedCategoryId,
-  );
+  const selectedCategory = localCategories.find((c) => c.id === watchedCategoryId);
   let currentParentId = '';
   let currentChildId = '';
 
@@ -346,20 +340,18 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
     }
   }
 
-  const childCategories = localCategories.filter(
-    (c) => c.parentId === currentParentId,
-  );
+  const childCategories = localCategories.filter((c) => c.parentId === currentParentId);
 
   return (
     <>
-      <div className="min-h-screen bg-background">
+      <div className="bg-background min-h-screen">
         <div className="mx-auto max-w-2xl px-6 py-16">
           {/* Header Section */}
           <div className="mb-16">
-            <h1 className="text-5xl font-bold tracking-tight text-foreground mb-4 text-balance">
+            <h1 className="text-foreground mb-4 text-5xl font-bold tracking-tight text-balance">
               {isEditMode ? 'Edit Design' : 'Create New Design'}
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="text-muted-foreground text-lg leading-relaxed">
               {isEditMode
                 ? 'Update your design information and assets below'
                 : 'Complete the form to publish your new design resource'}
@@ -367,18 +359,15 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
           </div>
 
           <Form {...form}>
-            <form
-              onSubmit={(e) => form.handleSubmit(onSubmit)(e)}
-              className="space-y-16"
-            >
+            <form onSubmit={(e) => form.handleSubmit(onSubmit)(e)} className="space-y-16">
               {/* SECTION 1: BASIC INFO */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                     Basic Information
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <div className="space-y-8">
@@ -389,7 +378,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                       name="categoryDesignsId"
                       render={() => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                          <FormLabel className="text-foreground mb-3 block text-sm font-medium">
                             Category
                           </FormLabel>
                           <FormControl>
@@ -413,7 +402,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                     />
 
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                      <FormLabel className="text-foreground mb-3 block text-sm font-medium">
                         Sub Category
                       </FormLabel>
                       <CategoryCombobox
@@ -443,13 +432,13 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-foreground">
+                        <FormLabel className="text-foreground text-sm font-medium">
                           Design Title
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g. Modern Dashboard UI"
-                            className="bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                            className="bg-muted/30 border-border/60 hover:border-border text-base transition-colors"
                             {...field}
                           />
                         </FormControl>
@@ -464,13 +453,10 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                       name="statusContent"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-foreground">
+                          <FormLabel className="text-foreground text-sm font-medium">
                             Status
                           </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                                 <SelectValue />
@@ -478,11 +464,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                             </FormControl>
                             <SelectContent>
                               {DESIGN_STATUS_OPTIONS.map((opt) => (
-                                <SelectItem
-                                  key={opt}
-                                  value={opt}
-                                  className="capitalize"
-                                >
+                                <SelectItem key={opt} value={opt} className="capitalize">
                                   {opt}
                                 </SelectItem>
                               ))}
@@ -498,14 +480,11 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                       name="tier"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center gap-2 text-sm font-medium text-foreground">
-                            <Crown className="w-3.5 h-3.5" />
+                          <FormLabel className="text-foreground flex items-center gap-2 text-sm font-medium">
+                            <Crown className="h-3.5 w-3.5" />
                             Access Tier
                           </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                                 <SelectValue />
@@ -513,11 +492,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                             </FormControl>
                             <SelectContent>
                               {DESIGN_TIER_OPTIONS.map((opt) => (
-                                <SelectItem
-                                  key={opt}
-                                  value={opt}
-                                  className="capitalize"
-                                >
+                                <SelectItem key={opt} value={opt} className="capitalize">
                                   {opt.replace('_', ' ')}
                                 </SelectItem>
                               ))}
@@ -534,11 +509,11 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
               {/* SECTION 2: DESCRIPTION (FIXED) */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                     Description
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <FormField
@@ -547,7 +522,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <div className="rounded-lg border border-border/60 bg-muted/30 p-4 hover:border-border transition-colors">
+                        <div className="border-border/60 bg-muted/30 hover:border-border rounded-lg border p-4 transition-colors">
                           <DescriptionEditor
                             initialContent={field.value}
                             onChange={field.onChange}
@@ -571,11 +546,11 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
               {/* SECTION 3: TAGS */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                     Tags
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <FormField
@@ -591,7 +566,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                           className="bg-muted/30"
                         />
                       </FormControl>
-                      <FormDescription className="text-xs text-muted-foreground/80 mt-3">
+                      <FormDescription className="text-muted-foreground/80 mt-3 text-xs">
                         Press Enter to add tags
                       </FormDescription>
                       <FormMessage />
@@ -603,12 +578,12 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
               {/* SECTION 4: LINKS */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <LinkIcon className="w-3.5 h-3.5" />
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                    <LinkIcon className="h-3.5 w-3.5" />
                     External Links
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <FormField
@@ -616,15 +591,15 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                   name="urlBuyOneTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-foreground">
+                      <FormLabel className="text-foreground text-sm font-medium">
                         Purchase Link (Optional)
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <LinkIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
+                          <LinkIcon className="text-muted-foreground/60 absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2" />
                           <Input
                             placeholder="https://example.com/buy"
-                            className="h-14 pl-12 bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                            className="bg-muted/30 border-border/60 hover:border-border h-14 pl-12 text-base transition-colors"
                             {...field}
                           />
                         </div>
@@ -638,12 +613,12 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
               {/* SECTION 5: SOURCE FILE */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <FileUp className="w-3.5 h-3.5" />
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                    <FileUp className="h-3.5 w-3.5" />
                     Source File <span className="text-destructive">*</span>
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <FormField
@@ -671,21 +646,24 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                             id="source-file-upload"
                           />
                           <label htmlFor="source-file-upload">
-                            <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${!field.value && form.formState.errors.sourceFile
-                              ? 'border-destructive/50 bg-destructive/5'
-                              : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
-                              }`}>
+                            <div
+                              className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${
+                                !field.value && form.formState.errors.sourceFile
+                                  ? 'border-destructive/50 bg-destructive/5'
+                                  : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                              }`}
+                            >
                               <div className="flex flex-col items-center justify-center gap-4">
                                 {field.value instanceof File ? (
                                   <div className="flex flex-col items-center gap-4">
-                                    <div className="rounded-full bg-primary/10 p-4">
-                                      <Upload className="h-8 w-8 text-primary" />
+                                    <div className="bg-primary/10 rounded-full p-4">
+                                      <Upload className="text-primary h-8 w-8" />
                                     </div>
                                     <div className="space-y-2">
-                                      <p className="text-base font-medium text-foreground">
+                                      <p className="text-foreground text-base font-medium">
                                         {field.value.name}
                                       </p>
-                                      <p className="text-sm text-muted-foreground">
+                                      <p className="text-muted-foreground text-sm">
                                         {(field.value.size / 1024 / 1024).toFixed(2)} MB
                                       </p>
                                     </div>
@@ -696,25 +674,24 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                                       <FileText className="h-8 w-8 text-emerald-600" />
                                     </div>
                                     <div className="space-y-2">
-                                      <p className="text-base font-medium text-foreground">
-                                        Existing File:{' '}
-                                        {getFileNameFromUrl(field.value)}
+                                      <p className="text-foreground text-base font-medium">
+                                        Existing File: {getFileNameFromUrl(field.value)}
                                       </p>
-                                      <p className="text-sm text-muted-foreground">
+                                      <p className="text-muted-foreground text-sm">
                                         Click to replace with a new file
                                       </p>
                                     </div>
                                   </div>
                                 ) : (
                                   <>
-                                    <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                                      <Upload className="h-8 w-8 text-primary" />
+                                    <div className="bg-primary/10 rounded-full p-4 transition-transform group-hover:scale-110">
+                                      <Upload className="text-primary h-8 w-8" />
                                     </div>
                                     <div className="space-y-2">
-                                      <p className="text-base font-medium text-foreground">
+                                      <p className="text-foreground text-base font-medium">
                                         Click to upload source file
                                       </p>
-                                      <p className="text-sm text-muted-foreground">
+                                      <p className="text-muted-foreground text-sm">
                                         ZIP, RAR, FIG (Max 100MB)
                                       </p>
                                     </div>
@@ -735,7 +712,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                                   if (sourceFileInputRef.current)
                                     sourceFileInputRef.current.value = '';
                                 }}
-                                className="mt-3 h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10 mt-3 h-9 text-xs"
                               >
                                 <Trash2 className="mr-1.5 h-3.5 w-3.5" />
                                 {field.value instanceof File ? 'Cancel Upload' : 'Remove File'}
@@ -753,12 +730,12 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
               {/* SECTION 6: IMAGES */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5" />
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                    <Sparkles className="h-3.5 w-3.5" />
                     Images / Gallery
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <div>
@@ -778,19 +755,22 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                         />
                         <label htmlFor="thumbnail-upload">
                           <FormControl>
-                            <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${form.formState.errors.imagesUrl
-                              ? 'border-destructive/50 bg-destructive/5'
-                              : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
-                              }`}>
+                            <div
+                              className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${
+                                form.formState.errors.imagesUrl
+                                  ? 'border-destructive/50 bg-destructive/5'
+                                  : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                              }`}
+                            >
                               <div className="flex flex-col items-center justify-center gap-4">
-                                <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                                  <ImageIcon className="h-8 w-8 text-primary" />
+                                <div className="bg-primary/10 rounded-full p-4 transition-transform group-hover:scale-110">
+                                  <ImageIcon className="text-primary h-8 w-8" />
                                 </div>
                                 <div className="space-y-2">
-                                  <p className="text-base font-medium text-foreground">
+                                  <p className="text-foreground text-base font-medium">
                                     Click to upload images
                                   </p>
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className="text-muted-foreground text-sm">
                                     Recommended: 16:9 aspect ratio
                                   </p>
                                 </div>
@@ -808,9 +788,9 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                     {existingImages.map((url, index) => (
                       <div
                         key={`existing-${index}`}
-                        className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30"
+                        className="group border-border/60 bg-muted/30 relative aspect-video overflow-hidden rounded-lg border"
                       >
-                        <div className="absolute top-2 left-2 z-10 bg-blue-500/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                        <div className="absolute top-2 left-2 z-10 rounded bg-blue-500/80 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm">
                           Saved
                         </div>
                         <Image
@@ -827,7 +807,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                             e.preventDefault();
                             removeExistingImage(index);
                           }}
-                          className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                          className="absolute top-2 right-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -838,9 +818,9 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                     {newPreviews.map((url, index) => (
                       <div
                         key={`new-${index}`}
-                        className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30"
+                        className="group border-border/60 bg-muted/30 relative aspect-video overflow-hidden rounded-lg border"
                       >
-                        <div className="absolute top-2 left-2 z-10 bg-green-500/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                        <div className="absolute top-2 left-2 z-10 rounded bg-green-500/80 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm">
                           New
                         </div>
                         <Image
@@ -857,7 +837,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                             e.preventDefault();
                             removeNewImage(index);
                           }}
-                          className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                          className="absolute top-2 right-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -872,11 +852,11 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                   type="submit"
                   disabled={isPending}
                   size="lg"
-                  className="w-full text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
+                  className="bg-primary hover:bg-primary/90 w-full text-base font-semibold transition-all"
                 >
                   {isPending ? (
                     <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
                         <circle
                           className="opacity-25"
                           cx="12"
@@ -895,16 +875,14 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                       {isEditMode ? 'Updating...' : 'Creating...'}
                     </span>
                   ) : (
-                    <span>
-                      {isEditMode ? 'Update Design' : 'Publish Design'}
-                    </span>
+                    <span>{isEditMode ? 'Update Design' : 'Publish Design'}</span>
                   )}
                 </Button>
               </div>
             </form>
           </Form>
         </div>
-      </div >
+      </div>
     </>
   );
 }

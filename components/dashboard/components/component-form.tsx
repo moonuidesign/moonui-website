@@ -14,7 +14,6 @@ import {
   Shrink,
   Eraser,
   FileCode2,
-  PlusCircle,
   Crown,
   Info,
   Upload,
@@ -38,13 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
+
 import {
   ContextMenu,
   ContextMenuContent,
@@ -71,6 +64,7 @@ import { createCategoryComponent } from '@/server-action/getCategoryComponent/cr
 import { CategoryCombobox } from '@/components/dashboard/category-combobox';
 import { IsolatedRenderer } from './isolated-renderer';
 import { ZoomToolbar } from './zoom-toolbar';
+import { useRouter } from 'next/navigation';
 
 // =====================================================================
 // 1. TYPES & CONSTANTS
@@ -96,8 +90,7 @@ export interface ComponentEntity {
 type ValidClipboardSource = 'figma' | 'framer' | null;
 
 const CLIPBOARD_PATTERNS = {
-  FIGMA:
-    /data-metadata="(&lt;|<)!--\(figmeta\)|data-buffer="(&lt;|<)!--\(figma\)/i,
+  FIGMA: /data-metadata="(&lt;|<)!--\(figmeta\)|data-buffer="(&lt;|<)!--\(figma\)/i,
   FRAMER: /data-framer-pasteboard/i,
 };
 
@@ -109,14 +102,11 @@ export default function ComponentForm({
   categories: Category[];
 }) {
   const [isPending, startTransition] = useTransition();
-  const [localCategories, setLocalCategories] =
-    useState<Category[]>(categories);
+  const [localCategories, setLocalCategories] = useState<Category[]>(categories);
 
   // State Assets
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadedImagePreview, setUploadedImagePreview] = useState<
-    string | null
-  >(null);
+  const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // State UI Controls
@@ -126,7 +116,7 @@ export default function ComponentForm({
   const [isCodeExpanded, setIsCodeExpanded] = useState(false);
 
   const isEditMode = !!component;
-
+  const router = useRouter();
   // --- HELPER: Parse Description ---
   const parseDescription = (desc: any) => {
     if (!desc) return undefined;
@@ -150,9 +140,7 @@ export default function ComponentForm({
   let defaultChildId = '';
 
   if (component?.categoryComponentsId) {
-    const selectedCat = categories.find(
-      (c) => c.id === component.categoryComponentsId,
-    );
+    const selectedCat = categories.find((c) => c.id === component.categoryComponentsId);
     if (selectedCat) {
       if (selectedCat.parentId) {
         defaultParentId = selectedCat.parentId;
@@ -199,14 +187,10 @@ export default function ComponentForm({
     name: 'categoryComponentsId',
   });
 
-  const activeImagePreview = uploadedImagePreview
-    ? uploadedImagePreview
-    : component?.imageUrl;
+  const activeImagePreview = uploadedImagePreview ? uploadedImagePreview : component?.imageUrl;
 
   const parentCategories = localCategories.filter((c) => !c.parentId);
-  const subCategories = localCategories.filter(
-    (c) => c.parentId === watchedParentCategoryId,
-  );
+  const subCategories = localCategories.filter((c) => c.parentId === watchedParentCategoryId);
 
   const createParentCategory = async (name: string) => {
     const res = await createCategoryComponent({ name, parentId: null });
@@ -235,9 +219,7 @@ export default function ComponentForm({
     return res.category;
   };
 
-  const validateClipboardSource = (
-    htmlString: string,
-  ): ValidClipboardSource => {
+  const validateClipboardSource = (htmlString: string): ValidClipboardSource => {
     if (!htmlString) return null;
     if (CLIPBOARD_PATTERNS.FIGMA.test(htmlString)) return 'figma';
     if (CLIPBOARD_PATTERNS.FRAMER.test(htmlString)) return 'framer';
@@ -246,8 +228,7 @@ export default function ComponentForm({
 
   const handleStrictPaste = async () => {
     try {
-      if (!navigator.clipboard)
-        return toast.error('Clipboard API not available');
+      if (!navigator.clipboard) return toast.error('Clipboard API not available');
 
       const clipboardItems = await navigator.clipboard.read();
       let htmlContent = '';
@@ -267,9 +248,7 @@ export default function ComponentForm({
       if (source === 'figma') {
         toast.success('✅ Figma Component Detected');
         const firstLine = textContent.split('\n')[0].trim();
-        const plainVal = textContent.trim()
-          ? textContent
-          : firstLine || 'Figma Content';
+        const plainVal = textContent.trim() ? textContent : firstLine || 'Figma Content';
 
         form.setValue('type', 'figma', { shouldValidate: true });
         form.setValue('copyComponentTextHTML', htmlContent, {
@@ -318,37 +297,26 @@ export default function ComponentForm({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/'))
-        return toast.error('Format harus gambar');
+      if (!file.type.startsWith('image/')) return toast.error('Format harus gambar');
       if (file.size > 5 * 1024 * 1024) return toast.error('Max 5MB');
       if (file.size > 5 * 1024 * 1024) return toast.error('Max 5MB');
       setSelectedFile(file);
       form.setValue('previewImage', file, { shouldValidate: true });
       const reader = new FileReader();
-      reader.onload = (ev) =>
-        setUploadedImagePreview(ev.target?.result as string);
+      reader.onload = (ev) => setUploadedImagePreview(ev.target?.result as string);
       reader.readAsDataURL(file);
     }
   };
 
   const onSubmit = (values: ContentComponentFormValues) => {
     if (!values.rawHtmlInput?.trim() && !isEditMode) {
-      if (
-        !confirm(
-          '⚠️ Source Engine (HTML) kosong. AI tidak akan berjalan. Lanjutkan?',
-        )
-      )
-        return;
+      if (!confirm('⚠️ Source Engine (HTML) kosong. AI tidak akan berjalan. Lanjutkan?')) return;
     }
 
     startTransition(async () => {
       const promise = async () => {
         const res = isEditMode
-          ? await updateContentComponent(
-            component!.id,
-            values,
-            selectedFile || undefined,
-          )
+          ? await updateContentComponent(component!.id, values, selectedFile || undefined)
           : await createContentComponent(values, selectedFile);
 
         if (!res?.success) {
@@ -359,9 +327,7 @@ export default function ComponentForm({
 
       await toast
         .promise(promise(), {
-          pending: isEditMode
-            ? 'Updating component...'
-            : 'Creating component...',
+          pending: isEditMode ? 'Updating component...' : 'Creating component...',
           success: {
             render({ data }) {
               return `${data}`;
@@ -378,24 +344,25 @@ export default function ComponentForm({
             form.reset();
             setUploadedImagePreview(null);
             setSelectedFile(null);
+            router.push(`/dashboard/content/components`);
           }
+          router.push(`/dashboard/content/components`);
         })
-        .catch(() => { });
+        .catch(() => {});
     });
   };
 
   return (
     <>
-      <div className="min-h-screen bg-background">
+      <div className="bg-background min-h-screen">
         <div className="mx-auto max-w-2xl px-6 py-16">
           {/* Header Section */}
           <div className="mb-16">
-            <h1 className="text-5xl font-bold tracking-tight text-foreground mb-4 text-balance">
+            <h1 className="text-foreground mb-4 text-5xl font-bold tracking-tight text-balance">
               {isEditMode ? 'Edit Component' : 'Create New Component'}
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Import design (Figma/Framer), configure metadata, and generate AI
-              code.
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Import design (Figma/Framer), configure metadata, and generate AI code.
             </p>
           </div>
 
@@ -404,11 +371,11 @@ export default function ComponentForm({
               {/* SECTION 1: BASIC INFO */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                     Basic Information
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <div className="space-y-8">
@@ -419,7 +386,7 @@ export default function ComponentForm({
                       name="categoryComponentsId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                          <FormLabel className="text-foreground mb-3 block text-sm font-medium">
                             Category
                           </FormLabel>
                           <CategoryCombobox
@@ -444,7 +411,7 @@ export default function ComponentForm({
                       name="subCategoryComponentsId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-foreground mb-3 block">
+                          <FormLabel className="text-foreground mb-3 block text-sm font-medium">
                             Sub Category
                           </FormLabel>
                           <CategoryCombobox
@@ -473,13 +440,13 @@ export default function ComponentForm({
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-foreground">
+                        <FormLabel className="text-foreground text-sm font-medium">
                           Component Name
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g. Navbar Pro"
-                            className="bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                            className="bg-muted/30 border-border/60 hover:border-border text-base transition-colors"
                             {...field}
                           />
                         </FormControl>
@@ -494,13 +461,10 @@ export default function ComponentForm({
                       name="statusContent"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-foreground flex items-center gap-2">
-                            <Info className="w-3.5 h-3.5" /> Status
+                          <FormLabel className="text-foreground flex items-center gap-2 text-sm font-medium">
+                            <Info className="h-3.5 w-3.5" /> Status
                           </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border transition-colors">
                                 <SelectValue />
@@ -508,11 +472,7 @@ export default function ComponentForm({
                             </FormControl>
                             <SelectContent>
                               {STATUS_OPTIONS.map((status) => (
-                                <SelectItem
-                                  key={status}
-                                  value={status}
-                                  className="capitalize"
-                                >
+                                <SelectItem key={status} value={status} className="capitalize">
                                   {status}
                                 </SelectItem>
                               ))}
@@ -526,8 +486,8 @@ export default function ComponentForm({
                       name="tier"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-foreground flex items-center gap-2">
-                            <Crown className="w-3.5 h-3.5" /> Tier
+                          <FormLabel className="text-foreground flex items-center gap-2 text-sm font-medium">
+                            <Crown className="h-3.5 w-3.5" /> Tier
                           </FormLabel>
                           <Select
                             onValueChange={field.onChange}
@@ -540,11 +500,7 @@ export default function ComponentForm({
                             </FormControl>
                             <SelectContent>
                               {TIER_OPTIONS.map((tier) => (
-                                <SelectItem
-                                  key={tier}
-                                  value={tier}
-                                  className="capitalize"
-                                >
+                                <SelectItem key={tier} value={tier} className="capitalize">
                                   {tier}
                                 </SelectItem>
                               ))}
@@ -560,41 +516,33 @@ export default function ComponentForm({
               {/* SECTION 2: VISUAL REFERENCE */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <MousePointer2 className="w-3.5 h-3.5" />
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                    <MousePointer2 className="h-3.5 w-3.5" />
                     Visual Reference
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
-                <div className="rounded-xl border border-border/60 overflow-hidden bg-muted/20">
-                  <div className="flex items-center justify-between p-4 bg-muted/30 border-b border-border/40">
+                <div className="border-border/60 bg-muted/20 overflow-hidden rounded-xl border">
+                  <div className="bg-muted/30 border-border/40 flex items-center justify-between border-b p-4">
                     <div className="flex items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className="bg-background text-xs font-normal"
-                      >
+                      <Badge variant="outline" className="bg-background text-xs font-normal">
                         Figma/Framer Only
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2">
-                      {watchedHTML && (
-                        <ZoomToolbar
-                          scale={visualScale}
-                          setScale={setVisualScale}
-                        />
-                      )}
+                      {watchedHTML && <ZoomToolbar scale={visualScale} setScale={setVisualScale} />}
                       {watchedHTML && (
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
                           onClick={clearVisualData}
                           title="Clear Visual Data"
                         >
-                          <Eraser className="w-4 h-4" />
+                          <Eraser className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
@@ -610,46 +558,40 @@ export default function ComponentForm({
                             <ContextMenuTrigger>
                               {!watchedHTML ? (
                                 <div
-                                  className="h-[280px] flex flex-col items-center justify-center text-muted-foreground/60 border-2 border-dashed border-border/40 bg-background/50 m-6 rounded-lg cursor-pointer hover:bg-muted/30 hover:border-primary/30 transition-all group"
+                                  className="text-muted-foreground/60 border-border/40 bg-background/50 hover:bg-muted/30 hover:border-primary/30 group m-6 flex h-[280px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-all"
                                   onClick={handleStrictPaste}
                                 >
-                                  <div className="bg-muted p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
-                                    <ClipboardPaste className="w-6 h-6 text-muted-foreground" />
+                                  <div className="bg-muted mb-4 rounded-full p-4 transition-transform group-hover:scale-110">
+                                    <ClipboardPaste className="text-muted-foreground h-6 w-6" />
                                   </div>
-                                  <p className="text-sm font-medium text-foreground">
+                                  <p className="text-foreground text-sm font-medium">
                                     Click to Paste (Strict)
                                   </p>
-                                  <p className="text-xs text-muted-foreground mt-1">
+                                  <p className="text-muted-foreground mt-1 text-xs">
                                     Figma or Framer data only
                                   </p>
                                 </div>
                               ) : (
-                                <div className="h-[400px] w-full relative overflow-hidden bg-background">
-                                  <IsolatedRenderer
-                                    htmlCode={watchedHTML}
-                                    scale={visualScale}
-                                  />
+                                <div className="bg-background relative h-[400px] w-full overflow-hidden">
+                                  <IsolatedRenderer htmlCode={watchedHTML} scale={visualScale} />
                                 </div>
                               )}
                             </ContextMenuTrigger>
                             <ContextMenuContent className="w-64">
                               <ContextMenuItem onSelect={handleStrictPaste}>
-                                <ClipboardPaste className="mr-2 h-4 w-4" />{' '}
-                                Paste (Strict Mode)
+                                <ClipboardPaste className="mr-2 h-4 w-4" /> Paste (Strict Mode)
                               </ContextMenuItem>
                               {watchedHTML && (
                                 <>
                                   <ContextMenuItem onSelect={copyPreviewToRaw}>
-                                    <ArrowDown className="mr-2 h-4 w-4" /> Copy
-                                    to Source Engine
+                                    <ArrowDown className="mr-2 h-4 w-4" /> Copy to Source Engine
                                   </ContextMenuItem>
                                   <ContextMenuSeparator />
                                   <ContextMenuItem
                                     onSelect={clearVisualData}
                                     className="text-destructive focus:text-destructive"
                                   >
-                                    <Trash2 className="mr-2 h-4 w-4" /> Clear
-                                    Reference
+                                    <Trash2 className="mr-2 h-4 w-4" /> Clear Reference
                                   </ContextMenuItem>
                                 </>
                               )}
@@ -666,61 +608,60 @@ export default function ComponentForm({
               {/* SECTION 3: SOURCE ENGINE */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5" />
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                    <Sparkles className="h-3.5 w-3.5" />
                     Source Engine
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
-                <div className="rounded-xl border border-border/60 overflow-hidden bg-muted/20">
-                  <div className="flex items-center justify-between p-4 bg-muted/30 border-b border-border/40">
-                    <div className="flex bg-background p-1 rounded-lg border border-border/40">
+                <div className="border-border/60 bg-muted/20 overflow-hidden rounded-xl border">
+                  <div className="bg-muted/30 border-border/40 flex items-center justify-between border-b p-4">
+                    <div className="bg-background border-border/40 flex rounded-lg border p-1">
                       <button
                         type="button"
                         onClick={() => setRawInputTab('code')}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${rawInputTab === 'code'
-                          ? 'bg-muted shadow-sm text-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                          }`}
+                        className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                          rawInputTab === 'code'
+                            ? 'bg-muted text-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
                       >
                         Code
                       </button>
                       <button
                         type="button"
                         onClick={() => setRawInputTab('preview')}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${rawInputTab === 'preview'
-                          ? 'bg-muted shadow-sm text-primary'
-                          : 'text-muted-foreground hover:text-primary'
-                          }`}
+                        className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                          rawInputTab === 'preview'
+                            ? 'bg-muted text-primary shadow-sm'
+                            : 'text-muted-foreground hover:text-primary'
+                        }`}
                       >
                         Review
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
                       {rawInputTab === 'preview' && watchedRawInput && (
-                        <ZoomToolbar
-                          scale={sourceScale}
-                          setScale={setSourceScale}
-                        />
+                        <ZoomToolbar scale={sourceScale} setScale={setSourceScale} />
                       )}
                       {watchedRawInput && (
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
                           onClick={() => form.setValue('rawHtmlInput', '')}
                           title="Clear Code"
                         >
-                          <Eraser className="w-4 h-4" />
+                          <Eraser className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
                   </div>
 
-                  <div className="relative bg-background group">
+                  <div className="bg-background group relative">
                     <FormField
                       control={form.control}
                       name="rawHtmlInput"
@@ -732,28 +673,27 @@ export default function ComponentForm({
                                 <Textarea
                                   {...field}
                                   placeholder="Paste clean HTML here (<div class='...'>...</div>)"
-                                  className={`font-mono text-xs leading-relaxed resize-none border-0 focus-visible:ring-0 bg-background p-6 transition-all duration-300 ease-in-out ${isCodeExpanded ? 'h-[500px]' : 'h-[250px]'
-                                    }`}
+                                  className={`bg-background resize-none border-0 p-6 font-mono text-xs leading-relaxed transition-all duration-300 ease-in-out focus-visible:ring-0 ${
+                                    isCodeExpanded ? 'h-[500px]' : 'h-[250px]'
+                                  }`}
                                   spellCheck={false}
                                 />
                               </FormControl>
-                              <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="absolute right-4 bottom-4 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                                 <Button
                                   type="button"
                                   size="sm"
                                   variant="secondary"
-                                  className="h-7 text-xs px-3 shadow-sm border border-border/40"
-                                  onClick={() =>
-                                    setIsCodeExpanded(!isCodeExpanded)
-                                  }
+                                  className="border-border/40 h-7 border px-3 text-xs shadow-sm"
+                                  onClick={() => setIsCodeExpanded(!isCodeExpanded)}
                                 >
                                   {isCodeExpanded ? (
                                     <>
-                                      <Shrink className="w-3 h-3 mr-1.5" /> Less
+                                      <Shrink className="mr-1.5 h-3 w-3" /> Less
                                     </>
                                   ) : (
                                     <>
-                                      <Expand className="w-3 h-3 mr-1.5" /> More
+                                      <Expand className="mr-1.5 h-3 w-3" /> More
                                     </>
                                   )}
                                 </Button>
@@ -761,10 +701,9 @@ export default function ComponentForm({
                                   type="button"
                                   size="sm"
                                   variant="secondary"
-                                  className="h-7 text-xs px-3 shadow-sm border border-border/40"
+                                  className="border-border/40 h-7 border px-3 text-xs shadow-sm"
                                   onClick={async () => {
-                                    const t =
-                                      await navigator.clipboard.readText();
+                                    const t = await navigator.clipboard.readText();
                                     if (t) {
                                       form.setValue('rawHtmlInput', t, {
                                         shouldValidate: true,
@@ -773,29 +712,25 @@ export default function ComponentForm({
                                     }
                                   }}
                                 >
-                                  <ClipboardPaste className="w-3 h-3 mr-1.5" />{' '}
-                                  Paste
+                                  <ClipboardPaste className="mr-1.5 h-3 w-3" /> Paste
                                 </Button>
                               </div>
                               {!field.value && (
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none opacity-40">
-                                  <FileCode2 className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-                                  <span className="text-sm font-medium text-muted-foreground">
+                                <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center opacity-40">
+                                  <FileCode2 className="text-muted-foreground mx-auto mb-3 h-10 w-10" />
+                                  <span className="text-muted-foreground text-sm font-medium">
                                     Empty Source Code
                                   </span>
                                 </div>
                               )}
                             </>
                           ) : (
-                            <div className="h-[400px] w-full bg-slate-50 relative overflow-hidden flex items-center justify-center border-t border-dashed border-border/20">
+                            <div className="border-border/20 relative flex h-[400px] w-full items-center justify-center overflow-hidden border-t border-dashed bg-slate-50">
                               {field.value ? (
-                                <IsolatedRenderer
-                                  htmlCode={field.value}
-                                  scale={sourceScale}
-                                />
+                                <IsolatedRenderer htmlCode={field.value} scale={sourceScale} />
                               ) : (
-                                <div className="text-muted-foreground/50 text-xs flex flex-col items-center">
-                                  <Eye className="mb-2 w-8 h-8" />
+                                <div className="text-muted-foreground/50 flex flex-col items-center text-xs">
+                                  <Eye className="mb-2 h-8 w-8" />
                                   <span>No code to render</span>
                                 </div>
                               )}
@@ -811,11 +746,11 @@ export default function ComponentForm({
               {/* SECTION 4: DESC & TAGS */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                     Description & Metadata
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <div className="space-y-8">
@@ -826,11 +761,11 @@ export default function ComponentForm({
                       console.log('[ComponentForm] Description Field Value:', field.value); // DEBUG
                       return (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-foreground">
+                          <FormLabel className="text-foreground text-sm font-medium">
                             Description
                           </FormLabel>
                           <FormControl>
-                            <div className="rounded-lg border border-border/60 bg-muted/30 p-4 hover:border-border transition-colors">
+                            <div className="border-border/60 bg-muted/30 hover:border-border rounded-lg border p-4 transition-colors">
                               <DescriptionEditor
                                 initialContent={field.value}
                                 onChange={(value) => field.onChange(value)}
@@ -856,7 +791,7 @@ export default function ComponentForm({
                     name="slug"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-foreground">
+                        <FormLabel className="text-foreground text-sm font-medium">
                           Tags / Keywords
                         </FormLabel>
                         <FormControl>
@@ -867,7 +802,7 @@ export default function ComponentForm({
                             className="bg-muted/30"
                           />
                         </FormControl>
-                        <FormDescription className="text-xs text-muted-foreground/80 mt-3">
+                        <FormDescription className="text-muted-foreground/80 mt-3 text-xs">
                           Press Enter to add tags
                         </FormDescription>
                         <FormMessage />
@@ -880,12 +815,12 @@ export default function ComponentForm({
                     name="urlBuyOneTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-foreground">
+                        <FormLabel className="text-foreground text-sm font-medium">
                           Purchase URL
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                            className="bg-muted/30 border-border/60 hover:border-border text-base transition-colors"
                             placeholder="e.g. https://..."
                             {...field}
                           />
@@ -900,12 +835,12 @@ export default function ComponentForm({
               {/* SECTION 5: THUMBNAIL (UPDATED TO MATCH TEMPLATE-FORM STYLE) */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5" />
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                    <Sparkles className="h-3.5 w-3.5" />
                     Thumbnail
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <div>
@@ -924,19 +859,22 @@ export default function ComponentForm({
                         />
                         <label htmlFor="image-upload">
                           <FormControl>
-                            <div className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${form.formState.errors.previewImage
-                              ? 'border-destructive/50 bg-destructive/5'
-                              : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
-                              }`}>
+                            <div
+                              className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all ${
+                                form.formState.errors.previewImage
+                                  ? 'border-destructive/50 bg-destructive/5'
+                                  : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30'
+                              }`}
+                            >
                               <div className="flex flex-col items-center justify-center gap-4">
-                                <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                                  <Upload className="h-8 w-8 text-primary" />
+                                <div className="bg-primary/10 rounded-full p-4 transition-transform group-hover:scale-110">
+                                  <Upload className="text-primary h-8 w-8" />
                                 </div>
                                 <div className="space-y-2">
-                                  <p className="text-base font-medium text-foreground">
+                                  <p className="text-foreground text-base font-medium">
                                     Click to upload thumbnail
                                   </p>
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className="text-muted-foreground text-sm">
                                     PNG, JPG, WEBP up to 5MB
                                   </p>
                                 </div>
@@ -952,8 +890,8 @@ export default function ComponentForm({
                   {/* Preview Image */}
                   {activeImagePreview && (
                     <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      <div className="group relative aspect-video overflow-hidden rounded-lg border border-border/60 bg-muted/30">
-                        <div className="absolute top-2 left-2 z-10 bg-green-500/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                      <div className="group border-border/60 bg-muted/30 relative aspect-video overflow-hidden rounded-lg border">
+                        <div className="absolute top-2 left-2 z-10 rounded bg-green-500/80 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm">
                           Thumbnail
                         </div>
                         <Image
@@ -970,10 +908,9 @@ export default function ComponentForm({
                             e.preventDefault();
                             setUploadedImagePreview(null);
                             setSelectedFile(null);
-                            if (fileInputRef.current)
-                              fileInputRef.current.value = '';
+                            if (fileInputRef.current) fileInputRef.current.value = '';
                           }}
-                          className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                          className="absolute top-2 right-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -988,11 +925,11 @@ export default function ComponentForm({
                   type="submit"
                   disabled={isPending}
                   size="lg"
-                  className="w-full text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
+                  className="bg-primary hover:bg-primary/90 w-full text-base font-semibold transition-all"
                 >
                   {isPending ? (
                     <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
                         <circle
                           className="opacity-25"
                           cx="12"
@@ -1011,17 +948,14 @@ export default function ComponentForm({
                       {isEditMode ? 'Updating...' : 'Processing...'}
                     </span>
                   ) : (
-                    <span>
-                      {isEditMode ? 'Update Component' : 'Save Component'}
-                    </span>
+                    <span>{isEditMode ? 'Update Component' : 'Save Component'}</span>
                   )}
                 </Button>
               </div>
             </form>
           </Form>
-
         </div>
-      </div >
+      </div>
     </>
   );
 }

@@ -29,16 +29,13 @@ export default async function EditTemplate({ id }: { id: string }) {
         },
       })
       .from(contentTemplates)
-      .leftJoin(
-        categoryTemplates,
-        eq(contentTemplates.categoryTemplatesId, categoryTemplates.id),
-      )
+      .leftJoin(categoryTemplates, eq(contentTemplates.categoryTemplatesId, categoryTemplates.id))
       .where(eq(contentTemplates.id, id))
       .limit(1),
 
     getCategoryTemplates(),
   ]);
-
+  console.log(templateResult);
   // 3. Ambil item pertama dari array (Destructuring manual pengganti findFirst)
   const template = templateResult[0];
 
@@ -59,10 +56,7 @@ export default async function EditTemplate({ id }: { id: string }) {
     ...template,
 
     // Handle imagesUrl: Pastikan array, lalu map URL-nya
-    imagesUrl: (Array.isArray(template.imagesUrl)
-      ? template.imagesUrl
-      : []
-    ).map((asset: any) => ({
+    imagesUrl: (Array.isArray(template.imagesUrl) ? template.imagesUrl : []).map((asset: any) => ({
       ...asset,
       url: getAbsoluteUrl(asset.url),
     })),
@@ -73,7 +67,7 @@ export default async function EditTemplate({ id }: { id: string }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Edit Template</h1>
+      <h1 className="mb-4 text-2xl font-bold">Edit Template</h1>
       <TemplateForm template={formattedTemplate} categories={categories} />
     </div>
   );

@@ -11,23 +11,18 @@ interface CategoryCreatePageProps {
   initialCategories: any[];
 }
 
-const CategoryCreatePage = ({
-  categoryType,
-  initialCategories,
-}: CategoryCreatePageProps) => {
+const CategoryCreatePage = ({ categoryType, initialCategories }: CategoryCreatePageProps) => {
   const router = useRouter();
 
   const handleSuccess = () => {
     toast.success('Category created successfully!');
-    router.push(`/dashboard/content/${categoryType}/category`);
+    router.push(`/dashboard/category/${categoryType}`);
   };
 
   return (
     <Card className="mx-auto max-w-2xl">
       <CardHeader>
-        <CardTitle className="text-2xl capitalize">
-          Create New {categoryType} Category
-        </CardTitle>
+        <CardTitle className="text-2xl capitalize">Create New {categoryType} Category</CardTitle>
       </CardHeader>
       <CardContent>
         <CategoryForm

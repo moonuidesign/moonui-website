@@ -11,9 +11,7 @@ import { AssetItem, ContentTemplateSchema } from './validator';
 // Definisikan tipe return yang spesifik (Strict)
 type ActionResponse = { success: string } | { error: string };
 
-export async function createContentTemplate(
-  formData: FormData,
-): Promise<ActionResponse> {
+export async function createContentTemplate(formData: FormData): Promise<ActionResponse> {
   console.log('[CreateTemplate] Started');
   // 1. Auth Check
   const session = await auth();
@@ -54,10 +52,7 @@ export async function createContentTemplate(
 
   const validated = ContentTemplateSchema.safeParse(parsedJson);
   if (!validated.success) {
-    console.error(
-      '[CreateTemplate] Validation Error:',
-      validated.error.flatten(),
-    );
+    console.error('[CreateTemplate] Validation Error:', validated.error.flatten());
     const errorDetails = validated.error.issues.map((i) => i.message).join('\n');
     return { error: errorDetails || 'Input tidak valid. Periksa kembali form anda.' };
   }
@@ -66,7 +61,7 @@ export async function createContentTemplate(
   console.log('[CreateTemplate] Validated Values:', values);
 
   // Handle Main File Upload
-  const mainFile = formData.get('mainFile');
+  const mainFile = formData.get('sourceFile');
   let linkDownloadUrl = '';
   let fileSize = '';
   let fileFormat = '';
@@ -130,10 +125,7 @@ export async function createContentTemplate(
   }
 
   // Gabungkan asset manual + hasil upload
-  const finalAssets: AssetItem[] = [
-    ...(values.imagesUrl || []),
-    ...uploadedAssets,
-  ];
+  const finalAssets: AssetItem[] = [...(values.imagesUrl || []), ...uploadedAssets];
 
   // 6. Insert ke Database
   try {

@@ -1,16 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CategoryForm from '@/components/dashboard/category/category-form';
 import { CategoryType } from '@/server-action/category/category-validator';
-import {
-  getCategoryById,
-  listCategories,
-} from '@/server-action/category/category-actions';
 
 interface CategoryEntity {
   id: string;
@@ -39,16 +35,14 @@ const CategoryEditPage = ({
 
   const handleSuccess = () => {
     toast.success('Category updated successfully!');
-    router.push(`/dashboard/content/${categoryType}/category`);
+    router.push(`/dashboard/category/${categoryType}`);
   };
 
   if (!initialData) {
     return (
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
-          <CardTitle className="text-2xl capitalize">
-            Edit {categoryType} Category
-          </CardTitle>
+          <CardTitle className="text-2xl capitalize">Edit {categoryType} Category</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-red-500">Category not found.</p>

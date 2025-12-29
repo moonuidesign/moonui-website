@@ -8,11 +8,7 @@ import { SearchParamsProps } from '../../components';
 import DesignsClient from '@/components/dashboard/design/client';
 import { auth } from '@/libs/auth';
 
-export default async function ListDesign({
-  searchParams,
-}: {
-  searchParams: SearchParamsProps;
-}) {
+export default async function ListDesign({ searchParams }: { searchParams: SearchParamsProps }) {
   const session = await auth();
   const role = session?.user?.roleUser;
   const userId = session?.user?.id;
@@ -21,12 +17,10 @@ export default async function ListDesign({
   const params = await searchParams;
 
   const search = typeof params?.search === 'string' ? params.search : undefined;
-  const categoryId =
-    typeof params?.categoryId === 'string' ? params.categoryId : undefined;
+  const categoryId = typeof params?.categoryId === 'string' ? params.categoryId : undefined;
   const tier = typeof params?.tier === 'string' ? params.tier : undefined;
   const status = typeof params?.status === 'string' ? params.status : undefined;
-  const sort =
-    typeof params?.sort === 'string' ? params.sort : 'createdAt.desc';
+  const sort = typeof params?.sort === 'string' ? params.sort : 'createdAt.desc';
   const page = typeof params?.page === 'string' ? parseInt(params.page) : 1;
 
   const ITEMS_PER_PAGE = 10;
@@ -38,10 +32,8 @@ export default async function ListDesign({
   if (search) filters.push(ilike(contentDesigns.title, `%${search}%`));
   if (categoryId && categoryId !== 'all')
     filters.push(eq(contentDesigns.categoryDesignsId, categoryId));
-  if (tier && tier !== 'all')
-    filters.push(eq(contentDesigns.tier, tier as any));
-  if (status && status !== 'all')
-    filters.push(eq(contentDesigns.statusContent, status));
+  if (tier && tier !== 'all') filters.push(eq(contentDesigns.tier, tier as any));
+  if (status && status !== 'all') filters.push(eq(contentDesigns.statusContent, status));
 
   if (role === 'admin' && userId) {
     filters.push(eq(contentDesigns.userId, userId));
@@ -53,8 +45,7 @@ export default async function ListDesign({
   else if (sort === 'title.asc') orderBy = asc(contentDesigns.title);
   else if (sort === 'title.desc') orderBy = desc(contentDesigns.title);
   else if (sort === 'viewCount.desc') orderBy = desc(contentDesigns.viewCount);
-  else if (sort === 'downloadCount.desc')
-    orderBy = desc(contentDesigns.downloadCount);
+  else if (sort === 'downloadCount.desc') orderBy = desc(contentDesigns.downloadCount);
 
   // --- 3. Fetch Data ---
   const data = await db
@@ -71,10 +62,7 @@ export default async function ListDesign({
       authorName: users.name,
     })
     .from(contentDesigns)
-    .leftJoin(
-      categoryDesigns,
-      eq(contentDesigns.categoryDesignsId, categoryDesigns.id),
-    )
+    .leftJoin(categoryDesigns, eq(contentDesigns.categoryDesignsId, categoryDesigns.id))
     .leftJoin(users, eq(contentDesigns.userId, users.id))
     .where(and(...filters))
     .orderBy(orderBy)
@@ -87,10 +75,7 @@ export default async function ListDesign({
       count: sql<number>`count(*)`.as('count'),
     })
     .from(contentDesigns)
-    .leftJoin(
-      categoryDesigns,
-      eq(contentDesigns.categoryDesignsId, categoryDesigns.id),
-    )
+    .leftJoin(categoryDesigns, eq(contentDesigns.categoryDesignsId, categoryDesigns.id))
     .where(and(...filters));
 
   const totalItems = Number(totalItemsResult[0]?.count || 0);
@@ -152,18 +137,16 @@ export default async function ListDesign({
   return (
     <div className="flex flex-col gap-8 p-8">
       {/* Header Section yang Lebih Menarik */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-6">
+      <div className="flex flex-col items-start justify-between gap-4 border-b pb-6 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-[28px] md:text-[30px] font-bold tracking-tight">
-            Design Library
-          </h1>
+          <h1 className="text-[28px] font-bold tracking-tight md:text-[30px]">Design Library</h1>
           <p className="text-muted-foreground mt-1">
             Manage your design assets, figma files, and templates here.
           </p>
         </div>
         <Link href="/dashboard/content/design/create">
           <Button size="lg" className="shadow-sm">
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Create New Design
           </Button>
         </Link>

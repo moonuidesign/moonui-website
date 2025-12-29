@@ -45,7 +45,7 @@ export async function updateContentTemplate(
   }
 
   // Inject 'sourceFile' if new one is uploaded
-  const mainFile = formData.get('mainFile');
+  const mainFile = formData.get('sourceFile');
   if (mainFile instanceof File) {
     parsedJson.sourceFile = mainFile;
   }
@@ -53,10 +53,7 @@ export async function updateContentTemplate(
   // 2. Validasi
   const validated = ContentTemplateSchema.safeParse(parsedJson);
   if (!validated.success) {
-    console.error(
-      '[UpdateTemplate] Validation Error:',
-      validated.error.flatten(),
-    );
+    console.error('[UpdateTemplate] Validation Error:', validated.error.flatten());
     return { error: validated.error.issues.map((i) => i.message).join('\n') };
   }
   const values = validated.data;
@@ -128,10 +125,7 @@ export async function updateContentTemplate(
   // 4. Merge Assets
   // values.assetUrls: berisi URL lama yang user pertahankan + URL manual baru
   // newUploadedAssets: berisi hasil upload file fisik saat ini
-  const finalAssets: AssetItem[] = [
-    ...(values.imagesUrl || []),
-    ...newUploadedAssets,
-  ];
+  const finalAssets: AssetItem[] = [...(values.imagesUrl || []), ...newUploadedAssets];
 
   try {
     const updateData = {
@@ -153,10 +147,7 @@ export async function updateContentTemplate(
 
     console.log('[UpdateTemplate] Updating DB with:', updateData);
 
-    await db
-      .update(contentTemplates)
-      .set(updateData)
-      .where(eq(contentTemplates.id, id));
+    await db.update(contentTemplates).set(updateData).where(eq(contentTemplates.id, id));
 
     console.log('[UpdateTemplate] DB Update Success');
     revalidatePath('/dashboard/templates');

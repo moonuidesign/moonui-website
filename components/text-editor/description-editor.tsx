@@ -16,7 +16,7 @@ import Highlight from '@tiptap/extension-highlight';
 // IMPORT FILE YANG KITA BUAT TADI
 import { SlashCommand } from './slash-command';
 import { EditorBubbleMenu } from './editor-buble-menu';
-import { EnterHardBreak } from './extensions/enter-hard-break';
+// import { EnterHardBreak } from './extensions/enter-hard-break';
 import { FontSize } from './font-size';
 import { BlockSpan } from './extensions/block-span';
 import { InlineH1, InlineH2, InlineH3 } from './extensions/inline-heading';
@@ -59,8 +59,11 @@ const getExtensions = (placeholder: string) => [
   Color,
   FontSize, // Custom extension font size !important
   BlockSpan, // Custom Block Span
-  EnterHardBreak, // Force Enter -> <br>
-  InlineH1, InlineH2, InlineH3, // Inline Semantic Headings
+  BlockSpan, // Custom Block Span
+  // EnterHardBreak, // Force Enter -> <br> (REMOVED to fix list issues)
+  InlineH1,
+  InlineH2,
+  InlineH3, // Inline Semantic Headings
 
   // --- Functional Extensions ---
   SlashCommand,
@@ -91,7 +94,8 @@ const DescriptionEditor = ({
     content: initialContent || { type: 'doc', content: [] },
     editorProps: {
       attributes: {
-        class: 'prose dark:prose-invert max-w-none w-full break-all whitespace-pre-wrap focus:outline-none px-4 py-3 [&_p]:text-sm [&_p]:sm:text-base [&_p]:lg:text-lg [&_p]:leading-relaxed [&_li]:text-sm [&_li]:sm:text-base [&_li]:lg:text-lg [&_li]:leading-relaxed [&_h1]:text-xl [&_h1]:sm:text-2xl [&_h1]:lg:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-lg [&_h2]:sm:text-xl [&_h2]:lg:text-2xl [&_h2]:font-semibold [&_h2]:mb-3 [&_h3]:text-base [&_h3]:sm:text-lg [&_h3]:lg:text-xl [&_h3]:font-medium [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_code]:bg-gray-100 [&_code]:dark:bg-gray-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_strong]:font-semibold [&_em]:italic',
+        class:
+          'prose dark:prose-invert max-w-none w-full break-all whitespace-pre-wrap focus:outline-none px-4 py-3 [&_p]:text-sm [&_p]:sm:text-base [&_p]:lg:text-lg [&_p]:leading-relaxed [&_li]:text-sm [&_li]:sm:text-base [&_li]:lg:text-lg [&_li]:leading-relaxed [&_h1]:text-xl [&_h1]:sm:text-2xl [&_h1]:lg:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-lg [&_h2]:sm:text-xl [&_h2]:lg:text-2xl [&_h2]:font-semibold [&_h2]:mb-3 [&_h3]:text-base [&_h3]:sm:text-lg [&_h3]:lg:text-xl [&_h3]:font-medium [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_code]:bg-gray-100 [&_code]:dark:bg-gray-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_strong]:font-semibold [&_em]:italic',
         style: `min-height: ${minHeight}`,
       },
     },
@@ -101,8 +105,13 @@ const DescriptionEditor = ({
         const html = editor.getHTML(); // e.g. <h1>...</h1><p>...</p>
         // Clean empty paragraphs (often created by Tiptap split)
         const cleanHtml = html.replace(/<p[^>]*>(\s*|<br\s*\/?>)?<\/p>/gi, '');
+        // Wrap logic moved outside or handled smarter?
+        // Actually, let's keep it simple. If we output wrapped HTML, we should compare against wrapped HTML.
         const wrappedHtml = `<div>${cleanHtml}</div>`;
-        console.log('[DescriptionEditor] outputHtml:', wrappedHtml); // DEBUG
+
+        // Store this value as the "last emitted value"
+        lastEmittedContentRef.current = wrappedHtml;
+
         onChange(wrappedHtml);
       } else {
         // Output JSON (default TipTap behavior)
@@ -115,20 +124,30 @@ const DescriptionEditor = ({
 
   console.log('[DescriptionEditor] Rendering. initialContent:', initialContent); // DEBUG
 
+  // Ref to track the last content we emitted to the parent
+  const lastEmittedContentRef = React.useRef<any>(initialContent);
+
   // Sync initialContent changes (e.g. async data loading or form reset)
   React.useEffect(() => {
     if (editor && initialContent !== undefined) {
-      // Comparison logic to avoid loop/cursor jump
-      const currentContent = outputHtml ? editor.getHTML() : editor.getJSON();
+      // const currentContent = outputHtml ? editor.getHTML() : editor.getJSON();
 
-      const isDifferent = outputHtml
-        ? currentContent !== initialContent
-        : JSON.stringify(currentContent) !== JSON.stringify(initialContent);
+      // IF outputHtml is true, initialContent is likely "<div>...</div>"
+      // But editor.getHTML() returns unwrapped html usually or just the inner part depending on configuration.
+      // Wait, standard TipTap getHTML() returns string.
 
-      if (isDifferent) {
-        // If content is different (e.g. reset to empty string), update editor
-        editor.commands.setContent(initialContent);
+      // CRITICAL FIX:
+      // If the incoming initialContent is EXACTLY what we just sent to the parent, DO NOT update.
+      // This prevents the loop where: Type ' ' -> onChange('... ') -> Parent setState('... ') -> Prop passed back '... ' -> useEffect triggers -> setContent('... ') -> Cursor resets.
+
+      if (initialContent === lastEmittedContentRef.current) {
+        return;
       }
+
+      // (Simplified logic: trusting the Ref check above to handle the sync)
+      editor.commands.setContent(initialContent);
+      // Update ref so we don't immediately cycle if `setContent` triggers an update (it shouldn't if we don't emit)
+      lastEmittedContentRef.current = initialContent;
     }
   }, [initialContent, editor, outputHtml]);
 
@@ -137,7 +156,7 @@ const DescriptionEditor = ({
   }
 
   return (
-    <div className="w-full rounded-md border border-input bg-transparent shadow-sm relative">
+    <div className="border-input relative w-full rounded-md border bg-transparent shadow-sm">
       {/* MENU MELAYANG (Bubble Menu) */}
       <EditorBubbleMenu editor={editor} />
 
