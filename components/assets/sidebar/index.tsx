@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useCallback } from 'react'; // Import useCallback
+import React from 'react'; // Import useCallback
 import { useFilter } from '@/contexts';
 import { NavCategoryItem } from '@/types/category';
 import { cn } from '@/libs/utils';
@@ -30,6 +30,8 @@ export interface SidebarFilterProps {
   gradientCategories: NavCategoryItem[];
   designCategories?: NavCategoryItem[];
   className?: string;
+  onToggleCategory?: (slug: string) => void;
+  onToggleSubCategory?: (slug: string) => void;
 }
 
 export default function SidebarFilter({
@@ -38,6 +40,8 @@ export default function SidebarFilter({
   gradientCategories,
   designCategories = [],
   className,
+  onToggleCategory,
+  onToggleSubCategory,
 }: SidebarFilterProps) {
   const {
     tool,
@@ -72,28 +76,33 @@ export default function SidebarFilter({
       break;
   }
 
+  const handleCategoryToggle = onToggleCategory || toggleCategory;
+  const handleSubCategoryToggle = onToggleSubCategory || toggleSubCategory;
+
   return (
     <aside
       className={cn(
-        'md:w-52 lg:w-64 flex flex-col gap-3 lg:gap-4 sticky top-24 h-fit pb-10',
+        'sticky top-24 flex h-full flex-col items-center justify-between gap-10',
         className,
       )}
     >
-      {(contentType === 'components' || contentType === 'templates') && (
-        <PlatformSwitcher currentTool={tool} onChange={setTool} />
-      )}
-      <AppliedFilters />
-      <TierFilter />
-      <ColorFilter />
-      <GradientTypeFilter />
-      <CategoryFilter
-        title={currentTitle}
-        categories={currentCategories}
-        activeSlugs={categorySlugs}
-        activeSubSlugs={subCategorySlugs}
-        onToggle={toggleCategory}
-        onToggleSub={toggleSubCategory}
-      />
+      <div className="flex h-full w-full flex-col gap-3 lg:gap-4">
+        {(contentType === 'components' || contentType === 'templates') && (
+          <PlatformSwitcher currentTool={tool} onChange={setTool} />
+        )}
+        <AppliedFilters />
+        <TierFilter />
+        <ColorFilter />
+        <GradientTypeFilter />
+        <CategoryFilter
+          title={currentTitle}
+          categories={currentCategories}
+          activeSlugs={categorySlugs}
+          activeSubSlugs={subCategorySlugs}
+          onToggle={handleCategoryToggle}
+          onToggleSub={handleSubCategoryToggle}
+        />
+      </div>
 
       {!session.data?.user && <GoProCard />}
     </aside>

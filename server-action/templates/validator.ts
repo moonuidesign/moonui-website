@@ -37,7 +37,7 @@ export const ContentTemplateSchema = z.object({
   ),
   typeContent: z.string().min(1, 'Tipe konten wajib diisi'),
   linkTemplate: z.string({ error: 'Main Template File wajib diisi' }).min(1, 'Main Template File wajib diisi'), // Boleh kosong stringnya -> Tidak boleh sekarang
-  categoryTemplatesId: z.string({ error: 'Kategori wajib dipilih' }).min(1),
+  categoryTemplatesId: z.string({ error: 'Kategori wajib dipilih' }).min(1, 'Kategori wajib dipilih'),
   tier: z.enum(TEMPLATE_TIER_OPTIONS, { error: 'Tier wajib dipilih' }),
   statusContent: z.enum(TEMPLATE_STATUS_OPTIONS, {
     error: 'Status wajib dipilih',

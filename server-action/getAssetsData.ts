@@ -9,6 +9,7 @@ import {
   contentDesigns,
 } from '@/db/migration';
 import { NavCategoryItem } from '@/types/category';
+import { getAssetsItems } from './getAssetsItems';
 
 // Helper to calculate counts recursively
 function buildCategoryTree(
@@ -64,15 +65,22 @@ function buildCategoryTree(
   return roots;
 }
 
-import { getAssetsItems } from './getAssetsItems';
-
 export async function getAssetsData(filters?: {
   contentType?: string;
   tool?: string;
   searchQuery?: string;
+  sortBy?: 'recent' | 'popular';
+  groupedMode?: boolean;
 }) {
   try {
-    const { contentType = 'components', tool = 'figma', searchQuery = '' } = filters || {};
+    const {
+      contentType = 'components',
+      tool = 'figma',
+      searchQuery = '',
+      sortBy = 'recent',
+      groupedMode = false,
+    } = filters || {};
+
     // 1. Parallel Fetching of Data
     const results = await Promise.allSettled([
       // Categories
@@ -207,15 +215,78 @@ export async function getAssetsData(filters?: {
       framer: buildCategoryTree(catDesigns, mapsDes.framer),
     };
 
-    // Fetch Initial Items (Page 1, Limit 12)
-    const { items: allItems, totalCount } = await getAssetsItems(
-      { contentType, tool, searchQuery },
-      { page: 1, limit: 12 },
-    );
-    
+    // Fetch Initial Items or Grouped Items
+    let allItems: any[] = [];
+    let totalCount = 0;
+    const groupedAssets: Record<string, any[]> = {};
+
+    if (groupedMode) {
+      // Identity current categories based on contentType
+      let targetCategories: NavCategoryItem[] = [];
+      if (contentType === 'components')
+        targetCategories = componentCategories.all; // Fallback to ALL if tool unknown, but useFilter has tool
+      else if (contentType === 'templates')
+        targetCategories = templateCategories.all;
+      else if (contentType === 'gradients')
+        targetCategories = gradientCategories.all;
+      else if (contentType === 'designs') targetCategories = designCategories.all;
+
+      // Filter by tool if needed
+      if (tool && contentType !== 'gradients') {
+        if (contentType === 'components')
+          targetCategories =
+            tool === 'framer'
+              ? componentCategories.framer
+              : componentCategories.figma;
+        else if (contentType === 'templates')
+          targetCategories =
+            tool === 'framer'
+              ? templateCategories.framer
+              : templateCategories.figma;
+        else if (contentType === 'designs')
+          targetCategories =
+            tool === 'framer'
+              ? designCategories.framer
+              : designCategories.figma;
+      }
+
+      // We only care about root categories? Or all? User said "Main category".
+      // Usually Main Categories are the roots.
+      const promises = targetCategories.map(async (cat) => {
+        const res = await getAssetsItems(
+          {
+            contentType,
+            tool,
+            categorySlugs: [cat.slug], // Fetch specific category
+            sortBy, // Add sorting here too if appropriate, or default recent
+          },
+          { page: 1, limit: 6 }, // Limit 6 per category
+        );
+        return { slug: cat.slug, items: res.items };
+      });
+
+      const results = await Promise.all(promises);
+      results.forEach((r) => {
+        groupedAssets[r.slug] = r.items;
+      });
+
+      // Total count might be misleading in grouped mode, maybe sum of all?
+      // For now, leave as 0 or sum counts
+      // But we also need 'allItems' for something? No.
+    } else {
+      // Normal Fetch
+      const res = await getAssetsItems(
+        { contentType, tool, searchQuery, sortBy },
+        { page: 1, limit: 12 },
+      );
+      allItems = res.items;
+      totalCount = res.totalCount;
+    }
+
     return {
       allItems,
       totalCount,
+      groupedAssets, // New field,
       componentCategories,
       templateCategories,
       gradientCategories,
@@ -227,6 +298,7 @@ export async function getAssetsData(filters?: {
     return {
       allItems: [],
       totalCount: 0,
+      groupedAssets: {},
       componentCategories: { all: [], figma: [], framer: [] },
       templateCategories: { all: [], figma: [], framer: [] },
       gradientCategories: { all: [], figma: [], framer: [] },

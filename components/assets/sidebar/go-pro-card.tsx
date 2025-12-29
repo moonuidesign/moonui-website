@@ -1,29 +1,37 @@
 'client use';
 
+import Image from 'next/image';
+
 export const GoProCard = () => {
   return (
-    <div className="w-full px-2 pt-6 pb-3 bg-zinc-900 rounded-[20px] shadow-card-sm flex flex-col items-center gap-3 text-center overflow-hidden relative">
-      {/* Abstract Decoration (CSS Art based on your snippet) */}
-      <div className="flex flex-wrap justify-center gap-1 scale-75 opacity-80">
-        <div className="w-8 h-6 bg-sky-400" />
-        <div className="w-2 h-2 bg-amber-400" />
-        <div className="w-4 h-5 bg-yellow-500" />
-        <div className="w-4 h-5 bg-orange-300" />
+    <div className="inline-flex w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[20px] bg-zinc-900 px-2 pt-6 pb-3 shadow-[0px_0px_0px_1px_rgba(51,51,51,0.10)] shadow-[0px_1px_1px_0.5px_rgba(51,51,51,0.04)] shadow-[0px_3px_3px_-1.5px_rgba(51,51,51,0.02)] shadow-[0px_6px_6px_-3px_rgba(51,51,51,0.04)] shadow-[0px_12px_12px_-6px_rgba(51,51,51,0.04)] shadow-[0px_24px_24px_-12px_rgba(51,51,51,0.04)] shadow-[0px_48px_48px_-24px_rgba(51,51,51,0.04)] shadow-[inset_0px_-1px_1px_-0.5px_rgba(51,51,51,0.06)]">
+      <Image src="/ic-diamond-small.svg" alt="Go Pro" width={100} height={100} />
+
+      <div className="flex flex-col items-center justify-center gap-1 self-stretch rounded-[10px]">
+        {/* JUDUL: Gradient Kiri Bawah -> Kanan Atas */}
+        <div className="inline-flex items-center justify-start gap-1">
+          <div className="justify-center bg-gradient-to-tr from-white to-[#6C6C6C] bg-clip-text text-center font-['Plus_Jakarta_Sans'] text-xl leading-6 font-extrabold text-transparent">
+            Go Pro!
+          </div>
+        </div>
+
+        {/* DESKRIPSI: Gradient Kiri Bawah -> Kanan Atas */}
+        <div className="inline-flex items-center justify-start gap-1 self-stretch">
+          <div className="flex-1 justify-center bg-gradient-to-tr from-[#6C6C6C] via-white to-[#6C6C6C] bg-clip-text text-center font-['Inter'] text-xs font-normal text-transparent">
+            Instantly access 750+ premium library design resources.
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-1 z-10">
-        <h3 className="text-white text-lg font-extrabold font-['Plus_Jakarta_Sans']">
-          Go Pro!
-        </h3>
-        <p className="text-neutral-300 text-xs font-normal font-['Inter'] px-2 leading-tight">
-          Instantly access 250+ premium Figma & Framer resources.
-        </p>
-      </div>
-
-      <button className="w-full py-1.5 bg-white rounded-xl shadow-sm hover:bg-gray-100 transition-colors mt-1">
-        <span className="text-neutral-800 text-xs font-bold font-['Inter']">
-          Get it now
-        </span>
+      {/* Button Action */}
+      <button className="flex flex-col items-center justify-start gap-2 self-stretch overflow-hidden rounded-2xl bg-white py-1 shadow-[0px_0px_0px_1px_rgba(51,51,51,0.10)] shadow-[0px_1px_1px_0.5px_rgba(51,51,51,0.04)] shadow-[0px_3px_3px_-1.5px_rgba(51,51,51,0.02)] shadow-[0px_6px_6px_-3px_rgba(51,51,51,0.04)] shadow-[0px_12px_12px_-6px_rgba(51,51,51,0.04)] shadow-[0px_24px_24px_-12px_rgba(51,51,51,0.04)] shadow-[0px_48px_48px_-24px_rgba(51,51,51,0.04)] shadow-[inset_0px_-1px_1px_-0.5px_rgba(51,51,51,0.06)] transition-colors hover:bg-neutral-50">
+        <div className="inline-flex h-7 w-full items-center justify-between self-stretch rounded-[10px] px-3">
+          <div className="inline-flex w-full flex-col items-center justify-start pr-1">
+            <div className="justify-center text-center font-['Inter'] text-xs leading-6 font-medium text-neutral-800">
+              Get it now
+            </div>
+          </div>
+        </div>
       </button>
     </div>
   );

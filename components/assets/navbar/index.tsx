@@ -24,7 +24,7 @@ export default function NavbarFilter({ onFilterClick }: NavbarFilterProps) {
     'bg-white text-[#3D3D3D] border-gray-200 hover:bg-gray-50';
 
   return (
-    <div className="w-full py-3 flex flex-col gap-4 mb-8">
+    <div className="w-full py-3 flex flex-col gap-4">
       {/* Row 1: Content Types (Wrap on mobile) */}
       <div className="w-full">
         <div className="flex flex-wrap items-center gap-3">

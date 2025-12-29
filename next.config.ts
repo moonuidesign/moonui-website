@@ -6,9 +6,7 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
   experimental: {
-    // 1. Add this line to increase the limit for Middleware interception
     proxyClientMaxBodySize: '50mb',
-
     serverActions: {
       bodySizeLimit: '50mb',
     },
@@ -16,21 +14,15 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
   },
   images: {
-    // 1. IZINKAN SVG (Wajib untuk DiceBear)
-    dangerouslyAllowSVG: true,
-    // 2. Atur Content Security Policy untuk SVG (Opsional tapi disarankan)
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
-      // --- TAMBAHAN PENTING DI SINI ---
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com', // Domain untuk Google Profile Picture
+        hostname: 'lh3.googleusercontent.com',
       },
       {
         protocol: 'https',
-        hostname: 'avatars.githubusercontent.com', // Domain untuk GitHub Profile Picture (Jaga-jaga)
+        hostname: 'avatars.githubusercontent.com',
       },
-      // --------------------------------
       {
         protocol: 'https',
         hostname: 'example.com',
@@ -101,15 +93,15 @@ export default withSentryConfig(nextConfig, {
 
   // Suppresses source map uploading logs during build
   silent: true,
-  org: "moonui",
-  project: "moonui-website",
+  org: 'moonui',
+  project: 'moonui-website',
 
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
   // Route browser requests to Sentry through the Next.js rewrite to circumvent ad-blockers.
-  tunnelRoute: "/monitoring",
+  tunnelRoute: '/monitoring',
 
   // Enables automatic instrumentation of Vercel Cron Monitors.
-  automaticVercelMonitors: true,
+  // automaticVercelMonitors: true,
 });

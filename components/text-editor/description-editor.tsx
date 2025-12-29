@@ -91,7 +91,7 @@ const DescriptionEditor = ({
     content: initialContent || { type: 'doc', content: [] },
     editorProps: {
       attributes: {
-        class: 'prose dark:prose-invert max-w-none w-full break-words focus:outline-none px-4 py-3 [&_p]:text-sm [&_p]:sm:text-base [&_p]:lg:text-lg [&_p]:leading-relaxed [&_li]:text-sm [&_li]:sm:text-base [&_li]:lg:text-lg [&_li]:leading-relaxed [&_h1]:text-xl [&_h1]:sm:text-2xl [&_h1]:lg:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-lg [&_h2]:sm:text-xl [&_h2]:lg:text-2xl [&_h2]:font-semibold [&_h2]:mb-3 [&_h3]:text-base [&_h3]:sm:text-lg [&_h3]:lg:text-xl [&_h3]:font-medium [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_code]:bg-gray-100 [&_code]:dark:bg-gray-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_strong]:font-semibold [&_em]:italic',
+        class: 'prose dark:prose-invert max-w-none w-full break-all whitespace-pre-wrap focus:outline-none px-4 py-3 [&_p]:text-sm [&_p]:sm:text-base [&_p]:lg:text-lg [&_p]:leading-relaxed [&_li]:text-sm [&_li]:sm:text-base [&_li]:lg:text-lg [&_li]:leading-relaxed [&_h1]:text-xl [&_h1]:sm:text-2xl [&_h1]:lg:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-lg [&_h2]:sm:text-xl [&_h2]:lg:text-2xl [&_h2]:font-semibold [&_h2]:mb-3 [&_h3]:text-base [&_h3]:sm:text-lg [&_h3]:lg:text-xl [&_h3]:font-medium [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_code]:bg-gray-100 [&_code]:dark:bg-gray-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_strong]:font-semibold [&_em]:italic',
         style: `min-height: ${minHeight}`,
       },
     },
@@ -115,17 +115,19 @@ const DescriptionEditor = ({
 
   console.log('[DescriptionEditor] Rendering. initialContent:', initialContent); // DEBUG
 
-  // Sync initialContent changes (e.g. async data loading)
+  // Sync initialContent changes (e.g. async data loading or form reset)
   React.useEffect(() => {
-    if (editor && initialContent) {
+    if (editor && initialContent !== undefined) {
+      // Comparison logic to avoid loop/cursor jump
       const currentContent = outputHtml ? editor.getHTML() : editor.getJSON();
-      // Only update if content is different to avoid cursor jumps/loops
-      // Simple comparison for string, deep comparison for JSON might be needed but for now JSON is initial-only usually
-      if (JSON.stringify(currentContent) !== JSON.stringify(initialContent)) {
-        // editor.commands.setContent(initialContent); // CAUTION: This might reset cursor.
-        // Better strategy: Only set if editor is empty? Or if explicitly changed.
-        // For this specific bug (validation), the issue is likely outgoing data, not incoming.
-        // But let's ensure we are not overwriting user input.
+
+      const isDifferent = outputHtml
+        ? currentContent !== initialContent
+        : JSON.stringify(currentContent) !== JSON.stringify(initialContent);
+
+      if (isDifferent) {
+        // If content is different (e.g. reset to empty string), update editor
+        editor.commands.setContent(initialContent);
       }
     }
   }, [initialContent, editor, outputHtml]);

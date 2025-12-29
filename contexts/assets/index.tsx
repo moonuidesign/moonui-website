@@ -19,6 +19,7 @@ interface FilterState {
   selectedColors: string[];
   selectedTiers: TierType[];
   searchQuery: string;
+  sortBy: 'recent' | 'popular';
   isFilterOpen: boolean;
   _hasHydrated: boolean;
 }
@@ -39,6 +40,7 @@ interface FilterActions {
   toggleTier: (t: TierType) => void;
 
   setSearchQuery: (q: string) => void;
+  setSortBy: (s: 'recent' | 'popular') => void;
   setFilterOpen: (open: boolean) => void;
   setHasHydrated: (state: boolean) => void;
 
@@ -80,6 +82,7 @@ export const useFilterStore = create<FilterState & FilterActions>()(
       selectedColors: [],
       selectedTiers: [],
       searchQuery: '',
+      sortBy: 'recent',
       isFilterOpen: false,
       _hasHydrated: false,
 
@@ -98,16 +101,19 @@ export const useFilterStore = create<FilterState & FilterActions>()(
 
       toggleCategory: (slug) =>
         set((state) => {
-          if (slug === 'all') return { categorySlugs: [] };
+          if (slug === 'all') return { categorySlugs: [], subCategorySlugs: [] };
           const exists = state.categorySlugs.includes(slug);
           return {
             categorySlugs: exists
               ? state.categorySlugs.filter((s) => s !== slug)
               : [...state.categorySlugs, slug],
+            // Reset subcategories when toggling categories to prevent invalid states
+            subCategorySlugs: []
           };
         }),
 
-      setCategory: (slug) => set({ categorySlugs: [slug] }),
+      // Updated: Reset subcategories when setting a new category
+      setCategory: (slug) => set({ categorySlugs: [slug], subCategorySlugs: [] }),
 
       toggleSubCategory: (slug) =>
         set((state) => {
@@ -152,6 +158,7 @@ export const useFilterStore = create<FilterState & FilterActions>()(
         }),
 
       setSearchQuery: (searchQuery) => set({ searchQuery }),
+      setSortBy: (sortBy) => set({ sortBy }),
 
       applySearchFilter: ({
         contentType,
@@ -192,6 +199,7 @@ export const useFilterStore = create<FilterState & FilterActions>()(
           selectedColors: [],
           selectedTiers: [],
           searchQuery: '',
+          sortBy: 'recent',
         });
       },
     }),

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendTelegramMessage } from '@/libs/telegram';
 
-// Sentry webhook payload type (simplified)
 interface SentryWebhookPayload {
     data: {
         event: {
@@ -17,7 +16,7 @@ interface SentryWebhookPayload {
 
 export async function POST(req: NextRequest) {
     try {
-        const payload = await req.json(); // Sentry sends JSON payload
+        const payload = await req.json();
         const { data } = payload as SentryWebhookPayload;
 
         if (!data || !data.event) {
@@ -29,7 +28,6 @@ export async function POST(req: NextRequest) {
 
         const { title, web_url, environment, level, message } = data.event;
 
-        // Construct Telegram Message
         const telegramMessage = `
 🚨 <b>New Sentry Issue</b> 🚨
 
@@ -41,7 +39,6 @@ export async function POST(req: NextRequest) {
 <a href="${web_url}">View Issue on Sentry</a>
     `;
 
-        // Send to Telegram
         await sendTelegramMessage(telegramMessage);
 
         return NextResponse.json({ message: 'Notification sent' }, { status: 200 });
