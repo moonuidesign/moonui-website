@@ -3,15 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/libs/auth';
 import { db } from '@/libs/drizzle';
-import { s3Client } from '@/libs/getR2 copy';
 import { contentComponents } from '@/db/migration';
 import { eq } from 'drizzle-orm';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
 import OpenAI from 'openai';
-import {
-  ContentComponentFormValues,
-  ContentComponentSchema,
-} from './component-validator';
+import { ContentComponentFormValues, ContentComponentSchema } from './component-validator';
 
 // ============================================================================
 // 1. CONFIG & TYPES
@@ -20,10 +15,10 @@ import {
 type ActionResponse =
   | { success: true; message: string }
   | {
-    success: false;
-    error: string;
-    details?: Record<string, string[] | undefined>;
-  };
+      success: false;
+      error: string;
+      details?: Record<string, string[] | undefined>;
+    };
 
 interface CodeSnippets {
   react: string;
@@ -37,13 +32,10 @@ const GEMINI_API_KEYS = [
   process.env.GEMINI_API_KEY_2,
   process.env.GEMINI_API_KEY_3,
   process.env.OPENROUTER_API_KEY,
-].filter(
-  (key): key is string => typeof key === 'string' && key.trim().length > 0,
-);
+].filter((key): key is string => typeof key === 'string' && key.trim().length > 0);
 
 const AI_MODEL = 'google/gemini-2.0-flash-exp:free';
-const AI_BASE_URL =
-  '[https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)';
+const AI_BASE_URL = '[https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)';
 
 const SYSTEM_INSTRUCTION_JSON = `
 You are a Senior Frontend Architect.
@@ -110,7 +102,8 @@ async function callAIWithRotation(
       const isRateLimit = lastError.message.includes('429');
 
       console.warn(
-        `[AI Warning] Key ...${apiKey.slice(-4)} failed (${isRateLimit ? '429' : 'Err'
+        `[AI Warning] Key ...${apiKey.slice(-4)} failed (${
+          isRateLimit ? '429' : 'Err'
         }). Switching...`,
       );
 
@@ -233,31 +226,12 @@ export async function updateContentComponent(
     console.log('[UpdateComponent] No new HTML provided, skipping AI.');
   }
 
-  // 5. Image Upload Logic (Hanya jalan jika step sebelumnya aman)
-  let newImageUrl: string | undefined = undefined;
-  if (imageFile && imageFile.size > 0) {
-    try {
-      const ext = imageFile.name.split('.').pop();
-      const fileName = `components/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-      const buffer = Buffer.from(await imageFile.arrayBuffer());
+  // 5. HANDLE IMAGE UPDATE
+  const newImageUrl = typeof values.previewImage === 'string' ? values.previewImage : undefined;
 
-      if (!process.env.BUCKET_NAME) throw new Error('BUCKET_NAME not defined');
-
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME,
-          Key: fileName,
-          Body: buffer,
-          ContentType: imageFile.type,
-        }),
-      );
-
-      newImageUrl = fileName;
-    } catch (e) {
-      console.error('[UpdateComponent] Upload Failed:', e);
-      return { success: false, error: 'Gagal mengupload gambar baru.' };
-    }
-  }
+  // Metadata (if updated)
+  const newSize = values.size;
+  const newFormat = values.format;
 
   // 6. Database Update
   try {
@@ -277,23 +251,18 @@ export async function updateContentComponent(
       // Update Code jika AI dipanggil & Sukses
       ...(newCodeSnippets
         ? {
-          codeSnippets: newCodeSnippets,
-          copyComponentTextPlain: {
-            content:
-              newCodeSnippets.react.length > 50
-                ? newCodeSnippets.react
-                : copyComponentTextPlain,
-          },
-        }
+            codeSnippets: newCodeSnippets,
+            copyComponentTextPlain: {
+              content:
+                newCodeSnippets.react.length > 50 ? newCodeSnippets.react : copyComponentTextPlain,
+            },
+          }
         : {
-          copyComponentTextPlain: { content: copyComponentTextPlain },
-        }),
+            copyComponentTextPlain: { content: copyComponentTextPlain },
+          }),
     };
 
-    await db
-      .update(contentComponents)
-      .set(updateData)
-      .where(eq(contentComponents.id, id));
+    await db.update(contentComponents).set(updateData).where(eq(contentComponents.id, id));
 
     revalidatePath('/dashboard/components');
 

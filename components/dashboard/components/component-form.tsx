@@ -65,6 +65,7 @@ import { CategoryCombobox } from '@/components/dashboard/category-combobox';
 import { IsolatedRenderer } from './isolated-renderer';
 import { ZoomToolbar } from './zoom-toolbar';
 import { useRouter } from 'next/navigation';
+import { getPresignedUrl } from '@/server-action/upload/get-presigned-url';
 
 // =====================================================================
 // 1. TYPES & CONSTANTS
@@ -308,25 +309,95 @@ export default function ComponentForm({
     }
   };
 
+  // --- CLIENT SIDE UPLOADS LOGIC ---
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Helper: Upload Single File to R2
+  const uploadFileToR2 = async (file: File, prefix: string = 'components') => {
+    try {
+      // 1. Get Presigned URL
+      const presigned = await getPresignedUrl({
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        prefix,
+      });
+
+      if (!presigned.success) {
+        throw new Error(presigned.error || 'Failed to get upload URL');
+      }
+
+      if (!presigned.uploadUrl) {
+        throw new Error('No upload URL returned');
+      }
+
+      // 2. Upload to R2 (CORS must be enabled)
+      const uploadRes = await fetch(presigned.uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error(`Upload failed with status: ${uploadRes.status}`);
+      }
+
+      // 3. Return the Key
+      return presigned.key;
+    } catch (error) {
+      console.error('R2 Upload Error:', error);
+      throw error;
+    }
+  };
+
   const onSubmit = (values: ContentComponentFormValues) => {
     if (!values.rawHtmlInput?.trim() && !isEditMode) {
       if (!confirm('⚠️ Source Engine (HTML) kosong. AI tidak akan berjalan. Lanjutkan?')) return;
     }
 
+    setIsUploading(true);
     startTransition(async () => {
-      const promise = async () => {
-        const res = isEditMode
-          ? await updateContentComponent(component!.id, values, selectedFile || undefined)
-          : await createContentComponent(values, selectedFile);
+      try {
+        // 1. Upload Image (Thumbnail)
+        let imageUrl = values.previewImage instanceof File ? '' : (values.previewImage as string);
+        let fileSizeStr = 'Unknown';
+        let fileFormatStr = 'IMG';
 
-        if (!res?.success) {
-          throw new Error(res?.error || 'Gagal menyimpan data.');
+        if (selectedFile) {
+          toast.info(`Uploading Thumbnail: ${selectedFile.name}...`);
+          // Metadata
+          fileSizeStr = (selectedFile.size / 1024 / 1024).toFixed(2) + ' MB';
+          fileFormatStr = selectedFile.name.split('.').pop()?.toUpperCase() || 'IMG';
+
+          imageUrl = await uploadFileToR2(selectedFile, 'components');
+        } else if (typeof values.previewImage === 'string') {
+          // Keep existing image logic
         }
-        return res.message;
-      };
 
-      await toast
-        .promise(promise(), {
+        // 2. Construct Payload
+        const payload = {
+          ...values,
+          previewImage: imageUrl, // Send String (Key)
+          // Metadata
+          size: fileSizeStr,
+          format: fileFormatStr,
+        };
+
+        const promise = async () => {
+          // NOTE: We pass undefined for imageFile because we already uploaded it and put key in payload
+          const res = isEditMode
+            ? await updateContentComponent(component!.id, payload, undefined)
+            : await createContentComponent(payload, undefined);
+
+          if (!res?.success) {
+            throw new Error(res?.error || 'Gagal menyimpan data.');
+          }
+          return res.message;
+        };
+
+        await toast.promise(promise(), {
           pending: isEditMode ? 'Updating component...' : 'Creating component...',
           success: {
             render({ data }) {
@@ -338,17 +409,22 @@ export default function ComponentForm({
               return (data as Error).message;
             },
           },
-        })
-        .then(() => {
-          if (!isEditMode) {
-            form.reset();
-            setUploadedImagePreview(null);
-            setSelectedFile(null);
-            router.push(`/dashboard/content/components`);
-          }
+        });
+
+        if (!isEditMode) {
+          form.reset();
+          setUploadedImagePreview(null);
+          setSelectedFile(null);
           router.push(`/dashboard/content/components`);
-        })
-        .catch(() => {});
+        } else {
+          router.push(`/dashboard/content/components`);
+        }
+      } catch (error: any) {
+        console.error('Submit Error:', error);
+        toast.error(error.message || 'Gagal menyimpan komponen.');
+      } finally {
+        setIsUploading(false);
+      }
     });
   };
 

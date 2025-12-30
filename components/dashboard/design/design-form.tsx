@@ -238,34 +238,132 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
     }
   };
 
-  const onSubmit = (values: ContentDesignFormValues) => {
-    startTransition(async () => {
-      const formData = new FormData();
+  // --- CLIENT SIDE UPLOADS LOGIC ---
+  const [isUploading, setIsUploading] = useState(false);
+  import { getPresignedUrl } from '@/server-action/upload/get-presigned-url';
 
-      // Normalisasi Description sebelum dikirim
-      // Kita pastikan mengirim JSON String ke server
-      // REVISI: Kirim sebagai Object agar validator bisa cek content
-      const finalDescription = values.description;
-
-      const submissionValues = {
-        ...values,
-        description: finalDescription,
-        imagesUrl: existingImages, // Kirim list URL gambar lama
-      };
-
-      formData.append('data', JSON.stringify(submissionValues));
-
-      selectedFiles.forEach((file) => {
-        formData.append('images', file);
+  // Helper: Upload Single File to R2
+  const uploadFileToR2 = async (file: File, prefix: string = 'designs') => {
+    try {
+      // 1. Get Presigned URL
+      const presigned = await getPresignedUrl({
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        prefix,
       });
 
-      // Handle Source File
-      if (values.sourceFile instanceof File) {
-        formData.append('sourceFile', values.sourceFile);
+      if (!presigned.success || !presigned.uploadUrl) {
+        throw new Error(presigned.error || 'Failed to get upload URL');
       }
-      // If valid string (existing URL), it's already in JSON 'data' via ...values
 
-      const promise = async () => {
+      // 2. Upload to R2 (CORS must be enabled)
+      const uploadRes = await fetch(presigned.uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error(`Upload failed with status: ${uploadRes.status}`);
+      }
+
+      // 3. Return the Key (to be saved in DB)
+      return presigned.key; // e.g., "designs/123-abc.png"
+    } catch (error) {
+      console.error('R2 Upload Error:', error);
+      throw error;
+    }
+  };
+
+  const onSubmit = (values: ContentDesignFormValues) => {
+    setIsUploading(true);
+    startTransition(async () => {
+      try {
+        // ---------------------------------------------------------
+        // 1. UPLOAD SOURCE FILE (If is File)
+        // ---------------------------------------------------------
+        let mainFileUrl = typeof values.sourceFile === 'string' ? values.sourceFile : '';
+
+        // Calculate Size & Format Metadata
+        let fileSizeStr = 'Unknown';
+        let fileFormatStr = 'FILE';
+
+        if (values.sourceFile instanceof File) {
+          toast.info(`Uploading Source File: ${values.sourceFile.name}...`);
+          try {
+            // Metadata Calculation
+            const sizeMB = values.sourceFile.size / 1024 / 1024;
+            fileSizeStr = sizeMB.toFixed(2) + ' MB';
+            fileFormatStr = values.sourceFile.name.split('.').pop()?.toUpperCase() || 'FILE';
+
+            mainFileUrl = await uploadFileToR2(values.sourceFile, 'designs/source');
+          } catch (err) {
+            console.error(err);
+            toast.error('Gagal upload source file. Cek koneksi atau coba lagi.');
+            return;
+          }
+        } else if (typeof values.sourceFile === 'string' && design?.size) {
+          // Preserve existing metadata if we are keeping old file
+          fileSizeStr = design.size || 'Unknown';
+          fileFormatStr = design.format || 'FILE';
+        }
+
+        // ---------------------------------------------------------
+        // 2. UPLOAD NEW IMAGES
+        // ---------------------------------------------------------
+        const newImageKeys: string[] = [];
+        if (selectedFiles.length > 0) {
+          toast.info(`Uploading ${selectedFiles.length} images...`);
+          // Parallel uploads
+          await Promise.all(
+            selectedFiles.map(async (file) => {
+              const key = await uploadFileToR2(file, 'designs/images');
+              newImageKeys.push(key);
+            }),
+          );
+        }
+
+        // Combine with existing images
+        // NOTE: Server expects `imagesUrl` to be array of strings (Keys/URLs)
+        const finalImages = [...existingImages, ...newImageKeys];
+
+        // ---------------------------------------------------------
+        // 3. CONSTRUCT PAYLOAD
+        // ---------------------------------------------------------
+        const payload = {
+          title: values.title,
+          description: values.description,
+          categoryDesignsId: values.categoryDesignsId,
+          tier: values.tier,
+          statusContent: values.statusContent,
+          urlBuyOneTime: values.urlBuyOneTime,
+          slug: values.slug,
+          imagesUrl: finalImages,
+          sourceFile: mainFileUrl,
+          // Metadata
+          size: fileSizeStr,
+          format: fileFormatStr,
+        };
+
+        // --- PAYLOAD SIZE CHECK ---
+        const payloadJson = JSON.stringify(payload);
+        const descriptionSize = new Blob([JSON.stringify(values.description)]).size;
+        const totalPayloadSize = new Blob([payloadJson]).size;
+
+        console.log(`Payload Size: ${(totalPayloadSize / 1024 / 1024).toFixed(2)} MB`);
+        if (descriptionSize > 4 * 1024 * 1024) {
+          toast.warning(
+            'Deskripsi terlalu panjang/besar (banyak gambar?). Mohon kurangi agar tidak error.',
+          );
+        }
+
+        const formData = new FormData();
+        formData.append('data', payloadJson);
+
+        // Call Server Action
         let result;
         if (isEditMode && design) {
           result = await updateContentDesign(design.id, formData);
@@ -276,47 +374,30 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
         if ('error' in result) {
           throw new Error(result.error);
         }
-        return result.success;
-      };
 
-      await toast
-        .promise(promise(), {
-          pending: isEditMode ? 'Updating design...' : 'Creating design...',
-          success: {
-            render({ data }) {
-              return `${data}`;
-            },
-          },
-          error: {
-            render({ data }) {
-              return (data as Error).message;
-            },
-          },
-        })
-        .then(() => {
-          if (!isEditMode) {
-            form.reset();
-            setExistingImages([]);
-            setNewPreviews([]);
-            setSelectedFiles([]);
+        toast.success(result.success);
 
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            if (sourceFileInputRef.current) sourceFileInputRef.current.value = '';
-            router.push('/dashboard/content/designs');
-          } else {
-            // Edit mode reset partial
-            setSelectedFiles([]);
-            setNewPreviews([]);
-            // Keep sourceFile as is (string) or reset if needed?
-            // Usually we don't reset sourceFile field in edit mode unless we want to revert changes.
-            // But if upload success, the new file is now "existing".
-            // Ideally we'd update the form with new data, but full refresh might be better or router.refresh()
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            if (sourceFileInputRef.current) sourceFileInputRef.current.value = '';
-            router.push('/dashboard/content/designs');
-          }
-        })
-        .catch(() => {});
+        // RESET / REDIRECT
+        if (!isEditMode) {
+          form.reset();
+          setExistingImages([]);
+          setNewPreviews([]);
+          setSelectedFiles([]);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+          if (sourceFileInputRef.current) sourceFileInputRef.current.value = '';
+          router.push('/dashboard/content/designs');
+        } else {
+          // Clean state but stay or redirect? Usually redirect.
+          setSelectedFiles([]);
+          setNewPreviews([]);
+          router.push('/dashboard/content/designs');
+        }
+      } catch (error: any) {
+        console.error('Submit Error:', error);
+        toast.error(error.message || 'Terjadi kesalahan saat menyimpan.');
+      } finally {
+        setIsUploading(false);
+      }
     });
   };
 

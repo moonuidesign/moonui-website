@@ -22,29 +22,27 @@ export const ContentGradientSchema = z.object({
   colors: z.array(ColorItemSchema).min(1, 'Min 1 color'),
   typeGradient: z.enum(GRADIENT_TYPE_OPTIONS),
   categoryGradientsId: z.string().min(1, 'Kategori wajib dipilih'),
-  description: z.any().refine(
-    (val) => {
-      if (!val) return false;
-      if (typeof val === 'string') {
-        const text = val.replace(/<[^>]*>/g, '').trim();
-        return text.length > 0 || /<img|<iframe|video/i.test(val);
-      }
-      if (typeof val === 'object' && val.content && Array.isArray(val.content)) {
-        return val.content.length > 0;
-      }
-      return false;
-    },
-    'Deskripsi wajib diisi',
-  ),
+  description: z.any().refine((val) => {
+    if (!val) return false;
+    if (typeof val === 'string') {
+      const text = val.replace(/<[^>]*>/g, '').trim();
+      return text.length > 0 || /<img|<iframe|video/i.test(val);
+    }
+    if (typeof val === 'object' && val.content && Array.isArray(val.content)) {
+      return val.content.length > 0;
+    }
+    return false;
+  }, 'Deskripsi wajib diisi'),
   slug: z.array(z.string()).min(1, 'Minimal satu tag/label wajib diisi'),
   image: z
-    .union([
-      z.string().min(1, 'Thumbnail wajib diupload'),
-      z.instanceof(File, { message: 'Thumbnail wajib diupload' }),
-    ])
-    .refine((val) => val !== null && val !== undefined, 'Thumbnail wajib diupload'),
+    .union([z.string().min(1, 'Thumbnail wajib diupload'), z.instanceof(File)])
+    .refine((val) => val !== null && val !== undefined && val !== '', 'Thumbnail wajib diupload'),
   urlBuyOneTime: z.string().optional(),
   tier: z.enum(GRADIENT_TIER_OPTIONS),
+
+  // Metadata
+  size: z.string().optional(),
+  format: z.string().optional(),
 });
 
 export type ContentGradientFormValues = z.infer<typeof ContentGradientSchema>;

@@ -4,23 +4,19 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/libs/drizzle';
 import { contentGradients } from '@/db/migration';
 import { auth } from '@/libs/auth';
-import { s3Client } from '@/libs/getR2 copy'; // Pastikan path import ini benar
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { auth } from '@/libs/auth';
 import { desc } from 'drizzle-orm';
 import { ContentGradientSchema } from './gradient-validator';
 import { cookies } from 'next/headers';
 
 type ActionResponse = { success: string } | { error: string };
 
-export async function createContentGradient(
-  formData: FormData,
-): Promise<ActionResponse> {
+export async function createContentGradient(formData: FormData): Promise<ActionResponse> {
   console.log('[CreateGradient] START');
 
   try {
     const c = await cookies();
-    const hasToken =
-      c.has('authjs.session-token') || c.has('next-auth.session-token');
+    const hasToken = c.has('authjs.session-token') || c.has('next-auth.session-token');
     console.log('[CreateGradient] Has Session Cookie:', hasToken);
   } catch (e) {
     console.error('[CreateGradient] Cookie Error:', e);
@@ -67,37 +63,13 @@ export async function createContentGradient(
   }
   const values = validated.data;
 
-  let imageUrl = '';
-  let fileSize = '';
-  let fileFormat = '';
-  let linkDownload = '';
-  if (imageFile instanceof File && imageFile.size > 0) {
-    try {
-      console.log('[CreateGradient] Uploading Image:', imageFile.name);
-      const ext = imageFile.name.split('.').pop();
-      const fileName = `gradients/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+  // Use values directly from client
+  const imageUrl = typeof values.image === 'string' ? values.image : '';
+  const linkDownload = imageUrl; // For gradients, download link IS the image itself
 
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME!,
-          Key: fileName,
-          Body: Buffer.from(await imageFile.arrayBuffer()),
-          ContentType: imageFile.type,
-        }),
-      );
-      imageUrl = `https://${process.env.R2_PUBLIC_DOMAIN}/${fileName}`;
-      linkDownload = `https://${process.env.R2_PUBLIC_DOMAIN}/${fileName}`;
-      fileSize = (imageFile.size / 1024 / 1024).toFixed(2) + ' MB';
-      fileFormat = ext?.toUpperCase() || 'IMG';
-      console.log('[CreateGradient] Image Uploaded:', imageUrl);
-    } catch (e) {
-      console.error('[CreateGradient] Image Upload Failed:', e);
-      return { error: 'Gagal upload thumbnail.' };
-    }
-  } else {
-    return { error: 'Thumbnail gradient wajib diupload.' };
-  }
-
+  // Metadata
+  const fileSize = values.size || 'Unknown';
+  const fileFormat = values.format || imageUrl.split('.').pop()?.toUpperCase() || 'IMG';
 
   const lastItem = await db
     .select({ number: contentGradients.number })

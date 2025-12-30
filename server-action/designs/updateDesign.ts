@@ -5,10 +5,8 @@ import { db } from '@/libs/drizzle';
 import { contentDesigns } from '@/db/migration';
 import { eq } from 'drizzle-orm';
 import { auth } from '@/libs/auth';
-import { s3Client } from '@/libs/getR2 copy';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { auth } from '@/libs/auth';
 import { ContentDesignSchema } from './validator';
-import { AssetItem } from '../templates/validator';
 
 type ActionResponse = { success: string } | { error: string };
 
@@ -57,75 +55,21 @@ export async function updateContentDesign(id: string, formData: FormData): Promi
   const values = validated.data;
   console.log('[UpdateDesign] Validated Values:', values);
 
-  // Handle Multiple Image Upload (New Files)
-  const imageFiles = formData.getAll('images');
-  const newImageUrls: AssetItem[] = [];
+  // Handle Main File
+  const linkDownloadUrl = typeof values.sourceFile === 'string' ? values.sourceFile : '';
+  const hasNewMainFile = !!linkDownloadUrl;
 
-  if (imageFiles && imageFiles.length > 0) {
-    for (const imageFile of imageFiles) {
-      if (imageFile instanceof File && imageFile.size > 0) {
-        try {
-          console.log('[UpdateDesign] Uploading New Image:', imageFile.name);
-          const ext = imageFile.name.split('.').pop();
-          const fileName = `designs/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+  // Metadata from Client
+  const fileSize = values.size;
+  const fileFormat = values.format;
 
-          await s3Client.send(
-            new PutObjectCommand({
-              Bucket: process.env.BUCKET_NAME!,
-              Key: fileName,
-              Body: Buffer.from(await imageFile.arrayBuffer()),
-              ContentType: imageFile.type,
-            }),
-          );
-
-          const assetUrl = `${fileName}`;
-          newImageUrls.push({
-            url: assetUrl,
-          });
-          console.log('[UpdateDesign] New Image URL:', assetUrl);
-        } catch (e) {
-          console.error('[UpdateDesign] Image Upload Failed for:', imageFile.name, e);
-        }
-      }
-    }
-  }
-
-  // Combine existing images (from values.imagesUrl) with new uploaded images
-  // values.imagesUrl comes from the client, containing URLs of images that were NOT deleted.
-  const existingImages = values.imagesUrl || [];
-  const finalImagesUrl = [...existingImages, ...newImageUrls];
-
-  let linkDownload: string | undefined = undefined;
-  let fileSize = '';
-  let fileFormat = '';
-
-  if (sourceFile instanceof File && sourceFile.size > 0) {
-    try {
-      console.log('[UpdateDesign] Uploading New Source File:', sourceFile.name);
-      const ext = sourceFile.name.split('.').pop();
-      const fileName = `designs/source/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME!,
-          Key: fileName,
-          Body: Buffer.from(await sourceFile.arrayBuffer()),
-          ContentType: sourceFile.type,
-        }),
-      );
-
-      linkDownload = `${fileName}`;
-      fileSize = (sourceFile.size / 1024 / 1024).toFixed(2) + ' MB';
-      fileFormat = ext?.toUpperCase() || 'FILE';
-      console.log('[UpdateDesign] New Source Link:', linkDownload);
-    } catch (e) {
-      console.error('[UpdateDesign] Source Upload Failed:', e);
-      return { error: 'Gagal upload source file baru.' };
-    }
-  }
+  // Handle Images
+  // Client sends `imagesUrl` which contains ALL valid images (existing + new) as strings.
+  // We just use that list directly.
+  const finalImagesUrl = values.imagesUrl || [];
 
   try {
-    const updateData = {
+    const updateData: any = {
       title: values.title,
       slug: values.slug,
       description: values.description,
@@ -135,8 +79,17 @@ export async function updateContentDesign(id: string, formData: FormData): Promi
       urlBuyOneTime: values.urlBuyOneTime,
       updatedAt: new Date(),
       imagesUrl: finalImagesUrl, // Always update imagesUrl with the final list
-      ...(linkDownload ? { linkDownload, size: fileSize, format: fileFormat } : {}),
     };
+
+    if (hasNewMainFile) {
+      updateData.linkDownload = linkDownloadUrl;
+
+      // Update Metadata if provided by client (new file uploaded)
+      if (fileSize) updateData.size = fileSize;
+      // Logic format: Use client format, or guess from URL, or default FILE
+      const finalFormat = fileFormat || linkDownloadUrl.split('.').pop()?.toUpperCase() || 'FILE';
+      updateData.format = finalFormat;
+    }
 
     console.log('[UpdateDesign] Updating DB with:', updateData);
 
