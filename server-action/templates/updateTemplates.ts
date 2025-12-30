@@ -66,19 +66,13 @@ export async function updateContentTemplate(
   // Handle Main File
   // 'values.sourceFile' contains the URL (new or old).
   // We check if it changed or needs update.
-  // Ideally, we just update it if it's there.
-  const linkDownloadUrl = values.sourceFile;
-  // If it's different from old? We don't have old here easily unless we query.
-  // But we can just update it.
-
-  // Logic size/format: for compatibility, if we don't know, we leave it or set default.
-  // Ideally client sends metadata. For now, assume if linkDownloadUrl is provided, we update it.
+  // Handle Main File
+  const linkDownloadUrl = typeof values.sourceFile === 'string' ? values.sourceFile : '';
   const hasNewMainFile = !!linkDownloadUrl;
-  // Note: if user didn't change file, sourceFile might be the old URL.
-  // In that case, updating it to the same string is harmless.
-  // However, we lose size/format metadata if we don't query old one or have it passed.
-  // If strict about size/format, we should fetching or expect it in payload.
-  // For now, we update if present.
+
+  // Metadata from Client
+  const fileSize = values.size;
+  const fileFormat = values.format;
 
   try {
     const updateData: any = {
@@ -98,16 +92,12 @@ export async function updateContentTemplate(
 
     if (hasNewMainFile) {
       updateData.linkDonwload = linkDownloadUrl;
-      // Only update format if we can guess, or keep old?
-      // We might overwrite valid size with Unknown if we are not careful.
-      // But since we don't query old, we can't persist old valid size easily without query.
-      // Let's assume if it's a URL (string) it's valid.
-      updateData.format =
-        typeof linkDownloadUrl === 'string'
-          ? linkDownloadUrl.split('.').pop()?.toUpperCase() || 'FILE'
-          : 'FILE';
-      // updateData.size = 'Unknown'; // Optional: don't overwrite size if we don't know new size to avoid "Unknown" on unchanged files?
-      // Risky. If we leave it, fine.
+
+      // Update Metadata if provided by client (new file uploaded)
+      if (fileSize) updateData.size = fileSize;
+      // Logic format: Use client format, or guess from URL, or default FILE
+      const finalFormat = fileFormat || linkDownloadUrl.split('.').pop()?.toUpperCase() || 'FILE';
+      updateData.format = finalFormat;
     }
 
     console.log('[UpdateTemplate] Updating DB with:', updateData);

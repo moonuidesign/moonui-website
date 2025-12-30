@@ -346,6 +346,26 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
         // ---------------------------------------------------------
         // 3. CONSTRUCT PAYLOAD
         // ---------------------------------------------------------
+
+        // Calculate Size & Format
+        let fileSizeStr = 'Unknown';
+        let fileFormatStr = 'FILE';
+
+        if (values.sourceFile instanceof File) {
+          const sizeMB = values.sourceFile.size / 1024 / 1024;
+          fileSizeStr = sizeMB.toFixed(2) + ' MB';
+          fileFormatStr = values.sourceFile.name.split('.').pop()?.toUpperCase() || 'FILE';
+        } else if (typeof values.sourceFile === 'string') {
+          // If existing file, we might keep existing, or if url has extension we guess format
+          // But we don't know size unless we fetch it.
+          // Ideally we shouldn't overwrite size if it's already in DB and we are in edit mode.
+          // But here we are constructing payload for update/create.
+          if (template && template.size) {
+            fileSizeStr = template.size; // Preserve existing size if available
+            fileFormatStr = template.format || 'FILE';
+          }
+        }
+
         const payload = {
           title: values.title,
           description: values.description,
@@ -358,6 +378,9 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
           slug: values.slug,
           imagesUrl: finalImages,
           sourceFile: mainFileUrl,
+          // New Metadata
+          size: fileSizeStr,
+          format: fileFormatStr,
         };
 
         const payloadJson = JSON.stringify(payload);

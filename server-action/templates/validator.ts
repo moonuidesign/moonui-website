@@ -49,13 +49,13 @@ export const ContentTemplateSchema = z
       .refine((val) => val !== null && val !== undefined, {
         message: 'File sumber wajib diisi',
       }),
-    // Slug / Tags (Label)
     slug: z.array(z.string()).min(1, 'Minimal satu tag/label wajib diisi'),
-
-    // Array untuk URL manual (bukan hasil upload file form ini)
     imagesUrl: z.array(AssetObjectSchema).optional(),
-    // Field untuk menampung File baru yang diupload
     newImages: z.array(z.instanceof(File)).optional(),
+
+    // Metadata File (Optional, dikirim dari client)
+    size: z.string().optional(),
+    format: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     const hasExisting = data.imagesUrl && data.imagesUrl.length > 0;

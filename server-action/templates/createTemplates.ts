@@ -68,35 +68,37 @@ export async function createContentTemplate(formData: FormData): Promise<ActionR
   // Kita pastikan linkDownloadUrl mengambil dari situ.
   const linkDownloadUrl = typeof values.sourceFile === 'string' ? values.sourceFile : '';
 
-  // NOTE: Ukuran/Format file idealnya dikirim juga dari client jika diperlukan untuk DB,
-  // tapi untuk sekarang kita bisa default atau biarkan kosong/minimal.
-  // Jika ingin data akurat, client harus kirim metadata size/format di payload JSON.
-  // Untuk compatibility, kita set default jika kosong.
-  const fileSize = 'Unknown';
-  const fileFormat = linkDownloadUrl
-    ? linkDownloadUrl.split('.').pop()?.toUpperCase() || 'FILE'
-    : 'FILE';
+  // NOTE: Ukuran/Format file dikirim dari client (values.size & values.format)
+  // Ini hasil kalkulasi di FE sebelum upload.
+  const fileSize = values.size || 'Unknown';
+  const fileFormat =
+    values.format ||
+    (linkDownloadUrl ? linkDownloadUrl.split('.').pop()?.toUpperCase() : 'FILE') ||
+    'FILE';
 
   // 6. Insert ke Database
   try {
     const insertData = {
-      userId,
+      id: crypto.randomUUID(),
       title: values.title,
       description: values.description,
       typeContent: values.typeContent,
-      urlPreview: values.linkTemplate,
-      linkDonwload: linkDownloadUrl,
-      size: fileSize,
-      format: fileFormat,
+      linkTemplate: values.linkTemplate,
       categoryTemplatesId: values.categoryTemplatesId,
-      slug: values.slug,
-      assetUrl: finalAssets,
       tier: values.tier,
       statusContent: values.statusContent,
       urlBuyOneTime: values.urlBuyOneTime,
-      imagesUrl: finalAssets,
-      viewCount: 0,
+      slug: values.slug,
+      linkDonwload: linkDownloadUrl,
+      userId: session.user.id,
+      assetUrl: finalAssets,
+      format: fileFormat,
+      size: fileSize,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      copyCount: 0,
       downloadCount: 0,
+      imagesUrl: finalAssets, // Simpan juga di kolom imagesUrl jika schema DB mendukung
     };
     console.log('[CreateTemplate] Inserting DB:', insertData);
 
