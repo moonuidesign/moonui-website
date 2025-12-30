@@ -66,14 +66,16 @@ export async function createContentTemplate(formData: FormData): Promise<ActionR
   // Handle Main File
   // Sama, 'sourceFile' di values/payload sudah string URL/Key.
   // Kita pastikan linkDownloadUrl mengambil dari situ.
-  const linkDownloadUrl = values.sourceFile || '';
+  const linkDownloadUrl = typeof values.sourceFile === 'string' ? values.sourceFile : '';
 
   // NOTE: Ukuran/Format file idealnya dikirim juga dari client jika diperlukan untuk DB,
   // tapi untuk sekarang kita bisa default atau biarkan kosong/minimal.
   // Jika ingin data akurat, client harus kirim metadata size/format di payload JSON.
   // Untuk compatibility, kita set default jika kosong.
   const fileSize = 'Unknown';
-  const fileFormat = linkDownloadUrl.split('.').pop()?.toUpperCase() || 'FILE';
+  const fileFormat = linkDownloadUrl
+    ? linkDownloadUrl.split('.').pop()?.toUpperCase() || 'FILE'
+    : 'FILE';
 
   // 6. Insert ke Database
   try {
