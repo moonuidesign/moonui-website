@@ -27,6 +27,7 @@ import { toast } from 'react-toastify';
 import Image from 'next/image';
 import { TagInput } from '@/components/ui/tag-input';
 import { useRouter } from 'next/navigation';
+import { getPresignedUrl } from '@/server-action/upload/get-presigned-url';
 
 // Imports Server Actions & Types
 // Pastikan path import ini sesuai dengan struktur project Anda
@@ -271,6 +272,38 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
 
   const childCategories = localCategories.filter((c) => c.parentId === currentParentId);
 
+  // --- UPLOAD HELPER ---
+  const uploadFileToR2 = async (file: File, prefix: string = 'uploads') => {
+    // 1. Get Presigned URL
+    const prezRes = await getPresignedUrl({
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size,
+      prefix,
+    });
+
+    if (!prezRes.success) {
+      throw new Error(prezRes.error);
+    }
+
+    const { uploadUrl, fileUrl, key } = prezRes;
+
+    // 2. Upload to R2 directly
+    const uploadRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      body: file,
+      headers: {
+        'Content-Type': file.type,
+      },
+    });
+
+    if (!uploadRes.ok) {
+      throw new Error(`Failed to upload ${file.name} to storage`);
+    }
+
+    return key; // This is the Key/URL to save in DB
+  };
+
   // --- SUBMIT HANDLER ---
   const onSubmit = (values: ContentTemplateFormValues) => {
     startTransition(async () => {
@@ -278,11 +311,44 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
         const formData = new FormData();
 
         // ---------------------------------------------------------
-        // PERBAIKAN: Bungkus data teks ke dalam satu field 'data' (JSON)
+        // 1. CLIENT-SIDE UPLOAD (Main File)
+        // ---------------------------------------------------------
+        let mainFileUrl = '';
+        // If string and not empty, it's an existing file or already processed
+        if (typeof values.sourceFile === 'string') {
+          mainFileUrl = values.sourceFile;
+        }
+        // If File, upload it now
+        else if (values.sourceFile instanceof File) {
+          toast.info(`Uploading main file: ${values.sourceFile.name}...`);
+          mainFileUrl = await uploadFileToR2(values.sourceFile, 'templates');
+        }
+
+        // ---------------------------------------------------------
+        // 2. CLIENT-SIDE UPLOAD (New Images)
+        // ---------------------------------------------------------
+        const uploadedImageUrls: AssetItem[] = [];
+
+        if (selectedFiles.length > 0) {
+          toast.info(`Uploading ${selectedFiles.length} images...`);
+          // Upload concurrently
+          const uploadPromises = selectedFiles.map(async (file) => {
+            const url = await uploadFileToR2(file, 'templates');
+            return { url };
+          });
+          const results = await Promise.all(uploadPromises);
+          uploadedImageUrls.push(...results);
+        }
+
+        // Combine with existing images
+        const finalImages = [...existingImages, ...uploadedImageUrls];
+
+        // ---------------------------------------------------------
+        // 3. CONSTRUCT PAYLOAD
         // ---------------------------------------------------------
         const payload = {
           title: values.title,
-          description: values.description, // Kirim object aslinya, nanti ter-stringify otomatis
+          description: values.description,
           typeContent: values.typeContent,
           linkTemplate: values.linkTemplate,
           categoryTemplatesId: values.categoryTemplatesId,
@@ -290,42 +356,16 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
           statusContent: values.statusContent,
           urlBuyOneTime: values.urlBuyOneTime,
           slug: values.slug,
-          imagesUrl: existingImages, // Penting: sertakan existing images agar validasi Zod di server lolos
+          imagesUrl: finalImages,
+          sourceFile: mainFileUrl,
         };
 
-        // Append JSON string ke field 'data' sesuai permintaan Server Action
         formData.append('data', JSON.stringify(payload));
+        // Append sourceFile as string for validator to see it's present
+        formData.append('sourceFile', mainFileUrl);
 
         // ---------------------------------------------------------
-        // File Handling (Biarkan terpisah seperti sebelumnya)
-        // ---------------------------------------------------------
-
-        // 1. Handle New Images (Files)
-        selectedFiles.forEach((file) => {
-          formData.append('images', file); // Pastikan key-nya 'images' (sesuai server action: formData.getAll('images'))
-        });
-
-        // 2. Handle Main Template File (sourceFile)
-        if (values.sourceFile instanceof File) {
-          formData.append('sourceFile', values.sourceFile);
-        }
-        // If string, it's already in 'data' payload via existing link mapping if needed,
-        // but server action 'data' usually doesn't need the file URL explicitly if not changing.
-        // However, validator might check it. Validator checks 'sourceFile' in formData or just presence?
-        // The validator we updated checks 'sourceFile' field which is usually a File object in FormData.
-        // BUT for update, if we don't send a new file, we might not send 'sourceFile' key in FormData at all?
-        // Wait, our updated validator uses `z.union([z.instanceof(File), z.string()])`.
-        // So we should pass the string if it's an existing file?
-        // Server actions usually parse formData using `Object.fromEntries` or `zfd`.
-        // If we strictly rely on `formData.get('sourceFile')` it returns string or File.
-        // If it's existing, we want to pass the URL string so validator passes.
-        if (typeof values.sourceFile === 'string' && values.sourceFile) {
-          // We append it so the validator receiving formData sees it.
-          formData.append('sourceFile', values.sourceFile);
-        }
-
-        // ---------------------------------------------------------
-        // Eksekusi Server Action
+        // 4. EXECUTE SERVER ACTION
         // ---------------------------------------------------------
         let res;
         if (isEditMode && template) {
