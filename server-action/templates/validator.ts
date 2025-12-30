@@ -10,7 +10,7 @@ export type TemplateStatusType = (typeof TEMPLATE_STATUS_OPTIONS)[number];
 
 // Schema untuk objek di dalam JSONB 'assetUrl'
 const AssetObjectSchema = z.object({
-  url: z.string().url('URL tidak valid'),
+  url: z.string().min(1, 'URL/Key tidak boleh kosong'),
 });
 
 export const ContentTemplateSchema = z
