@@ -360,7 +360,22 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
           sourceFile: mainFileUrl,
         };
 
-        formData.append('data', JSON.stringify(payload));
+        const payloadJson = JSON.stringify(payload);
+        const payloadSize = new Blob([payloadJson]).size;
+        const sizeInMB = (payloadSize / 1024 / 1024).toFixed(2);
+
+        console.log('Payload Size:', sizeInMB, 'MB');
+        // DEBUG: Always show payload size in toast
+        toast.info(`Debug: Payload Size = ${sizeInMB} MB`);
+
+        if (payloadSize > 4.5 * 1024 * 1024) {
+          toast.error(
+            `ERROR: Payload terlalu besar (${sizeInMB} MB). Batas Vercel ~4.5MB. Kurangi konten deskripsi.`,
+          );
+          return;
+        }
+
+        formData.append('data', payloadJson);
         // Append sourceFile as string for validator to see it's present
         formData.append('sourceFile', mainFileUrl);
 
@@ -378,7 +393,7 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
         }
 
         if (res && 'error' in res) {
-          toast.error(res.error);
+          toast.error(`Server Error: ${res.error}`);
         } else {
           toast.success(res.success || 'Template saved successfully');
           router.push('/dashboard/content/templates');
