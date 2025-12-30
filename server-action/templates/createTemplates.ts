@@ -4,8 +4,6 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/libs/drizzle';
 import { contentTemplates } from '@/db/migration';
 import { auth } from '@/libs/auth';
-import { s3Client } from '@/libs/getR2 copy';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { AssetItem, ContentTemplateSchema } from './validator';
 
 // Definisikan tipe return yang spesifik (Strict)
@@ -60,72 +58,22 @@ export async function createContentTemplate(formData: FormData): Promise<ActionR
   const values = validated.data;
   console.log('[CreateTemplate] Validated Values:', values);
 
-  // Handle Main File Upload
-  const mainFile = formData.get('sourceFile');
-  let linkDownloadUrl = '';
-  let fileSize = '';
-  let fileFormat = '';
-
-  if (mainFile instanceof File && mainFile.size > 0) {
-    try {
-      console.log('[CreateTemplate] Uploading Main File:', mainFile.name);
-      const ext = mainFile.name.split('.').pop();
-      const fileName = `templates/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME!,
-          Key: fileName,
-          Body: Buffer.from(await mainFile.arrayBuffer()),
-          ContentType: mainFile.type,
-        }),
-      );
-
-      linkDownloadUrl = `${fileName}`;
-      fileSize = (mainFile.size / 1024 / 1024).toFixed(2) + ' MB';
-      fileFormat = ext?.toUpperCase() || 'FILE';
-      console.log('[CreateTemplate] Main File Uploaded:', linkDownloadUrl);
-    } catch (e) {
-      console.error('[CreateTemplate] Upload Main File Failed:', e);
-      return { error: 'Gagal mengupload file template utama.' };
-    }
-  }
-
   // 4. Handle File Upload (Images)
-  const imageFiles = formData.getAll('images');
-  const uploadedAssets: AssetItem[] = [];
-  console.log(`[CreateTemplate] Found ${imageFiles.length} images to upload`);
+  // Logic upload dipindahkan ke Client-Side untuk menghindari limit Vercel (4.5MB).
+  // Data 'imagesUrl' di dalam 'values' sekarang sudah berisi URL hasil upload client.
+  const finalAssets: AssetItem[] = values.imagesUrl || [];
 
-  // Validasi manual untuk items di FormData agar Type-Safe
-  for (const file of imageFiles) {
-    if (file instanceof File && file.size > 0) {
-      try {
-        const ext = file.name.split('.').pop();
-        const fileName = `templates/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+  // Handle Main File
+  // Sama, 'sourceFile' di values/payload sudah string URL/Key.
+  // Kita pastikan linkDownloadUrl mengambil dari situ.
+  const linkDownloadUrl = values.sourceFile || '';
 
-        await s3Client.send(
-          new PutObjectCommand({
-            Bucket: process.env.BUCKET_NAME!,
-            Key: fileName,
-            Body: Buffer.from(await file.arrayBuffer()),
-            ContentType: file.type,
-          }),
-        );
-
-        const assetUrl = `${fileName}`;
-        uploadedAssets.push({
-          url: assetUrl,
-        });
-        console.log('[CreateTemplate] Uploaded Asset:', assetUrl);
-      } catch (e) {
-        console.error('[CreateTemplate] Asset Upload Failed:', e);
-        return { error: 'Gagal mengupload gambar ke server.' };
-      }
-    }
-  }
-
-  // Gabungkan asset manual + hasil upload
-  const finalAssets: AssetItem[] = [...(values.imagesUrl || []), ...uploadedAssets];
+  // NOTE: Ukuran/Format file idealnya dikirim juga dari client jika diperlukan untuk DB,
+  // tapi untuk sekarang kita bisa default atau biarkan kosong/minimal.
+  // Jika ingin data akurat, client harus kirim metadata size/format di payload JSON.
+  // Untuk compatibility, kita set default jika kosong.
+  const fileSize = 'Unknown';
+  const fileFormat = linkDownloadUrl.split('.').pop()?.toUpperCase() || 'FILE';
 
   // 6. Insert ke Database
   try {
@@ -135,18 +83,16 @@ export async function createContentTemplate(formData: FormData): Promise<ActionR
       description: values.description,
       typeContent: values.typeContent,
       urlPreview: values.linkTemplate,
-      linkDonwload: linkDownloadUrl, // Typo fixed in schema, but keeping for now
+      linkDonwload: linkDownloadUrl,
       size: fileSize,
       format: fileFormat,
       categoryTemplatesId: values.categoryTemplatesId,
-      slug: values.slug, // New Field
-      assetUrl: finalAssets, // Drizzle akan otomatis stringify JSONB
+      slug: values.slug,
+      assetUrl: finalAssets,
       tier: values.tier,
-      // platform: values.platform, // Removed not in schema
       statusContent: values.statusContent,
       urlBuyOneTime: values.urlBuyOneTime,
-
-      imagesUrl: finalAssets, // Add imagesUrl to the insertData
+      imagesUrl: finalAssets,
       viewCount: 0,
       downloadCount: 0,
     };
