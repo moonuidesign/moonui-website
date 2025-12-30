@@ -35,11 +35,10 @@ export const DATA_TABS: ShowcaseTabItem[] = [
     image:
       'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop',
     ctaTitle: 'Premium Components & Blocks',
-    ctaDescription:
-      'Unlock 100+ premium components and blocks for advanced projects.',
+    ctaDescription: 'Unlock 100+ premium components and blocks for advanced projects.',
     ctaButtonText: 'Explore - MoonUI PRO',
     footerStyle: 'simple-dark', // Style baru seperti gambar component & block
-    buttonColor: 'bg-[#FF5F38]', // Warna Orange khusus
+    buttonColor: 'bg-[#FF4F00]', // Warna Orange khusus
   },
   {
     id: 'templates',
@@ -115,10 +114,9 @@ export const DATA_TABS: ShowcaseTabItem[] = [
     image:
       'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=2070&auto=format&fit=crop',
     ctaTitle: 'Design System',
-    ctaDescription:
-      'Keep your design and code perfectly aligned with our Figma kit.',
+    ctaDescription: 'Keep your design and code perfectly aligned with our Figma kit.',
     ctaButtonText: 'Get Figma Kit',
     footerStyle: 'simple-dark', // Style baru
-    buttonColor: 'bg-[#FF5F38]', // Warna Orange
+    buttonColor: 'bg-[#FF4F00]', // Warna Orange
   },
 ];

@@ -270,45 +270,40 @@ export default function Bennefits() {
   );
 
   return (
-    <div className="max-h-[1600px] h-fit md:h-fit relative lg:max-w-7xl mx-auto flex flex-col items-center py-8 lg:py-20 font-sans text-[#2E2E2E] selection:bg-black/10">
+    <div className="relative mx-auto flex h-fit max-h-[1600px] flex-col items-center py-8 font-sans text-[#2E2E2E] selection:bg-black/10 md:h-fit lg:max-w-7xl lg:py-20">
       {/* MOBILE VIEW */}
-      <div className="md:hidden w-full px-1 lg:px-5 flex flex-col gap-6 max-w-[420px]">
-        <div className="flex flex-col items-center gap-4 mb-2">
-          <div className="inline-flex h-8 px-3 items-center gap-2 rounded-xl bg-[#8A7F8D] shadow-sm">
+      <div className="flex w-full max-w-[420px] flex-col gap-6 px-1 md:hidden lg:px-5">
+        <div className="mb-2 flex flex-col items-center gap-4">
+          <div className="inline-flex h-8 items-center gap-2 rounded-xl bg-[#8A7F8D] px-3 shadow-sm">
             <Icons.Check />
-            <span className="text-white text-[12px] font-semibold tracking-wide uppercase">
+            <span className="text-[12px] font-semibold tracking-wide text-white uppercase">
               Pro Templates
             </span>
           </div>
-          <h1 className="text-center text-[32px] leading-[1.1] font-bold text-[#1A1A1A] tracking-tight">
+          <h1 className="text-center text-[32px] leading-[1.1] font-bold tracking-tight text-[#1A1A1A]">
             Ready-made
             <br />
             multi-page flows
           </h1>
         </div>
-        <MobileTopNav
-          activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
-        />
+        <MobileTopNav activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
         <MobileCardView key={activeCategory} activeCategory={activeCategory} />
       </div>
 
       {/* DESKTOP VIEW */}
-      <div className="hidden md:flex flex-col items-center md:w-3xl md:overflow-hidden lg:w-7xl md:max-w-3xl lg:max-w-[1440px] px-4">
-        <div className="flex flex-col items-center gap-8 mb-16 z-20 relative">
-          <div className="inline-flex h-8 px-3 pl-2 items-center gap-1.5 rounded-[9px] bg-[#FF4F00] shadow-sm">
+      <div className="hidden flex-col items-center px-4 md:flex md:w-3xl md:max-w-3xl md:overflow-hidden lg:w-7xl lg:max-w-[1440px]">
+        <div className="relative z-20 mb-16 flex flex-col items-center gap-8">
+          <div className="inline-flex h-8 items-center gap-1.5 rounded-[9px] bg-[#FF4F00] px-3 pl-2 shadow-sm">
             <Icons.Check />
-            <span className="text-white text-sm font-medium leading-5">
+            <span className="text-sm leading-5 font-medium text-white">
               Sector-specific Templates
             </span>
-            <div className="flex px-1.5 py-[3px] items-start rounded-[5px] bg-white/50">
-              <span className="text-white text-[11px] font-semibold leading-[10px]">
-                PRO
-              </span>
+            <div className="flex items-start rounded-[5px] bg-white/50 px-1.5 py-[3px]">
+              <span className="text-[11px] leading-[10px] font-semibold text-white">PRO</span>
             </div>
           </div>
 
-          <h1 className="text-center text-[44px] font-['Plus_Jakarta_Sans'] leading-[56px] tracking-[-1.3px]">
+          <h1 className="text-center font-['Plus_Jakarta_Sans'] text-[44px] leading-[56px] tracking-[-1.3px]">
             <span className="font-semibold">Ready</span>—
             <span className="font-semibold">made multi</span>—
             <span className="font-semibold">
@@ -318,18 +313,19 @@ export default function Bennefits() {
             </span>
           </h1>
 
-          <div className="flex flex-wrap justify-center gap-4 w-3xl">
+          <div className="flex w-3xl flex-wrap justify-center gap-4">
             {CATEGORIES_CONFIG.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`flex h-12 px-4 items-center gap-3 rounded-[15px] transition-all ${activeCategory === cat.id
-                  ? 'bg-[#EBEBEB] ring-2 ring-transparent'
-                  : 'bg-[#F7F7F7] shadow-[0_0_0_1px_#EBEBEB] hover:bg-white'
-                  }`}
+                className={`flex h-12 items-center gap-3 rounded-[15px] px-4 transition-all ${
+                  activeCategory === cat.id
+                    ? 'bg-[#EBEBEB] ring-2 ring-transparent'
+                    : 'bg-[#F7F7F7] shadow-[0_0_0_1px_#EBEBEB] hover:bg-white'
+                }`}
               >
                 <div
-                  className={`size-7 p-1 rounded-[7px] flex items-center justify-center shadow-inner ${cat.bgColor}`}
+                  className={`flex size-7 items-center justify-center rounded-[7px] p-1 shadow-inner ${cat.bgColor}`}
                 >
                   {/* Cast to ReactElement to allow prop overriding without TS error */}
                   {React.cloneElement(cat.icons as React.ReactElement<any>, {
@@ -337,21 +333,19 @@ export default function Bennefits() {
                     variant: 'Bold',
                   })}
                 </div>
-                <span className="capitalize font-medium text-base text-[#3D3D3D]">
-                  {cat.title}
-                </span>
+                <span className="text-base font-medium text-[#3D3D3D] capitalize">{cat.title}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="relative w-full flex justify-center min-h-[600px]">
+        <div className="relative flex min-h-[600px] w-full justify-center">
           <span
             style={{ zIndex: 100 }}
-            className="border-x border-2 border-t-0 -bottom-10 rounded-b-4xl absolute pointer-events-none border-[#D3D3D3] w-full flex h-[calc(100%+70px)]"
+            className="pointer-events-none absolute -bottom-10 flex h-[calc(100%+70px)] w-full rounded-b-4xl border-2 border-x border-t-0 border-[#D3D3D3]"
           >
-            <span className="w-1.5 h-1.5 absolute top-0 -left-[3px] bg-[#D3D3D3] rounded-full" />
-            <span className="w-1.5 h-1.5 absolute top-0 -right-[3px] bg-[#D3D3D3] rounded-full" />
+            <span className="absolute top-0 -left-[3px] h-1.5 w-1.5 rounded-full bg-[#D3D3D3]" />
+            <span className="absolute top-0 -right-[3.5px] h-1.5 w-1.5 rounded-full bg-[#D3D3D3]" />
           </span>
 
           <AnimatePresence mode="wait">
@@ -361,47 +355,37 @@ export default function Bennefits() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.4 }}
-              className="w-full flex justify-center"
+              className="flex w-full justify-center"
             >
-              <CardSwap
-                width={1000}
-                height={600}
-                verticalDistance={50}
-                delay={4500}
-              >
+              <CardSwap width={1000} height={600} verticalDistance={50} delay={4500}>
                 {desktopCards.map((card, index) => (
                   <div
                     key={`${card.id}-${index}`}
-                    className="absolute md:w-2xl lg:w-6xl bg-white rounded-[24px] shadow-2xl border border-white/60 cursor-pointer overflow-hidden transform transition-transform hover:brightness-105"
+                    className="absolute transform cursor-pointer overflow-hidden rounded-[24px] border border-white/60 bg-white shadow-2xl transition-transform hover:brightness-105 md:w-2xl lg:w-6xl"
                   >
-                    <div className="h-12 bg-[#FAFAFA] border-b border-[#EBEBEB] flex items-center justify-between px-5">
+                    <div className="flex h-12 items-center justify-between border-b border-[#EBEBEB] bg-[#FAFAFA] px-5">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-6 h-6 rounded-[6px] flex items-center justify-center text-white text-xs shadow-sm ${card.bgColor}`}
+                          className={`flex h-6 w-6 items-center justify-center rounded-[6px] text-xs text-white shadow-sm ${card.bgColor}`}
                         >
                           {/* Cast activeConfig.icons to ReactElement<any> to allow 'size' prop */}
                           {activeConfig?.icons &&
-                            React.cloneElement(
-                              activeConfig.icons as React.ReactElement<any>,
-                              {
-                                size: 14,
-                                color: 'white',
-                              },
-                            )}
+                            React.cloneElement(activeConfig.icons as React.ReactElement<any>, {
+                              size: 14,
+                              color: 'white',
+                            })}
                         </div>
                         <div>
-                          <span className="text-[#333] font-medium text-sm">
-                            {card.title}
-                          </span>
-                          <span className="text-[#999] text-xs ml-2 font-normal hidden sm:inline">
+                          <span className="text-sm font-medium text-[#333]">{card.title}</span>
+                          <span className="ml-2 hidden text-xs font-normal text-[#999] sm:inline">
                             · {card.subtitle}
                           </span>
                         </div>
                       </div>
                       <div className="flex gap-2 opacity-40">
-                        <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                        <div className="h-3 w-3 rounded-full bg-red-400"></div>
+                        <div className="h-3 w-3 rounded-full bg-yellow-400"></div>
+                        <div className="h-3 w-3 rounded-full bg-green-400"></div>
                       </div>
                     </div>
                     <div className="h-[480px]">
@@ -414,18 +398,16 @@ export default function Bennefits() {
           </AnimatePresence>
         </div>
 
-        <button className="relative z-[110] bottom-16 flex h-11 px-5 items-center gap-3 rounded-[13px] bg-[#2E2E2E] hover:bg-black text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-colors mt-4">
+        <button className="relative bottom-16 z-[110] mt-4 flex h-11 items-center gap-3 rounded-[13px] bg-[#2E2E2E] px-5 text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-colors hover:bg-black">
           <div className="flex items-center gap-1.5 text-sm">
             <span className="font-medium">Explore Template</span>
             <span className="opacity-30">-</span>
-            <span className="opacity-70 font-medium capitalize">
-              {activeConfig?.title}
-            </span>
+            <span className="font-medium capitalize opacity-70">{activeConfig?.title}</span>
           </div>
           <Icons.ArrowRight />
         </button>
       </div>
-      <div className="absolute bottom-[0px] lg:-bottom-10 z-[10] left-0 w-full h-[250px] lg:h-[500px] bg-gradient-to-t from-[#e8e8e8] via-[#e8e8e8] to-transparent pointer-events-none"></div>
+      <div className="pointer-events-none absolute bottom-[0px] left-0 z-[10] h-[250px] w-full bg-gradient-to-t from-[#e8e8e8] via-[#e8e8e8] to-transparent lg:-bottom-10 lg:h-[500px]"></div>
     </div>
   );
 }

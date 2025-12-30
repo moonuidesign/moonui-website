@@ -25,6 +25,7 @@ import {
 
 import { toast } from 'react-toastify';
 import Image from 'next/image';
+import { getPresignedUrl } from '@/server-action/upload/get-presigned-url';
 
 import { createCategoryGradient } from '@/server-action/getCategoryComponent/create';
 import { CategoryCombobox } from '@/components/dashboard/category-combobox';
@@ -52,6 +53,8 @@ interface GradientEntity {
   description?: object;
   typeGradient: string;
   image: string;
+  size: string | null;
+  format: string | null;
   categoryGradientsId: string | null;
   tier: string;
   slug: unknown;
@@ -69,10 +72,6 @@ export default function GradientForm({ categories, gradient }: GradientFormProps
   const [imagePreview, setImagePreview] = useState<string | null>(gradient?.image || null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Source File State
-  const [sourceFile, setSourceFile] = useState<File | null>(null);
-  const sourceFileInputRef = useRef<HTMLInputElement>(null);
 
   const isEditMode = !!gradient;
 
@@ -190,30 +189,96 @@ export default function GradientForm({ categories, gradient }: GradientFormProps
 
   const router = useRouter();
 
+  // --- CLIENT SIDE UPLOADS LOGIC ---
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Helper: Upload Single File to R2
+  const uploadFileToR2 = async (file: File, prefix: string = 'gradients') => {
+    try {
+      // 1. Get Presigned URL
+      const presigned = await getPresignedUrl({
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        prefix,
+      });
+
+      if (!presigned.success) {
+        throw new Error(presigned.error || 'Failed to get upload URL');
+      }
+
+      // 2. Upload to R2 (CORS must be enabled)
+      const uploadRes = await fetch(presigned.uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error(`Upload failed with status: ${uploadRes.status}`);
+      }
+
+      // 3. Return the Key
+      return presigned.key;
+    } catch (error) {
+      console.error('R2 Upload Error:', error);
+      throw error;
+    }
+  };
+
   const onSubmit = (values: ContentGradientFormValues) => {
+    setIsUploading(true);
     startTransition(async () => {
-      const formData = new FormData();
+      try {
+        // 1. Upload Image (Thumbnail/Source)
+        let imageUrl = values.image instanceof File ? '' : (values.image as string);
+        let fileSizeStr = 'Unknown';
+        let fileFormatStr = 'IMG';
 
-      formData.append('data', JSON.stringify(values));
-      if (selectedFile) formData.append('image', selectedFile);
-      if (sourceFile) formData.append('sourceFile', sourceFile);
+        if (selectedFile) {
+          toast.info(`Uploading Gradient Image: ${selectedFile.name}...`);
+          // Metadata
+          fileSizeStr = (selectedFile.size / 1024 / 1024).toFixed(2) + ' MB';
+          fileFormatStr = selectedFile.name.split('.').pop()?.toUpperCase() || 'IMG';
 
-      const promise = async () => {
-        let result;
-        if (isEditMode && gradient) {
-          result = await updateContentGradient(gradient.id, formData);
-        } else {
-          result = await createContentGradient(formData);
+          imageUrl = await uploadFileToR2(selectedFile, 'gradients');
+        } else if (typeof values.image === 'string' && gradient?.size) {
+          // Keep existing metadata
+          fileSizeStr = gradient.size || 'Unknown';
+          fileFormatStr = gradient.format || 'IMG';
         }
 
-        if (result && 'error' in result) {
-          throw new Error(result.error);
-        }
-        return result.success;
-      };
+        // 2. Construct Payload
+        const payload = {
+          ...values,
+          image: imageUrl, // Send String (Key)
+          // Metadata
+          size: fileSizeStr,
+          format: fileFormatStr,
+        };
 
-      await toast
-        .promise(promise(), {
+        const payloadJson = JSON.stringify(payload);
+        const formData = new FormData();
+        formData.append('data', payloadJson);
+
+        // 3. Call Server Action
+        const promise = async () => {
+          let result;
+          if (isEditMode && gradient) {
+            result = await updateContentGradient(gradient.id, formData);
+          } else {
+            result = await createContentGradient(formData);
+          }
+
+          if (result && 'error' in result) {
+            throw new Error(result.error);
+          }
+          return result.success;
+        };
+
+        await toast.promise(promise(), {
           pending: isEditMode ? 'Updating gradient...' : 'Creating gradient...',
           success: {
             render({ data }) {
@@ -222,14 +287,18 @@ export default function GradientForm({ categories, gradient }: GradientFormProps
           },
           error: {
             render({ data }) {
-              return (data as Error).message || 'Something went wrong';
+              return (data as Error).message;
             },
           },
-        })
-        .then(() => {
-          router.push('/dashboard/content/gradients');
-        })
-        .catch(() => {});
+        });
+
+        router.push('/dashboard/content/gradients');
+      } catch (error: any) {
+        console.error('Submit Error:', error);
+        toast.error(error.message || 'Gagal menyimpan gradient.');
+      } finally {
+        setIsUploading(false);
+      }
     });
   };
 

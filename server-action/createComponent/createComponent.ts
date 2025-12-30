@@ -3,14 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/libs/auth';
 import { db } from '@/libs/drizzle';
-import { s3Client } from '@/libs/getR2 copy';
 import { contentComponents } from '@/db/migration';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
 import OpenAI from 'openai';
-import {
-  ContentComponentFormValues,
-  ContentComponentSchema,
-} from './component-validator';
+import { ContentComponentFormValues, ContentComponentSchema } from './component-validator';
 
 // ============================================================================
 // 1. CONFIG & TYPES
@@ -21,9 +16,7 @@ const GEMINI_API_KEYS = [
   process.env.GEMINI_API_KEY_2,
   process.env.GEMINI_API_KEY_3,
   process.env.OPENROUTER_API_KEY,
-].filter(
-  (key): key is string => typeof key === 'string' && key.trim().length > 0,
-);
+].filter((key): key is string => typeof key === 'string' && key.trim().length > 0);
 
 const AI_MODEL = 'google/gemini-2.5-flash-preview-09-2025';
 const AI_BASE_URL = 'https://openrouter.ai/api/v1';
@@ -100,7 +93,8 @@ async function callAIWithRotation(
       const isRateLimit = lastError.message.includes('429');
 
       console.warn(
-        `[AI Warning] Key ...${apiKey.slice(-4)} failed (${isRateLimit ? '429' : 'Err'
+        `[AI Warning] Key ...${apiKey.slice(-4)} failed (${
+          isRateLimit ? '429' : 'Err'
         }). Switching...`,
       );
 
@@ -222,32 +216,14 @@ export async function createContentComponent(
     }
   }
 
-  // 3. UPLOAD IMAGE (Hanya jalan jika AI sukses)
-  let imageUrl: string | null = null;
-  if (imageFile && imageFile.size > 0) {
-    try {
-      const ext = imageFile.name.split('.').pop();
-      const fileName = `components/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-      const buffer = Buffer.from(await imageFile.arrayBuffer());
+  // 3. HANDLE IMAGE (Client already uploaded, we stick to values.previewImage)
+  const imageUrl = typeof values.previewImage === 'string' ? values.previewImage : null;
 
-      if (!process.env.BUCKET_NAME) throw new Error('No Bucket Name');
+  // Metadata
+  const fileSize = values.size || null;
+  const fileFormat = values.format || null;
 
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME,
-          Key: fileName,
-          Body: buffer,
-          ContentType: imageFile.type,
-        }),
-      );
-      imageUrl = fileName;
-    } catch (e) {
-      console.error('[S3 Error]', e);
-      return { success: false, error: 'Gagal upload gambar' };
-    }
-  }
-
-  // 4. DB INSERT (Hanya jalan jika AI & Upload sukses)
+  // 4. DB INSERT
   try {
     await db.insert(contentComponents).values({
       userId: session.user.id,
@@ -265,6 +241,8 @@ export async function createContentComponent(
       statusContent,
       urlBuyOneTime,
       imageUrl,
+      size: fileSize,
+      format: fileFormat,
     });
 
     revalidatePath('/dashboard/components');

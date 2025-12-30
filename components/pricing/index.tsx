@@ -38,7 +38,7 @@ const plans: PricePlan[] = [
   },
   {
     title: 'MoonUI Pro',
-    subtitle: 'Subscribe—annual Plan',
+    subtitle: 'Subscribe—',
     price: { monthly: 99, yearly: 499 },
     priceDetail: 'billed per cycle',
     features: [
@@ -77,10 +77,12 @@ const plans: PricePlan[] = [
 // ==========================================
 const PricingCard = ({
   plan,
+  index,
   isAnnual,
   activeDiscount,
 }: {
   plan: PricePlan;
+  index: number;
   isAnnual: boolean;
   activeDiscount: { code: string; discount: number } | null;
 }) => {
@@ -103,10 +105,7 @@ const PricingCard = ({
 
   // Annual savings logic (existing)
   const showAnnualStrikethrough =
-    isAnnual &&
-    !isLifetime &&
-    originalPrice > 0 &&
-    annualizedMonthlyPrice > originalPrice;
+    isAnnual && !isLifetime && originalPrice > 0 && annualizedMonthlyPrice > originalPrice;
 
   // We should prioritize showing the 'active discount' savings if present,
   // or combine them?
@@ -122,48 +121,47 @@ const PricingCard = ({
 
   return (
     <div
-      className={`relative p-4 flex flex-col h-full rounded-[32px] overflow-hidden border transition-transform duration-300 shadow-xl
-        ${plan.isDark
-          ? 'bg-zinc-900 text-white border-zinc-800'
-          : 'bg-white text-zinc-800 border-zinc-100'
-        }`}
+      className={`relative flex h-full flex-col overflow-hidden rounded-[32px] border p-4 shadow-xl transition-transform duration-300 ${
+        plan.isDark
+          ? 'border-zinc-800 bg-zinc-900 text-white'
+          : 'border-zinc-100 bg-white text-zinc-800'
+      }`}
     >
       <div
-        className={`h-40 w-full rounded-2xl bg-gradient-to-br ${plan.gradient} flex flex-col justify-between relative`}
+        className={`h-40 w-full rounded-2xl bg-gradient-to-br ${plan.gradient} relative flex flex-col justify-between`}
       >
-        <div className="relative p-4 flex flex-col justify-between z-10 h-full">
-          <div className="flex justify-between items-center">
+        <div className="relative z-10 flex h-full flex-col justify-between p-4">
+          <div className="flex items-center justify-between">
             <h3
-              className={`text-2xl font-bold ${plan.isDark || plan.title === 'MoonUI Free'
-                ? 'text-white'
-                : 'text-zinc-800'
-                }`}
+              className={`text-2xl font-bold ${
+                plan.isDark || plan.title === 'MoonUI Free' ? 'text-white' : 'text-zinc-800'
+              }`}
             >
               {plan.title}
             </h3>
             {plan.isPopular && (
-              <span className="bg-white/20 backdrop-blur-md border border-white/30 text-zinc-800 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm uppercase">
+              <span className="rounded-full border border-white/30 bg-white px-3 py-1 text-[10px] font-bold text-black uppercase shadow-sm backdrop-blur-md">
                 Most Popular
               </span>
             )}
           </div>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <p
-              className={`text-sm opacity-80 mt-1 ${plan.isDark || plan.title === 'MoonUI Free'
-                ? 'text-white'
-                : 'text-zinc-800'
-                }`}
+              className={`mt-1 text-sm opacity-80 ${
+                plan.isDark || plan.title === 'MoonUI Free' ? 'text-white' : 'text-zinc-800'
+              }`}
             >
               {plan.subtitle}
+              {index === 1 ? (isAnnual ? 'annual Plan' : 'monthly Plan') : ''}
             </p>
             {showCouponBadge && (
-              <div className="flex items-center gap-2 mb-2 animate-fade-in-up">
+              <div className="animate-fade-in-up mb-2 flex items-center gap-2">
                 <div
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border
-                    ${plan.isDark
-                      ? 'bg-emerald-900/30 text-emerald-400 border-emerald-500/30'
-                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    }`}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase ${
+                    plan.isDark
+                      ? 'border-emerald-500/30 bg-emerald-900/30 text-emerald-400'
+                      : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                  }`}
                 >
                   <TicketPercent size={12} />
                   <span>CODE: {activeDiscount.code}</span>
@@ -174,12 +172,12 @@ const PricingCard = ({
         </div>
       </div>
 
-      <div className="pt-4 flex flex-col flex-1 gap-6">
+      <div className="flex flex-1 flex-col gap-6 pt-4">
         {/* FITUR LIST */}
-        <ul className="flex flex-col gap-3 flex-1">
+        <ul className="flex flex-1 flex-col gap-3">
           {plan.features.map((feature, i) => (
             <li key={i} className="flex items-center gap-3">
-              <div className="w-5 h-5 bg-orange-600 rounded flex-shrink-0 flex items-center justify-center">
+              <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded bg-orange-600">
                 <svg
                   width="12"
                   height="12"
@@ -197,8 +195,9 @@ const PricingCard = ({
                 </svg>
               </div>
               <span
-                className={`text-sm font-medium ${plan.isDark ? 'text-neutral-300' : 'text-neutral-500'
-                  }`}
+                className={`text-sm font-medium ${
+                  plan.isDark ? 'text-neutral-300' : 'text-neutral-500'
+                }`}
               >
                 {feature}
               </span>
@@ -208,57 +207,53 @@ const PricingCard = ({
 
         {/* --- HARGA & LABEL --- */}
         <div className="mt-4">
-          <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-bold leading-none">
-              ${finalPrice}
-            </span>
+          <div className="flex gap-2">
+            <span className="text-4xl leading-none font-bold">${finalPrice}</span>
 
             {/* HARGA CORET (VISUAL DISKON) */}
             {showDiscountStrikethrough && (
-              <div className="flex flex-col leading-none ml-1">
+              <div className="ml-1 flex flex-col leading-none">
                 <span
-                  className={`text-sm line-through decoration-red-500/50 opacity-60 ${plan.isDark ? 'text-neutral-400' : 'text-neutral-500'
-                    }`}
+                  className={`text-sm line-through decoration-red-500/50 opacity-60 ${
+                    plan.isDark ? 'text-neutral-400' : 'text-neutral-500'
+                  }`}
                 >
                   ${originalPrice}
                 </span>
-                <span className="text-[10px] text-green-600 font-bold">
+                <span className="text-[10px] font-bold text-[#ff4f00]">
                   Save {activeDiscount?.discount}%
                 </span>
               </div>
             )}
 
             {!showDiscountStrikethrough && showAnnualStrikethrough && (
-              <div className="flex flex-col leading-none ml-1">
+              <div className="ml-1 flex flex-col leading-none">
                 <span
-                  className={`text-sm line-through decoration-red-500/50 opacity-60 ${plan.isDark ? 'text-neutral-400' : 'text-neutral-500'
-                    }`}
+                  className={`text-sm line-through decoration-red-500/50 opacity-60 ${
+                    plan.isDark ? 'text-neutral-400' : 'text-neutral-500'
+                  }`}
                 >
                   ${annualizedMonthlyPrice}
                 </span>
-                <span className="text-[10px] text-green-600 font-bold">
-                  Save ${(annualizedMonthlyPrice - originalPrice)}
+                <span className="text-[10px] font-bold text-[#ff4f00]">
+                  Save ${annualizedMonthlyPrice - originalPrice}
                 </span>
               </div>
             )}
-
           </div>
 
-          <div
-            className={`text-sm mt-2 ${plan.isDark ? 'text-neutral-400' : 'text-neutral-500'
-              }`}
-          >
+          <div className={`mt-2 text-sm ${plan.isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
             {plan.priceDetail}
           </div>
         </div>
 
         {/* BUTTON */}
         <button
-          className={`w-full  py-4 rounded-xl font-semibold transition-all shadow-lg active:scale-95
-          ${plan.isDark
-              ? 'bg-white text-zinc-900 hover:bg-[#f4f00]'
+          className={`w-full cursor-pointer rounded-xl py-4 font-semibold shadow-lg transition-all ${
+            plan.isDark
+              ? 'bg-white text-zinc-900 hover:bg-[#ff4f00] hover:text-white'
               : 'bg-zinc-900 text-white hover:bg-[#ff4f00]'
-            }`}
+          }`}
         >
           {plan.buttonText}
         </button>
@@ -283,44 +278,43 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
   const [isAnnual, setIsAnnual] = useState(true);
 
   return (
-    <section className="w-full py-16 px-4 md:px-8 flex flex-col gap-16 items-center ">
+    <section className="flex w-full flex-col items-center gap-16 px-4 py-16 md:px-8">
       {/* HEADER */}
-      <div className="flex flex-col items-center text-center gap-6">
-        <div className="px-4 py-1.5 bg-orange-600 rounded-lg shadow-md flex items-center gap-2">
-          <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
-          <span className="text-white text-sm font-medium">Pricing</span>
+      <div className="flex flex-col items-center gap-6 text-center">
+        <div className="flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-1.5 shadow-md">
+          <div className="h-3 w-3 animate-pulse rounded-full bg-white" />
+          <span className="text-sm font-medium text-white">Pricing</span>
         </div>
 
-        <h2 className="max-w-5xl text-zinc-800 text-3xl md:text-5xl font-semibold leading-tight">
-          Elevate your business with premium <br className="hidden md:block" />{' '}
-          design assets library
+        <h2 className="max-w-5xl text-3xl leading-tight font-semibold text-zinc-800 md:text-5xl">
+          Elevate your business with premium <br className="hidden md:block" /> design assets
+          library
         </h2>
 
         {/* TOGGLE SWITCH */}
-        <div className="flex items-center justify-center mt-2">
-          <div className="relative flex items-center p-1 bg-white border border-zinc-200 rounded-xl shadow-sm">
+        <div className="mt-2 flex items-center justify-center">
+          <div className="relative flex items-center rounded-xl border border-zinc-200 bg-white p-1 shadow-sm">
             <button
               onClick={() => setIsAnnual(false)}
-              className={`relative z-10 px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300
-                ${!isAnnual
-                  ? 'bg-zinc-900 text-white shadow-md'
-                  : 'text-zinc-500 hover:text-zinc-900'
-                }`}
+              className={`relative z-10 cursor-pointer rounded-lg px-6 py-2.5 text-sm font-bold transition-all duration-300 ${
+                !isAnnual ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-900'
+              }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setIsAnnual(true)}
-              className={`relative z-10 px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2
-                ${isAnnual
-                  ? 'bg-zinc-900 text-white shadow-md'
-                  : 'text-zinc-500 hover:text-zinc-900'
-                }`}
+              className={`relative z-10 flex cursor-pointer items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold transition-all duration-300 ${
+                isAnnual ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-900'
+              }`}
             >
               Annual
-              <span className="bg-orange-100 text-orange-700 text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wide border border-orange-200">
-                Save ~15%
+              <span className="absolute flex w-[74%] items-center rounded-md border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] tracking-wide text-orange-700 uppercase md:-top-4 md:-right-12">
+                Save 15%
               </span>
+              {/* <span className="rounded-md border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] tracking-wide text-orange-700 uppercase">
+                Save ~15%
+              </span> */}
             </button>
           </div>
         </div>
@@ -328,42 +322,48 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
 
       {/* GRID CARDS */}
       {/* Layout: tablet = 4 cols (1st centered, 2nd & 3rd below) | desktop = 3 columns */}
-      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-3 md:auto-rows-fr gap-6 lg:gap-8 w-full max-w-6xl">
+      <div className="grid w-full max-w-6xl grid-cols-1 gap-6 md:auto-rows-fr md:grid-cols-4 lg:grid-cols-3 lg:gap-8">
         {plans.map((plan, index) => (
           <div
             key={index}
-            className={`h-full ${index === plans.length - 1
-              ? 'md:col-start-2 md:col-span-2 lg:col-start-auto lg:col-span-1'
-              : 'md:col-span-2 lg:col-span-1'
-              }`}
+            className={`h-full ${
+              index === plans.length - 1
+                ? 'md:col-span-2 md:col-start-2 lg:col-span-1 lg:col-start-auto'
+                : 'md:col-span-2 lg:col-span-1'
+            }`}
           >
-            <PricingCard plan={plan} isAnnual={isAnnual} activeDiscount={activeDiscount || null} />
+            <PricingCard
+              index={index}
+              plan={plan}
+              isAnnual={isAnnual}
+              activeDiscount={activeDiscount || null}
+            />
           </div>
         ))}
       </div>
 
       {/* BANNER BAWAH */}
       <div className="w-full max-w-7xl">
-        <div className="w-full bg-white border border-zinc-100 rounded-[30px] p-6 md:p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-            <div className="w-24 h-16 bg-gradient-to-br from-gray-200 to-stone-300 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
-              <div className="w-8 h-8 rounded-full bg-white/30" />
+        <div className="flex w-full flex-col items-center justify-between gap-6 rounded-[30px] border border-zinc-100 bg-white p-6 shadow-lg md:flex-row md:p-6">
+          <div className="flex flex-col items-center gap-6 text-center md:flex-row md:text-left">
+            <div className="flex h-16 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-gray-200 to-stone-300">
+              <div className="h-8 w-8 rounded-full bg-white/30" />
             </div>
             <div>
-              <h4 className="text-zinc-800 text-lg md:text-xl font-bold">
+              <h4 className="text-lg font-bold text-zinc-800 md:text-xl">
                 Need a custom solution for your business?
               </h4>
-              <p className="text-neutral-500 text-sm max-w-lg">
-                We've partnered with dozens of companies to provide exclusive
-                licensing and custom-tailored access.
+              <p className="max-w-lg text-sm text-neutral-500">
+                We've partnered with dozens of companies to provide exclusive licensing and
+                custom-tailored access.
               </p>
             </div>
           </div>
-          <button className="w-full md:w-auto h-12 md:h-14 px-6 md:px-8 text-base font-semibold text-white bg-zinc-800 rounded-xl shadow-button hover:bg-zinc-700 transition-colors flex justify-center items-center gap-3.5 overflow-hidden cursor-pointer group flex-shrink-0">
+          <button className="shadow-button group flex h-12 w-full flex-shrink-0 cursor-pointer items-center justify-center gap-3.5 overflow-hidden rounded-xl bg-zinc-800 px-6 text-base font-semibold text-white transition-colors hover:bg-zinc-700 md:h-14 md:w-auto md:px-8">
             Let’s Talk
-            <div className="w-5 h-full relative flex justify-center items-center">
-              <div className="text-white left-1/2 transform -translate-x-1/2 top-1/2 -translate-y-1/2 absolute inline-flex flex-col justify-center items-center overflow-hidden">
-                <div className="flex-1 relative flex justify-center items-center group-hover:translate-x-1 transition-transform">
+            <div className="relative flex h-full w-5 items-center justify-center">
+              <div className="absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 transform flex-col items-center justify-center overflow-hidden text-white">
+                <div className="relative flex flex-1 items-center justify-center transition-transform group-hover:translate-x-1">
                   <ArrowRight2 size={20} />
                 </div>
               </div>

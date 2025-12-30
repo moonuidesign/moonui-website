@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
-const figmaRegex =
-  /data-metadata="(&lt;|<)!--\(figmeta\)|data-buffer="(&lt;|<)!--\(figma\)/i;
+const figmaRegex = /data-metadata="(&lt;|<)!--\(figmeta\)|data-buffer="(&lt;|<)!--\(figma\)/i;
 const framerRegex = /data-framer-pasteboard/i;
 const basicHtmlTagRegex = /<[a-z][\s\S]*>/i;
 export const TIER_OPTIONS = ['free', 'pro'] as const;
@@ -11,45 +10,40 @@ export const TYPE_OPTIONS = ['figma', 'framer'] as const;
 // 2. Buat Zod Schema
 export const ContentComponentSchema = z
   .object({
-    title: z
-      .string({ error: 'Judul wajib diisi' })
-      .min(3, 'Minimal 3 karakter')
-      .max(100),
+    title: z.string({ error: 'Judul wajib diisi' }).min(3, 'Minimal 3 karakter').max(100),
     type: z.enum(TYPE_OPTIONS),
     tier: z.enum(TIER_OPTIONS, { error: 'Pilih Tier' }),
 
     statusContent: z.enum(STATUS_OPTIONS, {
       error: 'Pilih Status',
     }),
-    description: z.any().refine(
-      (val) => {
-        if (!val) return false;
-        // 1. Handle String (HTML)
-        if (typeof val === 'string') {
-          const text = val.replace(/<[^>]*>/g, '').trim();
-          return text.length > 0 || /<img|<iframe|video/i.test(val);
-        }
-        // 2. Handle Object (TipTap JSON)
-        if (typeof val === 'object' && val.content && Array.isArray(val.content)) {
-          return val.content.length > 0;
-        }
-        return false;
-      },
-      'Deskripsi wajib diisi (minimal teks atau gambar)',
-    ),
+    description: z.any().refine((val) => {
+      if (!val) return false;
+      // 1. Handle String (HTML)
+      if (typeof val === 'string') {
+        const text = val.replace(/<[^>]*>/g, '').trim();
+        return text.length > 0 || /<img|<iframe|video/i.test(val);
+      }
+      // 2. Handle Object (TipTap JSON)
+      if (typeof val === 'object' && val.content && Array.isArray(val.content)) {
+        return val.content.length > 0;
+      }
+      return false;
+    }, 'Deskripsi wajib diisi (minimal teks atau gambar)'),
     urlBuyOneTime: z.string().optional(),
     slug: z.array(z.string()).min(1, 'Minimal satu tag/label wajib diisi'),
     previewImage: z
-      .union([
-        z.string().min(1, 'Thumbnail wajib diupload'),
-        z.instanceof(File, { message: 'Thumbnail wajib diupload' }),
-      ])
-      .refine((val) => val !== null && val !== undefined, 'Thumbnail wajib diupload'),
+      .union([z.string().min(1, 'Thumbnail wajib diupload'), z.instanceof(File)])
+      .refine((val) => val !== null && val !== undefined && val !== '', 'Thumbnail wajib diupload'),
     copyComponentTextHTML: z.string().min(1, 'Data Clipboard kosong'),
     copyComponentTextPlain: z.string().min(1, 'Data Teks kosong'),
     rawHtmlInput: z.string().min(10, 'HTML input wajib diisi'),
     categoryComponentsId: z.string({ error: 'Pilih Kategori' }).min(1, 'Pilih Kategori'),
     subCategoryComponentsId: z.string().optional(),
+
+    // Metadata
+    size: z.string().optional(),
+    format: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     // ---------------------------------------------------------
@@ -58,20 +52,15 @@ export const ContentComponentSchema = z
     if (data.type === 'figma' && !figmaRegex.test(data.copyComponentTextHTML)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message:
-          'Data yang di-paste tidak terdeteksi sebagai format Figma yang valid.',
+        message: 'Data yang di-paste tidak terdeteksi sebagai format Figma yang valid.',
         path: ['copyComponentTextHTML'],
       });
     }
 
-    if (
-      data.type === 'framer' &&
-      !framerRegex.test(data.copyComponentTextHTML)
-    ) {
+    if (data.type === 'framer' && !framerRegex.test(data.copyComponentTextHTML)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message:
-          'Data yang di-paste tidak terdeteksi sebagai format Framer yang valid.',
+        message: 'Data yang di-paste tidak terdeteksi sebagai format Framer yang valid.',
         path: ['copyComponentTextHTML'],
       });
     }
@@ -79,13 +68,11 @@ export const ContentComponentSchema = z
     // ---------------------------------------------------------
     // B. VALIDASI RAW HTML INPUT (SOURCE ENGINE)
     // ---------------------------------------------------------
-    const hasRawInput =
-      data.rawHtmlInput && data.rawHtmlInput.trim().length > 0;
+    const hasRawInput = data.rawHtmlInput && data.rawHtmlInput.trim().length > 0;
     if (data.statusContent === 'published' && !hasRawInput) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message:
-          'Untuk mem-publish komponen, Source Engine (Raw HTML) wajib diisi.',
+        message: 'Untuk mem-publish komponen, Source Engine (Raw HTML) wajib diisi.',
         path: ['rawHtmlInput'],
       });
     }
@@ -100,8 +87,7 @@ export const ContentComponentSchema = z
       if (!basicHtmlTagRegex.test(data.rawHtmlInput!)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message:
-            'Input harus mengandung tag HTML yang valid (contoh: <div...>).',
+          message: 'Input harus mengandung tag HTML yang valid (contoh: <div...>).',
           path: ['rawHtmlInput'],
         });
       }

@@ -16,6 +16,8 @@ export default async function EditGradient({ id }: { id: string }) {
       typeGradient: contentGradients.typeGradient,
       image: contentGradients.image,
       linkDownload: contentGradients.linkDownload,
+      size: contentGradients.size,
+      format: contentGradients.format,
       urlBuyOneTime: contentGradients.urlBuyOneTime,
       tier: contentGradients.tier,
       categoryGradientsId: contentGradients.categoryGradientsId,
@@ -24,10 +26,7 @@ export default async function EditGradient({ id }: { id: string }) {
       },
     })
     .from(contentGradients)
-    .leftJoin(
-      categoryGradients,
-      eq(contentGradients.categoryGradientsId, categoryGradients.id),
-    )
+    .leftJoin(categoryGradients, eq(contentGradients.categoryGradientsId, categoryGradients.id))
     .where(eq(contentGradients.id, id))
     .limit(1);
 
@@ -51,7 +50,7 @@ export default async function EditGradient({ id }: { id: string }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Edit Gradient</h1>
+      <h1 className="mb-4 text-2xl font-bold">Edit Gradient</h1>
       <GradientForm gradient={formattedGradient} categories={categories} />
     </div>
   );

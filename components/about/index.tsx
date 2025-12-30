@@ -5,9 +5,11 @@ import {
   Card,
   Command,
   Component,
+  Crown1,
   ImportCurve,
   Layer,
   MinusSquare,
+  People,
   Stickynote,
 } from 'iconsax-reactjs';
 import ReflectiveCard from '../reflective-card';
@@ -18,13 +20,13 @@ import { FloatingCursor } from './floating-cursor';
 // --- Sub Components ---
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-  <h3 className="text-zinc-500 text-xl md:text-2xl lg:text-[30px] font-medium font-sans leading-tight">
+  <h3 className="font-sans text-xl leading-tight font-medium text-zinc-500 md:text-2xl lg:text-[30px]">
     {children}
   </h3>
 );
 
 const MainHeading = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="text-zinc-900 text-3xl sm:text-4xl md:text-6xl font-semibold font-sans leading-tight">
+  <h2 className="font-sans text-3xl leading-tight font-semibold text-zinc-900 sm:text-4xl md:text-6xl">
     {children}
   </h2>
 );
@@ -38,7 +40,7 @@ const HighlightText = ({
 }) => (
   <div
     className={cn(
-      'text-zinc-500 text-base md:text-xl font-normal font-sans leading-relaxed md:leading-8',
+      'font-sans text-base leading-relaxed font-normal text-zinc-500 md:text-xl md:leading-8',
       className,
     )}
   >
@@ -46,59 +48,53 @@ const HighlightText = ({
   </div>
 );
 
-const Bold = ({
-  children,
-  className,
-}: {
-  className?: string;
-  children: React.ReactNode;
-}) => <span className={cn(className, `font-medium`)}>{children}</span>;
+const Bold = ({ children, className }: { className?: string; children: React.ReactNode }) => (
+  <span className={cn(className, `font-medium`)}>{children}</span>
+);
 const AboutSection = () => {
-  const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = React.useState(false);
+  // const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
+  // const [isHovering, setIsHovering] = React.useState(false);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Disable interaction on tablet/mobile (match lg breakpoint)
-    if (window.innerWidth < 1024) return;
+  // const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  //   // Disable interaction on tablet/mobile (match lg breakpoint)
+  //   if (window.innerWidth < 1024) return;
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
+  //   const rect = e.currentTarget.getBoundingClientRect();
+  //   setMousePos({
+  //     x: e.clientX - rect.left,
+  //     y: e.clientY - rect.top,
+  //   });
+  // };
 
   return (
-    <section className=" z-[800] md:z-0 bg-[#E7E7E7] md:bg-none md:rounded-none rounded-t-[39px]  flex flex-col justify-start items-center md:justify-start md:items-center  ">
-      <div className="w-full flex flex-col gap-10 md:gap-14 lg:gap-32">
-
+    <section className="z-[800] mt-10 flex flex-col items-center justify-start rounded-t-[39px] bg-[#E7E7E7] md:z-0 md:items-center md:justify-start md:rounded-none md:bg-none">
+      <div className="flex w-full flex-col gap-10 md:gap-14 lg:gap-16">
         <div
-          className="relative px-4 flex max-w-[1440px] mx-auto container w-full flex-col items-center "
-        // onMouseMove={handleMouseMove}
-        // onMouseEnter={() => {
-        //   if (window.innerWidth >= 1024) setIsHovering(true);
-        // }}
-        // onMouseLeave={() => setIsHovering(false)}
+          className="relative container mx-auto flex w-full max-w-[1440px] flex-col items-center px-4"
+          // onMouseMove={handleMouseMove}
+          // onMouseEnter={() => {
+          //   if (window.innerWidth >= 1024) setIsHovering(true);
+          // }}
+          // onMouseLeave={() => setIsHovering(false)}
         >
-          <div className="hidden lg:block absolute inset-0 pointer-events-none overflow-visible">
+          <div className="pointer-events-none absolute inset-0 hidden overflow-visible lg:block">
             <FloatingCursor
               label="Achmad"
               color="#ff4f00" // Purple
-              className="left-[5%] top-[10%] md:left-[280px] md:top-[80px]"
+              className="top-[10%] left-[5%] md:top-[80px] md:left-[280px]"
               direction="right"
-
             />
             <FloatingCursor
               label="Fajar"
               color="#ec4899" // Pink
-              className="right-[5%] top-[25%] md:right-[450px] md:top-[150px]"
+              className="top-[25%] right-[5%] md:top-[150px] md:right-[450px]"
               direction="left"
-            // mouseX={mousePos.x}
-            // mouseY={mousePos.y}
-            // isHovering={isHovering}
+              // mouseX={mousePos.x}
+              // mouseY={mousePos.y}
+              // isHovering={isHovering}
             />
           </div>
-          <div className="w-full max-w-xl flex flex-col  gap-6 md:gap-8 z-10">
+          <div className="z-10 flex w-full max-w-xl flex-col gap-6 md:gap-8">
             <SectionLabel>Who are we?</SectionLabel>
             <div className="pb-2 md:pb-6">
               <MainHeading>
@@ -106,33 +102,29 @@ const AboutSection = () => {
               </MainHeading>
             </div>
 
-            <div className="w-full hidden md:block h-[1px] bg-gradient-to-r from-zinc-300 to-transparent opacity-80" />
+            <div className="hidden h-[1px] w-full bg-gradient-to-r from-zinc-300 to-transparent opacity-80 md:block" />
 
-            <div className="pt-4 md:pt-6 flex flex-col gap-6">
+            <div className="flex flex-col gap-6 pt-4 md:pt-6">
               <HighlightText>
-                <Bold className="text-[#FD4F12]">Baggy Studio</Bold> is a design
-                agency and product design collective redefining how digital
-                experiences are crafted. We blend creativity and technology to
-                build products and identities that feel human, modern, and
-                meaningful.
+                <Bold className="text-[#FD4F12]">Baggy Studio</Bold> is a design agency and product
+                design collective redefining how digital experiences are crafted. We blend
+                creativity and technology to build products and identities that feel human, modern,
+                and meaningful.
               </HighlightText>
 
               <HighlightText>
-                Our identity captures a youthful, tech-savvy energy, simple,
-                bold, and full of contrast. The symbol, born from the shape of B
-                letter, carries a unique notch that gives it personality and
-                depth. Paired with All Round Gothic’s geometric typeface and a
-                striking orange palette, it radiates confidence and stands out
-                with purpose.
+                Our identity captures a youthful, tech-savvy energy, simple, bold, and full of
+                contrast. The symbol, born from the shape of B letter, carries a unique notch that
+                gives it personality and depth. Paired with All Round Gothic’s geometric typeface
+                and a striking orange palette, it radiates confidence and stands out with purpose.
               </HighlightText>
 
               <HighlightText>
-                At Baggy Studio, our visual identity isn't just about aesthetics
-                — it’s how we imagine what’s next and bring clarity to the
-                future of design innovation.
+                At Baggy Studio, our visual identity isn't just about aesthetics — it’s how we
+                imagine what’s next and bring clarity to the future of design innovation.
               </HighlightText>
 
-              <div className="flex flex-wrap flex-row justify-start gap-2 md:gap-3 items-center text-sm md:text-base text-zinc-500">
+              <div className="flex flex-row flex-wrap items-center justify-start gap-2 text-sm text-zinc-500 md:gap-3 md:text-base">
                 <p>© January 2024</p>
                 <p>|</p>
                 <p> Logo & Visual Identity</p>
@@ -141,15 +133,15 @@ const AboutSection = () => {
               </div>
             </div>
 
-            <div className="pt-8 flex flex-col items-start gap-3">
-              <div className="w-24 h-14 md:w-28 md:h-16 border border-zinc-400 rounded-sm flex items-center justify-center text-[10px] md:text-xs text-zinc-400 tracking-widest">
+            <div className="flex flex-col items-start gap-3 pt-8">
+              <div className="flex h-14 w-24 items-center justify-center rounded-sm border border-zinc-400 text-[10px] tracking-widest text-zinc-400 md:h-16 md:w-28 md:text-xs">
                 LOGO
               </div>
               <div>
-                <div className="text-zinc-500 text-sm font-medium leading-5">
+                <div className="text-sm leading-5 font-medium text-zinc-500">
                   MoonUI Design System
                 </div>
-                <div className="text-zinc-400 text-xs md:text-sm font-mono leading-5">
+                <div className="font-mono text-xs leading-5 text-zinc-400 md:text-sm">
                   Design & development perfectly aligned.
                 </div>
               </div>
@@ -158,68 +150,59 @@ const AboutSection = () => {
         </div>
 
         {/* --- BLOCK 2: STATS --- */}
-        <div className="w-full md:border-y px-4 md:border-[#D3D3D3] mx-auto py-4 relative md:max-w-3xl lg:max-w-6xl">
-          <span className="absolute  rounded-full bg-[#D3D3D3] -top-1 left-0 h-1.5 w-1.5" />
-          <span className="absolute  rounded-full bg-[#D3D3D3] -top-1 right-0 h-1.5 w-1.5" />
-          <span className="absolute  rounded-full bg-[#D3D3D3] -bottom-1 left-0 h-1.5 w-1.5" />
-          <span className="absolute  rounded-full bg-[#D3D3D3] -bottom-1 right-0 h-1.5 w-1.5" />
+        <div className="relative mx-auto w-full px-4 py-4 md:max-w-3xl md:border-y md:border-[#D3D3D3] lg:max-w-6xl">
+          <span className="absolute -top-1 left-0 h-1.5 w-1.5 rounded-full bg-[#D3D3D3]" />
+          <span className="absolute -top-1 right-0 h-1.5 w-1.5 rounded-full bg-[#D3D3D3]" />
+          <span className="absolute -bottom-1 left-0 h-1.5 w-1.5 rounded-full bg-[#D3D3D3]" />
+          <span className="absolute right-0 -bottom-1 h-1.5 w-1.5 rounded-full bg-[#D3D3D3]" />
 
-          <div className="max-w-[1440px] mx-auto container px-4 md:px-4 lg:px-0">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 md:gap-0">
-              <div className="flex-1 relative w-full  flex flex-row md:flex-col lg:flex-col items-center md:items-center gap-4 border-b md:border-b-0 md:border-r py-2 md:py-0    md:last:border-r-0">
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 left-0 h-1.5 w-1.5" />
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 right-0 h-1.5 w-1.5" />
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -bottom-1 left-0 h-1.5 w-1.5" />
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -bottom-1 right-0 h-1.5 w-1.5" />
-                <div className="p-2  rounded-lg shadow-sm border border-zinc-100">
-                  <Layer variant="Bold" className="text-zinc-700 w-6 h-6" />
+          <div className="container mx-auto max-w-[1440px] px-4 md:px-4 lg:px-0">
+            <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center md:gap-0">
+              <div className="relative flex w-full flex-1 flex-row items-center gap-4 border-b py-2 md:flex-col md:items-center md:border-r md:border-b-0 md:py-0 md:last:border-r-0 lg:flex-col">
+                <span className="absolute -top-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute -top-1 right-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute -bottom-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute right-0 -bottom-1 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
+                  <Layer variant="Bold" className="h-6 w-6 text-zinc-700" />
                 </div>
-                <div className="flex flex-col items-start md:items-center gap-1">
-                  <span className="text-zinc-500 text-sm md:text-base font-medium">
+                <div className="flex flex-col items-start gap-1 md:items-center">
+                  <span className="text-sm font-medium text-zinc-500 md:text-base">
                     Widgets & Examples
                   </span>
-                  <span className="text-zinc-900 text-2xl md:text-[30px] font-semibold">
-                    400+
-                  </span>
+                  <span className="text-2xl font-semibold text-zinc-900 md:text-[30px]">400+</span>
                 </div>
               </div>
-              <div className="hidden md:block w-[1px] h-16 bg-[#D3D3D3]" />
-              <div className="flex-1 relative w-full flex flex-row md:flex-col lg:flex-col items-center md:items-center gap-4 border-b md:border-b-0 md:border-r py-2 md:py-0    md:last:border-r-0">
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 left-0 h-1.5 w-1.5" />
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 right-0 h-1.5 w-1.5" />
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -bottom-1 left-0 h-1.5 w-1.5" />
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -bottom-1 right-0 h-1.5 w-1.5" />
-                <div className="p-2 bg-white rounded-lg shadow-sm border border-zinc-100">
-                  <Component variant="Bold" className="text-zinc-700 w-6 h-6" />
+              <div className="hidden h-16 w-[1px] bg-[#D3D3D3] md:block" />
+              <div className="relative flex w-full flex-1 flex-row items-center gap-4 border-b py-2 md:flex-col md:items-center md:border-r md:border-b-0 md:py-0 md:last:border-r-0 lg:flex-col">
+                <span className="absolute -top-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute -top-1 right-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute -bottom-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute right-0 -bottom-1 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
+                  <Component variant="Bold" className="h-6 w-6 text-zinc-700" />
                 </div>
-                <div className="flex flex-col items-start md:items-center gap-1">
-                  <span className="text-zinc-500 text-sm md:text-base font-medium">
+                <div className="flex flex-col items-start gap-1 md:items-center">
+                  <span className="text-sm font-medium text-zinc-500 md:text-base">
                     Components & Variant
                   </span>
-                  <span className="text-zinc-900 text-2xl md:text-[30px] font-semibold">
-                    8000+
-                  </span>
+                  <span className="text-2xl font-semibold text-zinc-900 md:text-[30px]">8000+</span>
                 </div>
               </div>
-              <div className="hidden md:block w-[1px] h-16 bg-[#D3D3D3]" />
-              <div className="flex-1 relative w-full flex flex-row md:flex-col lg:flex-col items-center md:items-center gap-4 border-b md:border-b-0 md:border-r py-2 md:py-0    md:last:border-r-0">
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 left-0 h-1.5 w-1.5" />
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -top-1 right-0 h-1.5 w-1.5" />
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -bottom-1 left-0 h-1.5 w-1.5" />
-                <span className="absolute block md:hidden rounded-full bg-[#D3D3D3] -bottom-1 right-0 h-1.5 w-1.5" />
-                <div className="p-2 bg-white rounded-lg shadow-sm border border-zinc-100">
-                  <Stickynote
-                    variant="Bold"
-                    className="text-zinc-700 w-6 h-6"
-                  />
+              <div className="hidden h-16 w-[1px] bg-[#D3D3D3] md:block" />
+              <div className="relative flex w-full flex-1 flex-row items-center gap-4 border-b py-2 md:flex-col md:items-center md:border-r md:border-b-0 md:py-0 md:last:border-r-0 lg:flex-col">
+                <span className="absolute -top-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute -top-1 right-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute -bottom-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute right-0 -bottom-1 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
+                  <Stickynote variant="Bold" className="h-6 w-6 text-zinc-700" />
                 </div>
-                <div className="flex flex-col items-start md:items-center gap-1">
-                  <span className="text-zinc-500 text-sm md:text-base font-medium">
+                <div className="flex flex-col items-start gap-1 md:items-center">
+                  <span className="text-sm font-medium text-zinc-500 md:text-base">
                     Styles & Tokens
                   </span>
-                  <span className="text-zinc-900 text-2xl md:text-[30px] font-semibold">
-                    400+
-                  </span>
+                  <span className="text-2xl font-semibold text-zinc-900 md:text-[30px]">400+</span>
                 </div>
               </div>
             </div>
@@ -227,130 +210,119 @@ const AboutSection = () => {
         </div>
 
         {/* --- BLOCK 3: MISSION --- */}
-        <div className="relative max-w-[1440px]  px-4 md:px-0 mx-auto container w-full flex flex-col items-center gap-12 md:gap-24"
-        // onMouseMove={handleMouseMove}
-        // onMouseEnter={() => {
-        //   if (window.innerWidth >= 1024) setIsHovering(true);
-        // }}
-        // onMouseLeave={() => setIsHovering(false)}
+        <div
+          className="relative container mx-auto flex w-full max-w-[1440px] flex-col items-center gap-12 px-4 md:gap-24 md:px-0 md:pt-10"
+          // onMouseMove={handleMouseMove}
+          // onMouseEnter={() => {
+          //   if (window.innerWidth >= 1024) setIsHovering(true);
+          // }}
+          // onMouseLeave={() => setIsHovering(false)}
         >
-          <div className="hidden lg:block absolute inset-0 pointer-events-none overflow-visible">
+          <div className="pointer-events-none absolute inset-0 hidden overflow-visible lg:block">
             <FloatingCursor
               label="Dera"
               color="#8b5cf6" // Purple
-              className="left-[5%] top-[10%] md:left-[280px] md:top-[80px]"
+              className="top-[10%] left-[5%] md:top-[80px] md:left-[280px]"
               direction="right"
-
             />
             <FloatingCursor
               label="Achmad"
               color="#ff4f00" // Pink
-              className="right-[5%] top-[25%] md:right-[450px] md:top-[200px]"
+              className="top-[25%] right-[5%] md:top-[200px] md:right-[450px]"
               direction="left"
-            // mouseX={mousePos.x}
-            // mouseY={mousePos.y}
-            // isHovering={isHovering}
+              // mouseX={mousePos.x}
+              // mouseY={mousePos.y}
+              // isHovering={isHovering}
             />
           </div>
-          <div className="w-full max-w-xl flex flex-col gap-6">
+          <div className="flex w-full max-w-xl flex-col gap-6">
             <SectionLabel>Mission and guidance.</SectionLabel>
             <div className="pb-4 md:pb-6">
               <MainHeading>
-                MoonUI helps you <br className="hidden md:block" /> design
-                well.
+                MoonUI helps you <br className="hidden md:block" /> design well.
               </MainHeading>
             </div>
 
-            <div className="w-full h-1 bg-gradient-to-r from-zinc-300 to-transparent opacity-80" />
+            <div className="h-1 w-full bg-gradient-to-r from-zinc-300 to-transparent opacity-80" />
 
-            <div className="pt-4 md:pt-6 flex flex-col gap-6 md:gap-8">
+            <div className="flex flex-col gap-6 pt-4 md:gap-8 md:pt-6">
               <HighlightText>
                 MoonUI is a comprehensive <Bold>figma design system</Bold>
-                for all designer levels. Our advanced component library enhances
-                workflows, enabling efficient creation of exceptional designs.
-                With a user-friendly interface and up-to-date practices, we
-                guide users to create accurate, appealing designs.{' '}
-                <Bold>comprehensive figma design system</Bold> for all designer
-                levels.
+                for all designer levels. Our advanced component library enhances workflows, enabling
+                efficient creation of exceptional designs. With a user-friendly interface and
+                up-to-date practices, we guide users to create accurate, appealing designs.{' '}
+                <Bold>comprehensive figma design system</Bold> for all designer levels.
               </HighlightText>
               <HighlightText>
-                MoonUI <Bold>empowers designers</Bold>, elevating the design
-                process for everyone in the field.
+                MoonUI <Bold>empowers designers</Bold>, elevating the design process for everyone in
+                the field.
               </HighlightText>
             </div>
           </div>
         </div>
 
         {/* Mission Grid */}
-        <div className="container mx-auto max-w-xl p-8 md:px-4 md:max-w-4xl">
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-6 md:p-8 bg-zinc-50/50 rounded-3xl shadow-[0_0_0_1px_rgba(61,61,61,0.12),inset_0_0.75px_0.75px_hsla(0,0%,100%,0.64)] flex flex-col gap-6 md:gap-7 hover:shadow-md transition-shadow">
-              <div className="w-11 h-11 bg-white rounded-xl shadow-sm border border-zinc-100 flex justify-center items-center">
+        <div className="container mx-auto max-w-xl p-8 md:max-w-4xl md:px-4">
+          <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="flex flex-col gap-6 rounded-3xl bg-zinc-50/50 p-6 shadow-[0_0_0_1px_rgba(61,61,61,0.12),inset_0_0.75px_0.75px_hsla(0,0%,100%,0.64)] transition-shadow hover:shadow-md md:gap-7 md:p-8">
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-zinc-100 p-2 shadow-sm">
                 <MinusSquare className="text-zinc-700" />
               </div>
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-3">
-                  <h4 className="text-[#3D3D3D] text-2xl font-semibold">
-                    Empowering
-                  </h4>
-                  <span className="px-2 py-0.5 bg-white rounded border border-zinc-200 text-zinc-500 text-[10px] md:text-xs font-semibold tracking-wider">
+                  <h4 className="text-2xl font-semibold text-[#3D3D3D]">Empowering</h4>
+                  <span className="rounded border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-semibold tracking-wider text-zinc-500 md:text-xs">
                     MISSION
                   </span>
                 </div>
-                <div className="flex flex-col gap-6 text-neutral-600 text-base md:text-lg font-medium leading-7">
+                <div className="flex flex-col gap-6 text-base leading-7 font-medium text-neutral-600 md:text-lg">
                   <p>
-                    At MoonUI, we are dedicated to providing UI/UX designers
-                    using Figma with the best and most advanced design system.
+                    At MoonUI, we are dedicated to providing UI/UX designers using Figma with the
+                    best and most advanced design system.
                   </p>
                   <p>
-                    Our mission is to empower designers at all levels, from
-                    juniors to senior designers, with a comprehensive component
-                    library and more.
+                    Our mission is to empower designers at all levels, from juniors to senior
+                    designers, with a comprehensive component library and more.
                   </p>
                   <p>
-                    By offering a comprehensive design system, we enhance
-                    workflows and enable designers to create exceptional designs
-                    efficiently.
+                    By offering a comprehensive design system, we enhance workflows and enable
+                    designers to create exceptional designs efficiently.
                   </p>
                 </div>
               </div>
-              <div className="text-neutral-400 text-sm leading-5 mt-auto pt-4 border-t border-dashed border-zinc-200">
-                We aim to empower designers at all levels with a comprehensive
-                design system.
+              <div className="mt-auto border-t border-dashed border-zinc-200 pt-4 text-sm leading-5 text-neutral-400">
+                We aim to empower designers at all levels with a comprehensive design system.
               </div>
             </div>
 
-            <div className="p-6 md:p-8 bg-zinc-50/50 rounded-3xl shadow-[0_0_0_1px_rgba(61,61,61,0.12),inset_0_0.75px_0.75px_hsla(0,0%,100%,0.64)] flex flex-col gap-6 md:gap-7 hover:shadow-md transition-shadow">
-              <div className="w-11 h-11 bg-white rounded-xl shadow-sm border border-zinc-100 flex justify-center items-center">
+            <div className="flex flex-col gap-6 rounded-3xl bg-zinc-50/50 p-6 shadow-[0_0_0_1px_rgba(61,61,61,0.12),inset_0_0.75px_0.75px_hsla(0,0%,100%,0.64)] transition-shadow hover:shadow-md md:gap-7 md:p-8">
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-zinc-100 p-2 shadow-sm">
                 <MinusSquare className="text-zinc-700" />
               </div>
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-3">
-                  <h4 className="text-[#3D3D3D] text-2xl font-semibold">
-                    Efficiency
-                  </h4>
-                  <span className="px-2 py-0.5 bg-white rounded border border-zinc-200 text-zinc-500 text-[10px] md:text-xs font-semibold tracking-wider">
+                  <h4 className="text-2xl font-semibold text-[#3D3D3D]">Efficiency</h4>
+                  <span className="rounded border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-semibold tracking-wider text-zinc-500 md:text-xs">
                     VISION
                   </span>
                 </div>
-                <div className="flex flex-col gap-6 text-neutral-600 text-base md:text-lg font-medium leading-7">
+                <div className="flex flex-col gap-6 text-base leading-7 font-medium text-neutral-600 md:text-lg">
                   <p>
-                    With over 10 years of experience in the field, we leverage
-                    our expertise to guide and inspire users towards creating
-                    accurate and visually appealing designs.
+                    With over 10 years of experience in the field, we leverage our expertise to
+                    guide and inspire users towards creating accurate and visually appealing
+                    designs.
                   </p>
                   <p>
-                    Through thorough research, we ensure that our offerings stay
-                    up-to-date with the design trends and best practices.
+                    Through thorough research, we ensure that our offerings stay up-to-date with the
+                    design trends and best practices.
                   </p>
                   <p>
-                    Our organized approach and user-friendly interface make it
-                    easy for designers to navigate our system and elevate their
-                    design process.
+                    Our organized approach and user-friendly interface make it easy for designers to
+                    navigate our system and elevate their design process.
                   </p>
                 </div>
               </div>
-              <div className="text-neutral-400 text-sm leading-5 mt-auto pt-4 border-t border-dashed border-zinc-200">
+              <div className="mt-auto border-t border-dashed border-zinc-200 pt-4 text-sm leading-5 text-neutral-400">
                 Streamlining design workflows for maximum efficiency.
               </div>
             </div>
@@ -358,44 +330,32 @@ const AboutSection = () => {
         </div>
 
         {/* --- BLOCK 4: TEAM SECTION --- */}
-        <div className="w-full py-10 px-4 md:px-0 mx-auto  bg-white">
-          <div className="flex flex-col items-start gap-12 md:max-w-xl lg:max-w-5xl container mx-auto">
-            <div className="flex flex-col gap-5 w-full">
-              <div className="flex relative items-center gap-6 md:gap-10">
-                <div className="flex md:flex h-8 pl-2 pr-3 py-1.5 rounded-lg shadow-sm border border-zinc-100 items-center gap-1.5">
-                  <div className="w-4 h-4 border border-zinc-400 rounded-[1px]" />
-                  <span className="text-zinc-600 text-sm font-medium">
-                    Our Team
-                  </span>
-                  <div className="h-4 px-1.5 bg-red-50 rounded flex items-center shadow-sm border border-red-200">
-                    <span className="text-red-500 text-[10px] font-bold tracking-tight">
+        <div className="mx-auto w-full bg-white px-4 py-10 md:px-0">
+          <div className="container mx-auto flex flex-col items-start gap-12 md:max-w-xl lg:max-w-5xl">
+            <div className="flex w-full flex-col gap-5">
+              <div className="relative flex items-center gap-6 md:gap-10">
+                <div className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-100 bg-[#ff4f00] py-1.5 pr-3 pl-2 shadow-sm md:flex">
+                  <People type="Outline" color="white" size={17} />
+                  <span className="text-sm font-medium text-white">Our Team</span>
+                  <div className="flex h-4 items-center rounded border border-red-200 bg-red-50 px-1.5 shadow-sm">
+                    <span className="text-[10px] font-bold tracking-tight text-[#ff4f00]">
                       CREW
                     </span>
                   </div>
-                </div>
-                <div className="flex-1 h-px bg-[#D3D3D3] block md:block relative">
-                  <span className="absolute rounded-full bg-[#D3D3D3] top-1/2 transform -translate-y-1/2 left-0 h-1.5 w-1.5" />
-                  <span className="absolute rounded-full bg-[#D3D3D3] top-1/2  transform -translate-y-1/2 right-0 h-1.5 w-1.5" />
-                </div>
-                <div className="absolute -left-[12%] w-[10%] h-px bg-[#D3D3D3] hidden md:block">
-                  <span className="absolute rounded-full bg-[#D3D3D3] top-1/2 transform -translate-y-1/2 left-0 h-1.5 w-1.5" />
-                  <span className="absolute rounded-full bg-[#D3D3D3] top-1/2  transform -translate-y-1/2 right-0 h-1.5 w-1.5" />
                 </div>
               </div>
 
               <div className="flex flex-col gap-4">
                 <MainHeading>Meet the heart of MoonUI™️</MainHeading>
                 <p className="text-base md:text-lg">
-                  <span className="text-zinc-600 font-medium">Our team</span>
+                  <span className="font-medium text-zinc-600">Our team</span>
                   <span className="text-zinc-400"> creates </span>
-                  <span className="text-zinc-600 font-medium">
-                    beautiful design system.
-                  </span>
+                  <span className="font-medium text-zinc-600">beautiful design system.</span>
                 </p>
               </div>
             </div>
 
-            <div className="w-full grid grid-cols-1 px-4 md:px-0 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid w-full grid-cols-1 gap-6 px-4 sm:grid-cols-2 md:px-0 lg:grid-cols-3">
               <ReflectiveCard
                 name="Achmad Qomarudin"
                 role="Product Designer"
@@ -410,8 +370,7 @@ const AboutSection = () => {
                 backContent={
                   <div className="flex flex-col gap-4">
                     <p className="text-sm text-zinc-300">
-                      Creative developer with a love for motion graphics and
-                      interactive design.
+                      Creative developer with a love for motion graphics and interactive design.
                     </p>
                   </div>
                 }
@@ -430,8 +389,7 @@ const AboutSection = () => {
                 backContent={
                   <div className="flex flex-col gap-4">
                     <p className="text-sm text-zinc-300">
-                      Creative developer with a love for motion graphics and
-                      interactive design.
+                      Creative developer with a love for motion graphics and interactive design.
                     </p>
                   </div>
                 }
@@ -450,77 +408,67 @@ const AboutSection = () => {
                 backContent={
                   <div className="flex flex-col gap-4">
                     <p className="text-sm text-zinc-300">
-                      Creative developer with a love for motion graphics and
-                      interactive design.
+                      Creative developer with a love for motion graphics and interactive design.
                     </p>
                   </div>
                 }
               />
             </div>
 
-            <div className="px-0 md:px-24 text-center md:text-left w-full">
-              <p className="text-zinc-500 text-sm">
-                We make{' '}
-                <span className="text-[#3D3D3D]">
-                  design & code work easier
-                </span>{' '}
-                and <span className="text-[#3D3D3D]">better</span>.
+            <div className="w-full px-0 text-left">
+              <p className="text-sm text-zinc-500">
+                We make <span className="text-[#3D3D3D]">design & code work easier</span> and{' '}
+                <span className="text-[#3D3D3D]">better</span>.
               </p>
             </div>
           </div>
         </div>
 
         {/* --- BLOCK 5: VALUES / PROCESS --- */}
-        <div className="w-full flex flex-col items-center gap-12 md:gap-16">
-          <div className="w-full max-w-3xl h-8 md:h-14 relative flex justify-center items-center">
-            <div className="w-full border-t border-dashed border-zinc-300 absolute top-1/2"></div>
-            <div className="bg-white px-3 relative z-10 text-zinc-300 text-xs tracking-widest uppercase">
-              Values
-            </div>
+        <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-12 rounded-t-4xl border-x border-t border-[#D3D3D3] pt-10 md:mt-10 md:mb-[60px] md:gap-16 md:pt-10">
+          <span className="absolute bottom-0 -left-[3px] size-1.5 rounded-full bg-[#D3D3D3]" />
+          <span className="absolute -right-[3.5px] bottom-0 size-1.5 rounded-full bg-[#D3D3D3]" />
+          <div className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-orange-600 py-1.5 pr-3 pl-2 shadow-[0px_0px_0px_1px_rgba(41,41,41,0.08)] shadow-[0px_1px_2px_0px_rgba(41,41,41,0.04)] shadow-[0px_2px_4px_0px_rgba(41,41,41,0.04)] shadow-[0px_4px_8px_0px_rgba(41,41,41,0.06)] shadow-[inset_0px_-0.5px_0.5px_0px_rgba(41,41,41,0.08)]">
+            <Crown1 variant="Outline" color="white" size={16} />
+            <span className="font-sans text-sm leading-5 font-medium text-white">Values</span>
           </div>
 
-          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 lg:gap-16 max-w-6xl mx-auto">
-            <div className="flex flex-col items-center text-center gap-4 p-4 md:p-0">
-              <div className="p-3 bg-zinc-50 rounded-2xl">
-                <Card variant="Bold" className="text-zinc-800 w-8 h-8" />
+          <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 md:grid-cols-3 md:gap-12 lg:gap-16">
+            <div className="flex flex-col items-center gap-4 p-4 text-center md:p-0">
+              <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
+                <Card variant="Bold" className="h-8 w-8 text-zinc-800" />
               </div>
               <div className="flex flex-col gap-2">
-                <h4 className="text-[#3D3D3D] text-lg font-medium">
-                  Understanding Needs
-                </h4>
-                <p className="text-zinc-500 text-sm leading-6">
-                  We research extensively to deeply understand designers needs
-                  and deliver exact solutions.
+                <h4 className="text-lg font-medium text-[#3D3D3D]">Understanding Needs</h4>
+                <p className="text-sm leading-6 text-zinc-500">
+                  We research extensively to deeply understand designers needs and deliver exact
+                  solutions.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col items-center text-center gap-4 p-4 md:p-0">
-              <div className="p-3 bg-zinc-50 rounded-2xl">
-                <ImportCurve variant="Bold" className="text-zinc-800 w-8 h-8" />
+            <div className="flex flex-col items-center gap-4 p-4 text-center md:p-0">
+              <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
+                <ImportCurve variant="Bold" className="h-8 w-8 text-zinc-800" />
               </div>
               <div className="flex flex-col gap-2">
-                <h4 className="text-[#3D3D3D] text-lg font-medium">
-                  Continuous Improvement
-                </h4>
-                <p className="text-zinc-500 text-sm leading-6">
-                  We shape our solutions through customer feedback to ensure
-                  continuous quality and innovation.
+                <h4 className="text-lg font-medium text-[#3D3D3D]">Continuous Improvement</h4>
+                <p className="text-sm leading-6 text-zinc-500">
+                  We shape our solutions through customer feedback to ensure continuous quality and
+                  innovation.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col items-center text-center gap-4 p-4 md:p-0">
-              <div className="p-3 bg-zinc-50 rounded-2xl">
-                <Command variant="Bold" className="text-zinc-800 w-8 h-8" />
+            <div className="flex flex-col items-center gap-4 p-4 text-center md:p-0">
+              <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
+                <Command variant="Bold" className="h-8 w-8 text-zinc-800" />
               </div>
               <div className="flex flex-col gap-2">
-                <h4 className="text-[#3D3D3D] text-lg font-medium">
-                  Responsive Communication
-                </h4>
-                <p className="text-zinc-500 text-sm leading-6">
-                  We provide prompt responses to customer inquiries via various
-                  channels and fast support.
+                <h4 className="text-lg font-medium text-[#3D3D3D]">Responsive Communication</h4>
+                <p className="text-sm leading-6 text-zinc-500">
+                  We provide prompt responses to customer inquiries via various channels and fast
+                  support.
                 </p>
               </div>
             </div>

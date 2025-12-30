@@ -4,10 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/libs/drizzle';
 import { contentDesigns } from '@/db/migration';
 import { auth } from '@/libs/auth';
-import { s3Client } from '@/libs/getR2 copy';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+
 import { ContentDesignSchema } from './validator';
-import { AssetItem } from '../templates/validator';
 
 type ActionResponse = { success: string } | { error: string };
 
@@ -59,84 +57,33 @@ export async function createContentDesign(formData: FormData): Promise<ActionRes
   const values = validated.data;
   console.log('[CreateDesign] Validated Values:', values);
 
-  // Handle Multiple Image Upload
-  const imageFiles = formData.getAll('images');
-  const uploadedImageUrls: AssetItem[] = [];
+  // Handle Multiple Image Upload (Managed by Client)
+  // Server-side, `imagesUrl` in parsedJson should contain both existing and new keys.
+  // We use `uploadedImageUrls` to map to the DB structure if needed, but here `imagesUrl` is just string[].
+  // But wait, schema says imagesUrl: string[].
+  // DB scheme: imagesUrl: Type which? designs table -> imagesUrl text[] ?? or json?
+  // Checking migration or inference from entity: `imagesUrl: string[]`.
+  // So we just take values.imagesUrl.
 
-  if (imageFiles && imageFiles.length > 0) {
-    for (const imageFile of imageFiles) {
-      if (imageFile instanceof File && imageFile.size > 0) {
-        try {
-          console.log('[CreateDesign] Uploading Image:', imageFile.name);
-          const ext = imageFile.name.split('.').pop();
-          const fileName = `designs/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+  const finalImageUrls = values.imagesUrl || [];
 
-          await s3Client.send(
-            new PutObjectCommand({
-              Bucket: process.env.BUCKET_NAME!,
-              Key: fileName,
-              Body: Buffer.from(await imageFile.arrayBuffer()),
-              ContentType: imageFile.type,
-            }),
-          );
+  // Handle Source File (Client Uploaded)
+  const linkDownload = typeof values.sourceFile === 'string' ? values.sourceFile : '';
 
-          const assetUrl = `${fileName}`;
-          uploadedImageUrls.push({ url: assetUrl });
-          console.log('[CreateDesign] Image Uploaded:', assetUrl);
-        } catch (e) {
-          console.error('[CreateDesign] Upload Failed for file:', imageFile.name, e);
-        }
-      }
-    }
-  }
-
-  if (uploadedImageUrls.length === 0) {
-    console.error('[CreateDesign] No Image Files Provided or Upload Failed');
-    return { error: 'Minimal satu gambar design wajib diupload.' };
-  }
-
-  let linkDownload = '';
-  let fileSize = '';
-  let fileFormat = '';
-
-  if (sourceFile instanceof File && sourceFile.size > 0) {
-    try {
-      console.log('[CreateDesign] Uploading Source File:', sourceFile.name);
-      const ext = sourceFile.name.split('.').pop();
-      const fileName = `designs/source/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME!,
-          Key: fileName,
-          Body: Buffer.from(await sourceFile.arrayBuffer()),
-          ContentType: sourceFile.type,
-        }),
-      );
-
-      linkDownload = `${fileName}`;
-      fileSize = (sourceFile.size / 1024 / 1024).toFixed(2) + ' MB';
-      fileFormat = ext?.toUpperCase() || 'FILE';
-      console.log('[CreateDesign] Source File Uploaded:', linkDownload);
-    } catch (e) {
-      console.error('[CreateDesign] Source File Upload Failed:', e);
-      return { error: 'Gagal mengupload source file.' };
-    }
-  } else {
-    // Fallback to first imageUrl if sourceFile not provided.
-    console.log('[CreateDesign] No Source File, using first Image URL as fallback');
-    const firstImage = imageFiles[0] instanceof File ? imageFiles[0] : null;
-    fileSize = (firstImage ? firstImage.size / 1024 / 1024 : 0).toFixed(2) + ' MB';
-    fileFormat = (firstImage ? firstImage.name.split('.').pop()?.toUpperCase() : 'IMG') || 'IMG';
-  }
+  // Metadata from Client
+  const fileSize = values.size || 'Unknown';
+  const fileFormat =
+    values.format ||
+    (linkDownload ? linkDownload.split('.').pop()?.toUpperCase() || 'FILE' : 'FILE');
 
   try {
     const insertData = {
+      id: crypto.randomUUID(),
       userId,
       title: values.title,
       slug: values.slug, // JSONB
       description: values.description,
-      imagesUrl: uploadedImageUrls, // Store as JSON array
+      imagesUrl: finalImageUrls, // Store as string array (Postgres text[] or json)
       linkDownload: linkDownload,
       urlBuyOneTime: values.urlBuyOneTime,
       size: fileSize,
@@ -144,6 +91,8 @@ export async function createContentDesign(formData: FormData): Promise<ActionRes
       categoryDesignsId: values.categoryDesignsId,
       tier: values.tier,
       statusContent: values.statusContent,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
     console.log('[CreateDesign] Inserting DB:', insertData);
     await db.insert(contentDesigns).values(insertData);
