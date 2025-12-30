@@ -25,6 +25,7 @@ import {
 
 import { toast } from 'react-toastify';
 import Image from 'next/image';
+import { getPresignedUrl } from '@/server-action/upload/get-presigned-url';
 
 import { createCategoryGradient } from '@/server-action/getCategoryComponent/create';
 import { CategoryCombobox } from '@/components/dashboard/category-combobox';
@@ -52,6 +53,8 @@ interface GradientEntity {
   description?: object;
   typeGradient: string;
   image: string;
+  size: string | null;
+  format: string | null;
   categoryGradientsId: string | null;
   tier: string;
   slug: unknown;
@@ -188,7 +191,6 @@ export default function GradientForm({ categories, gradient }: GradientFormProps
 
   // --- CLIENT SIDE UPLOADS LOGIC ---
   const [isUploading, setIsUploading] = useState(false);
-  import { getPresignedUrl } from '@/server-action/upload/get-presigned-url';
 
   // Helper: Upload Single File to R2
   const uploadFileToR2 = async (file: File, prefix: string = 'gradients') => {
@@ -201,7 +203,7 @@ export default function GradientForm({ categories, gradient }: GradientFormProps
         prefix,
       });
 
-      if (!presigned.success || !presigned.uploadUrl) {
+      if (!presigned.success) {
         throw new Error(presigned.error || 'Failed to get upload URL');
       }
 

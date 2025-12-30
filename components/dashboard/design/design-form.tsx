@@ -1,5 +1,6 @@
 'use client';
 
+import { getPresignedUrl } from '@/server-action/upload/get-presigned-url';
 import { useState, useTransition, useRef, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
@@ -56,6 +57,8 @@ import { useRouter } from 'next/navigation';
 // Interface untuk Data Design dari Database
 interface DesignEntity {
   id: string;
+  size: string | null;
+  format: string | null;
   title: string;
   description: any; // Bisa string JSON, string HTML, atau Object
   categoryDesignsId: string | null;
@@ -95,7 +98,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
 
   // --- HELPER UTAMA: PARSE DESCRIPTION ---
   // Fungsi ini memperbaiki masalah raw HTML string
-  const parseDescription = (desc: any) => {
+  const parseDescription = (desc: unknown) => {
     if (!desc) return undefined;
 
     // 1. Jika sudah berupa Object (Tiptap JSON Object), kembalikan langsung
@@ -240,7 +243,6 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
 
   // --- CLIENT SIDE UPLOADS LOGIC ---
   const [isUploading, setIsUploading] = useState(false);
-  import { getPresignedUrl } from '@/server-action/upload/get-presigned-url';
 
   // Helper: Upload Single File to R2
   const uploadFileToR2 = async (file: File, prefix: string = 'designs') => {
@@ -253,7 +255,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
         prefix,
       });
 
-      if (!presigned.success || !presigned.uploadUrl) {
+      if (!presigned.success) {
         throw new Error(presigned.error || 'Failed to get upload URL');
       }
 
@@ -348,7 +350,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
           format: fileFormatStr,
         };
 
-        // --- PAYLOAD SIZE CHECK ---
+        // --- ZOD SCHEMAS ---
         const payloadJson = JSON.stringify(payload);
         const descriptionSize = new Blob([JSON.stringify(values.description)]).size;
         const totalPayloadSize = new Blob([payloadJson]).size;
@@ -392,9 +394,10 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
           setNewPreviews([]);
           router.push('/dashboard/content/designs');
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Submit Error:', error);
-        toast.error(error.message || 'Terjadi kesalahan saat menyimpan.');
+        const msg = error instanceof Error ? error.message : 'Terjadi kesalahan saat menyimpan.';
+        toast.error(msg);
       } finally {
         setIsUploading(false);
       }
@@ -931,7 +934,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
               <div className="pt-8">
                 <Button
                   type="submit"
-                  disabled={isPending}
+                  disabled={isPending || isUploading}
                   size="lg"
                   className="bg-primary hover:bg-primary/90 w-full text-base font-semibold transition-all"
                 >

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/libs/drizzle';
 import { contentDesigns } from '@/db/migration';
 import { auth } from '@/libs/auth';
-import { auth } from '@/libs/auth';
+
 import { ContentDesignSchema } from './validator';
 
 type ActionResponse = { success: string } | { error: string };

@@ -15,6 +15,8 @@ export default async function EditDesign({ id }: { id: string }) {
       tier: contentDesigns.tier,
       statusContent: contentDesigns.statusContent,
       slug: contentDesigns.slug,
+      size: contentDesigns.size,
+      format: contentDesigns.format,
       imagesUrl: contentDesigns.imagesUrl, // Changed from imageUrl
       linkDownload: contentDesigns.linkDownload, // Added
       urlBuyOneTime: contentDesigns.urlBuyOneTime, // Added
@@ -23,10 +25,7 @@ export default async function EditDesign({ id }: { id: string }) {
       },
     })
     .from(contentDesigns)
-    .leftJoin(
-      categoryDesigns,
-      eq(contentDesigns.categoryDesignsId, categoryDesigns.id),
-    )
+    .leftJoin(categoryDesigns, eq(contentDesigns.categoryDesignsId, categoryDesigns.id))
     .where(eq(contentDesigns.id, id))
     .limit(1);
 
@@ -37,14 +36,12 @@ export default async function EditDesign({ id }: { id: string }) {
   const designData = design[0];
   const formattedDesign = {
     ...designData,
-    imagesUrl:
-      Array.isArray(designData.imagesUrl)
-        ? (designData.imagesUrl as string[]).map((url) =>
-            url.startsWith('http')
-              ? url
-              : `https://${process.env.R2_PUBLIC_DOMAIN}/${url}`,
-          )
-        : [],
+
+    imagesUrl: Array.isArray(designData.imagesUrl)
+      ? (designData.imagesUrl as string[]).map((url) =>
+          url.startsWith('http') ? url : `https://${process.env.R2_PUBLIC_DOMAIN}/${url}`,
+        )
+      : [],
     linkDownload:
       designData.linkDownload && !designData.linkDownload.startsWith('http')
         ? `https://${process.env.R2_PUBLIC_DOMAIN}/${designData.linkDownload}`
@@ -55,7 +52,7 @@ export default async function EditDesign({ id }: { id: string }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Edit Design</h1>
+      <h1 className="mb-4 text-2xl font-bold">Edit Design</h1>
       <DesignForm design={formattedDesign} categories={categories} />
     </div>
   );

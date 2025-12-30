@@ -55,7 +55,6 @@ export async function updateContentGradient(
 
   // Metadata
   // Check if we effectively have a new file to update metadata
-  const hasNewImage = !!imageUrl;
 
   // Note: Client sends Full Payload usually.
 

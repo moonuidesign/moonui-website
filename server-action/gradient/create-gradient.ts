@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/libs/drizzle';
 import { contentGradients } from '@/db/migration';
 import { auth } from '@/libs/auth';
-import { auth } from '@/libs/auth';
+
 import { desc } from 'drizzle-orm';
 import { ContentGradientSchema } from './gradient-validator';
 import { cookies } from 'next/headers';
