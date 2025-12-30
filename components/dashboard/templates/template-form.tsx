@@ -346,7 +346,11 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
         }
       } catch (error) {
         console.error('Submit Error:', error);
-        toast.error('Something went wrong during submission');
+        if (error instanceof Error) {
+          toast.error(`Error: ${error.message}`);
+        } else {
+          toast.error('Something went wrong during submission');
+        }
       }
     });
   };
