@@ -16,7 +16,7 @@ interface NewsletterProps {
 }
 
 const Badge = ({ text }: { text: string }) => (
-  <div className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-orange-600 py-1.5 pr-3 pl-2 shadow-[0px_0px_0px_1px_rgba(41,41,41,0.08)] shadow-[0px_1px_2px_0px_rgba(41,41,41,0.04)] shadow-[0px_2px_4px_0px_rgba(41,41,41,0.04)] shadow-[0px_4px_8px_0px_rgba(41,41,41,0.06)] shadow-[inset_0px_-0.5px_0.5px_0px_rgba(41,41,41,0.08)]">
+  <div className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-orange-600 py-1.5 pr-3 pl-2 shadow-sm">
     <FileText className="h-3.5 w-3.5 text-white" strokeWidth={3} />
     <span className="font-sans text-sm leading-5 font-medium text-white">{text}</span>
   </div>
@@ -114,7 +114,7 @@ const NewsletterSection: React.FC<NewsletterProps> = ({
             <button
               type="submit"
               disabled={isPending}
-              className="group flex h-6 w-8 cursor-pointer items-center justify-center rounded-[5px] border border-neutral-200 bg-white shadow-[0px_1px_2px_rgba(0,0,0,0.05)] transition-transform hover:bg-zinc-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              className="group flex h-6 w-8 cursor-pointer items-center justify-center rounded-[5px] border border-neutral-200 bg-white shadow-[0px_1px_2px_rgba(0,0,0,0.05)] transition-transform hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Submit"
             >
               {isPending ? (

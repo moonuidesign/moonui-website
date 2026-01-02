@@ -25,8 +25,19 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   </h3>
 );
 
-const MainHeading = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="font-sans text-3xl leading-tight font-semibold text-zinc-900 sm:text-4xl md:text-6xl">
+const MainHeading = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <h2
+    className={cn(
+      `font-sans text-3xl leading-tight font-semibold text-zinc-900 sm:text-4xl md:text-6xl`,
+      className,
+    )}
+  >
     {children}
   </h2>
 );
@@ -330,15 +341,15 @@ const AboutSection = () => {
         </div>
 
         {/* --- BLOCK 4: TEAM SECTION --- */}
-        <div className="mx-auto w-full bg-white px-4 py-10 md:px-0">
+        <div className="mx-auto w-full bg-zinc-900 px-4 py-10 md:px-0">
           <div className="container mx-auto flex flex-col items-start gap-12 md:max-w-xl lg:max-w-5xl">
             <div className="flex w-full flex-col gap-5">
               <div className="relative flex items-center gap-6 md:gap-10">
                 <div className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-100 bg-[#ff4f00] py-1.5 pr-3 pl-2 shadow-sm md:flex">
                   <People type="Outline" color="white" size={17} />
                   <span className="text-sm font-medium text-white">Our Team</span>
-                  <div className="flex h-4 items-center rounded border border-red-200 bg-red-50 px-1.5 shadow-sm">
-                    <span className="text-[10px] font-bold tracking-tight text-[#ff4f00]">
+                  <div className="flex items-start rounded-[5px] bg-white/50 px-1.5 py-[3px]">
+                    <span className="text-[11px] leading-[10px] font-semibold text-white">
                       CREW
                     </span>
                   </div>
@@ -346,7 +357,7 @@ const AboutSection = () => {
               </div>
 
               <div className="flex flex-col gap-4">
-                <MainHeading>Meet the heart of MoonUI™️</MainHeading>
+                <MainHeading className="text-white">Meet the heart of MoonUI</MainHeading>
                 <p className="text-base md:text-lg">
                   <span className="font-medium text-zinc-600">Our team</span>
                   <span className="text-zinc-400"> creates </span>

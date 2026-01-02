@@ -40,9 +40,7 @@ import { toast } from 'react-toastify';
 import { CodeGroup, type CodeFile } from '../ui/shadcn-io/tabs';
 
 // --- HELPER: SAFE URL PARSER ---
-const getSafeImageUrl = (
-  src: string | { url: string } | null | undefined,
-): string | null => {
+const getSafeImageUrl = (src: string | { url: string } | null | undefined): string | null => {
   if (!src) return null;
   const urlString = typeof src === 'object' && 'url' in src ? src.url : src;
   if (typeof urlString !== 'string' || urlString.trim() === '') return null;
@@ -74,83 +72,83 @@ const calculateDuration = (code: string) => {
 // --- SKELETON COMPONENT ---
 export function ContentDetailSkeleton() {
   return (
-    <div className="w-full max-w-[1280px] mx-auto p-4 md:p-8 min-h-screen">
+    <div className="mx-auto min-h-screen w-full max-w-[1280px] p-4 md:p-8">
       {/* Top Navigation Skeleton */}
-      <div className="flex justify-between items-center mb-8">
-        <div className="h-10 w-32 bg-neutral-200 rounded-full animate-pulse" />
+      <div className="mb-8 flex items-center justify-between">
+        <div className="h-10 w-32 animate-pulse rounded-full bg-neutral-200" />
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+      <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
         {/* Left Column - Image */}
-        <div className="w-full lg:w-[65%] flex flex-col gap-6">
-          <div className="w-full aspect-[4/3] bg-neutral-200 rounded-3xl animate-pulse" />
+        <div className="flex w-full flex-col gap-6 lg:w-[65%]">
+          <div className="aspect-[4/3] w-full animate-pulse rounded-3xl bg-neutral-200" />
           {/* Gallery Thumbnails */}
-          <div className="hidden lg:grid grid-cols-3 gap-4">
+          <div className="hidden grid-cols-3 gap-4 lg:grid">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="aspect-video bg-neutral-200 rounded-xl animate-pulse" />
+              <div key={i} className="aspect-video animate-pulse rounded-xl bg-neutral-200" />
             ))}
           </div>
         </div>
 
         {/* Right Column - Info */}
-        <div className="w-full lg:w-[35%] space-y-6">
+        <div className="w-full space-y-6 lg:w-[35%]">
           {/* Stats & Number */}
           <div className="flex items-center gap-3">
-            <div className="h-7 w-12 bg-neutral-200 rounded animate-pulse" />
-            <div className="h-5 w-20 bg-neutral-200 rounded animate-pulse" />
-            <div className="h-5 w-24 bg-neutral-200 rounded animate-pulse" />
+            <div className="h-7 w-12 animate-pulse rounded bg-neutral-200" />
+            <div className="h-5 w-20 animate-pulse rounded bg-neutral-200" />
+            <div className="h-5 w-24 animate-pulse rounded bg-neutral-200" />
           </div>
 
           {/* Title */}
           <div className="space-y-2">
-            <div className="h-8 w-full bg-neutral-200 rounded animate-pulse" />
-            <div className="h-8 w-3/4 bg-neutral-200 rounded animate-pulse" />
+            <div className="h-8 w-full animate-pulse rounded bg-neutral-200" />
+            <div className="h-8 w-3/4 animate-pulse rounded bg-neutral-200" />
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
-            <div className="h-12 w-12 bg-neutral-200 rounded-xl animate-pulse" />
-            <div className="h-12 flex-1 bg-neutral-200 rounded-xl animate-pulse" />
-            <div className="h-12 w-12 bg-neutral-200 rounded-xl animate-pulse" />
+            <div className="h-12 w-12 animate-pulse rounded-xl bg-neutral-200" />
+            <div className="h-12 flex-1 animate-pulse rounded-xl bg-neutral-200" />
+            <div className="h-12 w-12 animate-pulse rounded-xl bg-neutral-200" />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <div className="h-4 w-full bg-neutral-200 rounded animate-pulse" />
-            <div className="h-4 w-5/6 bg-neutral-200 rounded animate-pulse" />
-            <div className="h-4 w-4/6 bg-neutral-200 rounded animate-pulse" />
+            <div className="h-4 w-full animate-pulse rounded bg-neutral-200" />
+            <div className="h-4 w-5/6 animate-pulse rounded bg-neutral-200" />
+            <div className="h-4 w-4/6 animate-pulse rounded bg-neutral-200" />
           </div>
 
           {/* Pricing Section */}
           <div className="space-y-3">
-            <div className="flex justify-between items-end">
+            <div className="flex items-end justify-between">
               <div className="space-y-1">
-                <div className="h-3 w-16 bg-neutral-200 rounded animate-pulse" />
-                <div className="h-8 w-20 bg-neutral-200 rounded animate-pulse" />
+                <div className="h-3 w-16 animate-pulse rounded bg-neutral-200" />
+                <div className="h-8 w-20 animate-pulse rounded bg-neutral-200" />
               </div>
-              <div className="h-6 w-20 bg-neutral-200 rounded-full animate-pulse" />
+              <div className="h-6 w-20 animate-pulse rounded-full bg-neutral-200" />
             </div>
           </div>
 
           {/* Specifications Table */}
-          <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
-            <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-200">
-              <div className="h-4 w-28 bg-neutral-200 rounded animate-pulse" />
+          <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
+            <div className="border-b border-neutral-200 bg-neutral-50 px-5 py-3">
+              <div className="h-4 w-28 animate-pulse rounded bg-neutral-200" />
             </div>
-            <div className="p-5 space-y-4">
+            <div className="space-y-4 p-5">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex justify-between items-center">
-                  <div className="h-3 w-20 bg-neutral-200 rounded animate-pulse" />
-                  <div className="h-4 w-24 bg-neutral-200 rounded animate-pulse" />
+                <div key={i} className="flex items-center justify-between">
+                  <div className="h-3 w-20 animate-pulse rounded bg-neutral-200" />
+                  <div className="h-4 w-24 animate-pulse rounded bg-neutral-200" />
                 </div>
               ))}
             </div>
             {/* Tags Skeleton */}
             <div className="px-5 pb-5">
-              <div className="h-3 w-12 bg-neutral-200 rounded animate-pulse mb-2" />
+              <div className="mb-2 h-3 w-12 animate-pulse rounded bg-neutral-200" />
               <div className="flex flex-wrap gap-2">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-6 w-16 bg-neutral-200 rounded-full animate-pulse" />
+                  <div key={i} className="h-6 w-16 animate-pulse rounded-full bg-neutral-200" />
                 ))}
               </div>
             </div>
@@ -160,14 +158,14 @@ export function ContentDetailSkeleton() {
 
       {/* Related Content Skeleton */}
       <div className="mt-16 space-y-8">
-        <div className="h-8 w-48 bg-neutral-200 rounded animate-pulse" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        <div className="h-8 w-48 animate-pulse rounded bg-neutral-200" />
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="flex flex-col gap-4">
-              <div className="aspect-[4/3] bg-neutral-200 rounded-2xl animate-pulse" />
+              <div className="aspect-[4/3] animate-pulse rounded-2xl bg-neutral-200" />
               <div className="space-y-2">
-                <div className="h-4 w-3/4 bg-neutral-200 rounded animate-pulse" />
-                <div className="h-3 w-1/2 bg-neutral-200 rounded animate-pulse" />
+                <div className="h-4 w-3/4 animate-pulse rounded bg-neutral-200" />
+                <div className="h-3 w-1/2 animate-pulse rounded bg-neutral-200" />
               </div>
             </div>
           ))}
@@ -242,15 +240,7 @@ export default function ContentDetailClient({
     if (!content.codeSnippets) return [];
 
     // Prioritas urutan tab
-    const priorityOrder = [
-      'react',
-      'vue',
-      'angular',
-      'html',
-      'css',
-      'js',
-      'ts',
-    ];
+    const priorityOrder = ['react', 'vue', 'angular', 'html', 'css', 'js', 'ts'];
 
     // Ambil keys yang ada di snippet
     const keys = Object.keys(content.codeSnippets);
@@ -321,12 +311,7 @@ export default function ContentDetailClient({
     }
     setIsProcessing(true);
     try {
-      const limitCheck = await checkDownloadLimit(
-        'copy',
-        assetId,
-        type,
-        visitorId,
-      );
+      const limitCheck = await checkDownloadLimit('copy', assetId, type, visitorId);
       if (!limitCheck.success) {
         toast.error(limitCheck.message);
         return;
@@ -358,12 +343,7 @@ export default function ContentDetailClient({
     }
     setIsProcessing(true);
     try {
-      const limitCheck = await checkDownloadLimit(
-        'download',
-        assetId,
-        type,
-        visitorId,
-      );
+      const limitCheck = await checkDownloadLimit('download', assetId, type, visitorId);
       if (!limitCheck.success) {
         toast.error(limitCheck.message);
         return;
@@ -390,30 +370,28 @@ export default function ContentDetailClient({
   };
 
   const slugString =
-    typeof content.slug === 'string'
-      ? content.slug
-      : content.slug?.current || 'N/A';
+    typeof content.slug === 'string' ? content.slug : content.slug?.current || 'N/A';
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="w-full max-w-[1280px] mx-auto p-4 md:p-8 relative min-h-screen font-sans"
+      className="relative mx-auto min-h-screen w-full max-w-[1280px] p-4 font-sans md:p-8"
     >
       {/* --- TOP NAVIGATION --- */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <Link
           href="/assets"
-          className="bg-white px-4 py-2 rounded-full border border-[#D3D3D3] shadow-sm flex items-center gap-2 text-sm font-semibold hover:bg-neutral-100 transition text-neutral-700"
+          className="flex items-center gap-2 rounded-full border border-[#D3D3D3] bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-100"
         >
           <ArrowLeft size={16} /> Back to Browse
         </Link>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 relative items-start">
+      <div className="relative flex flex-col items-start gap-6 lg:flex-row">
         {/* --- LEFT COLUMN: MEDIA & CODE --- */}
-        <div className="w-full lg:w-[65%] relative">
+        <div className="relative w-full lg:w-[65%]">
           <div
             className={
               ['template', 'design'].includes(content.type)
@@ -427,11 +405,12 @@ export default function ContentDetailClient({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.1, duration: 0.4 }}
-                className="relative w-full bg-white rounded-3xl overflow-hidden border border-[#D3D3D3] shadow-xl shadow-neutral-100 group"
+                className="group relative w-full overflow-hidden rounded-3xl border border-[#D3D3D3] bg-white shadow-xl shadow-neutral-100"
               >
                 <div
-                  className={`relative w-full ${content.type === 'template' ? 'aspect-2/3' : 'aspect-4/3'
-                    }`}
+                  className={`relative w-full ${
+                    content.type === 'template' ? 'aspect-2/3' : 'aspect-4/3'
+                  }`}
                 >
                   <Image
                     src={mainImage}
@@ -442,27 +421,24 @@ export default function ContentDetailClient({
                   />
                 </div>
                 <AssetTypeBadge type={content.type} />
-                <div className="absolute bottom-4 right-4 z-20">
+                <div className="absolute right-4 bottom-4 z-20">
                   <button
                     onClick={() => handleOpenPreview(mainImage)}
-                    className="flex items-center gap-2 bg-neutral-900/90 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-lg border border-white/10 active:scale-95 transition-transform hover:bg-black"
+                    className="flex items-center gap-2 rounded-full border border-white/10 bg-neutral-900/90 px-4 py-2.5 text-white shadow-lg backdrop-blur-md transition-transform hover:bg-black"
                   >
                     <Maximize2 size={16} />
-                    <span className="text-xs font-bold hidden sm:inline">
-                      Zoom
-                    </span>
+                    <span className="hidden text-xs font-bold sm:inline">Zoom</span>
                   </button>
                 </div>
               </motion.div>
             ) : (
               <div
-                className={`relative w-full ${content.type === 'template' ? 'aspect-2/4' : ' aspect-3-4'
-                  } bg-white rounded-3xl overflow-hidden border border-[#D3D3D3] shadow-xl flex items-center justify-center text-neutral-400 gap-2`}
+                className={`relative w-full ${
+                  content.type === 'template' ? 'aspect-2/4' : 'aspect-3-4'
+                } flex items-center justify-center gap-2 overflow-hidden rounded-3xl border border-[#D3D3D3] bg-white text-neutral-400 shadow-xl`}
               >
                 <ImageIcon size={32} className="opacity-50" />
-                <span className="text-xs font-medium">
-                  No Preview Available
-                </span>
+                <span className="text-xs font-medium">No Preview Available</span>
               </div>
             )}
 
@@ -482,14 +458,13 @@ export default function ContentDetailClient({
                       duration: 0.4,
                       ease: [0.04, 0.62, 0.23, 0.98],
                     }}
-                    className="relative w-full bg-white rounded-3xl overflow-hidden border border-[#D3D3D3] shadow-xl shadow-neutral-100 group lg:!h-auto lg:!opacity-100 lg:!mt-0 lg:block"
+                    className="group relative w-full overflow-hidden rounded-3xl border border-[#D3D3D3] bg-white shadow-xl shadow-neutral-100 lg:!mt-0 lg:block lg:!h-auto lg:!opacity-100"
                     style={{ overflow: 'hidden' }}
                   >
                     <div
-                      className={`relative w-full ${content.type === 'template'
-                        ? 'aspect-2/3'
-                        : 'aspect-4/3'
-                        }`}
+                      className={`relative w-full ${
+                        content.type === 'template' ? 'aspect-2/3' : 'aspect-4/3'
+                      }`}
                     >
                       <Image
                         src={src}
@@ -498,15 +473,13 @@ export default function ContentDetailClient({
                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     </div>
-                    <div className="absolute bottom-4 right-4 z-20">
+                    <div className="absolute right-4 bottom-4 z-20">
                       <button
                         onClick={() => handleOpenPreview(src)}
-                        className="flex items-center gap-2 bg-neutral-900/90 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-lg border border-white/10 active:scale-95 transition-transform hover:bg-black"
+                        className="flex items-center gap-2 rounded-full border border-white/10 bg-neutral-900/90 px-4 py-2.5 text-white shadow-lg backdrop-blur-md transition-transform hover:bg-black"
                       >
                         <Maximize2 size={16} />
-                        <span className="text-xs font-bold hidden sm:inline">
-                          Zoom
-                        </span>
+                        <span className="hidden text-xs font-bold sm:inline">Zoom</span>
                       </button>
                     </div>
                   </motion.div>
@@ -516,13 +489,10 @@ export default function ContentDetailClient({
 
             {/* 3. MOBILE TOGGLE */}
             {hasMultipleImages && (
-              <motion.div
-                layout
-                className="flex items-center justify-between mt-2 lg:hidden"
-              >
+              <motion.div layout className="mt-2 flex items-center justify-between lg:hidden">
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="flex items-center gap-2 px-6 py-3 bg-white border border-[#D3D3D3] rounded-xl text-sm font-bold text-neutral-800 shadow-sm hover:bg-neutral-50 active:scale-95 transition-all w-full mr-4 justify-center"
+                  className="mr-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#D3D3D3] bg-white px-6 py-3 text-sm font-bold text-neutral-800 shadow-sm transition-all hover:bg-neutral-50"
                 >
                   {isExpanded ? (
                     <>
@@ -534,7 +504,7 @@ export default function ContentDetailClient({
                     </>
                   )}
                 </button>
-                <div className="flex items-center gap-2 bg-neutral-100 border border-[#D3D3D3] px-4 py-3 rounded-xl text-neutral-600 font-bold text-sm whitespace-nowrap">
+                <div className="flex items-center gap-2 rounded-xl border border-[#D3D3D3] bg-neutral-100 px-4 py-3 text-sm font-bold whitespace-nowrap text-neutral-600">
                   <LucideImage size={16} className="text-neutral-400" />
                   <span>+{galleryImages.length} Photos</span>
                 </div>
@@ -543,47 +513,41 @@ export default function ContentDetailClient({
 
             {/* --- CODE SNIPPET SECTION (TABS) --- */}
             {showCodeSnippet && (
-              <div className="w-full mt-6 lg:mt-0">
+              <div className="mt-6 w-full lg:mt-0">
                 {canViewCode ? (
                   <CodeGroup
                     files={codeFiles}
                     editorProps={{
                       // Kalkulasi durasi animasi typing berdasarkan panjang kode file pertama
-                      duration: codeFiles[0]
-                        ? calculateDuration(codeFiles[0].code)
-                        : 3,
+                      duration: codeFiles[0] ? calculateDuration(codeFiles[0].code) : 3,
                     }}
-                    className="w-full min-h-[400px] border-[#D3D3D3] shadow-sm"
+                    className="min-h-[400px] w-full border-[#D3D3D3] shadow-sm"
                   />
                 ) : (
                   // LOCKED STATE UI
-                  <div className="w-full bg-white rounded-2xl border border-[#D3D3D3] overflow-hidden shadow-sm relative">
-                    <div className="px-4 py-3 border-b border-[#D3D3D3] flex items-center justify-between bg-neutral-50/50">
+                  <div className="relative w-full overflow-hidden rounded-2xl border border-[#D3D3D3] bg-white shadow-sm">
+                    <div className="flex items-center justify-between border-b border-[#D3D3D3] bg-neutral-50/50 px-4 py-3">
                       <div className="flex items-center gap-2">
                         <Code size={16} className="text-blue-600" />
-                        <span className="text-sm font-semibold text-neutral-800">
-                          Source Code
-                        </span>
+                        <span className="text-sm font-semibold text-neutral-800">Source Code</span>
                       </div>
-                      <span className="text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-0.5 rounded-full shadow-sm">
+                      <span className="rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
                         LOCKED
                       </span>
                     </div>
-                    <div className="relative min-h-[200px] bg-[#0d1117] p-4 font-mono text-xs text-neutral-300 overflow-hidden select-none">
-                      <div className="absolute inset-0 bg-[#0d1117]/80 backdrop-blur-[4px] z-10 flex flex-col items-center justify-center p-6 text-center">
-                        <div className="p-3 bg-white/5 rounded-full mb-4 border border-white/10">
+                    <div className="relative min-h-[200px] overflow-hidden bg-[#0d1117] p-4 font-mono text-xs text-neutral-300 select-none">
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#0d1117]/80 p-6 text-center backdrop-blur-[4px]">
+                        <div className="mb-4 rounded-full border border-white/10 bg-white/5 p-3">
                           <Lock size={24} className="text-neutral-400" />
                         </div>
-                        <h4 className="text-white font-bold text-lg mb-2">
-                          Pro Access Required
-                        </h4>
-                        <p className="text-neutral-400 font-medium mb-6 text-sm max-w-xs">
-                          Unlock the full source code (React, Vue, Angular,
-                          HTML) and speed up your workflow.
+                        <h4 className="mb-2 text-lg font-bold text-white">Pro Access Required</h4>
+                        <p className="mb-6 max-w-xs text-sm font-medium text-neutral-400">
+                          Unlock the full source code (React, Vue, Angular, HTML) and speed up your
+                          workflow.
                         </p>
                         <Link
                           href="/pricing"
-                          className="px-6 py-2.5 bg-white text-black rounded-lg text-sm font-bold hover:bg-neutral-200 transition shadow-lg shadow-white/10 active:scale-95"
+                          className="rounded-lg bg-white px-6 py-2.5 text-sm font-bold text-black shadow-lg shadow-white/10 transition hover:bg-neutral-200"
                         >
                           Upgrade to Pro
                         </Link>
@@ -592,7 +556,7 @@ export default function ContentDetailClient({
                         {Array.from({ length: 12 }).map((_, i) => (
                           <div
                             key={i}
-                            className="h-4 w-full bg-neutral-700/50 rounded mb-2"
+                            className="mb-2 h-4 w-full rounded bg-neutral-700/50"
                             style={{ width: `${Math.random() * 60 + 30}%` }}
                           ></div>
                         ))}
@@ -606,19 +570,15 @@ export default function ContentDetailClient({
         </div>
 
         {/* --- RIGHT COLUMN: INFO --- */}
-        <div className="w-full lg:w-[35%] pt-2 sticky top-8 h-fit">
+        <div className="sticky top-8 h-fit w-full pt-2 lg:w-[35%]">
           <div className="flex flex-col gap-8">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2 py-0.5 text-center items-center justify-center flex rounded bg-neutral-200 text-neutral-600 text-[14px] font-bold uppercase tracking-wider">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="flex items-center justify-center rounded bg-neutral-200 px-2 py-0.5 text-center text-[14px] font-bold tracking-wider text-neutral-600 uppercase">
                   #{content.number}
                 </span>
                 <div className="flex flex-wrap gap-6">
-                  <StatItem
-                    icon={<Eye size={14} />}
-                    value={content.viewCount}
-                    label="views"
-                  />
+                  <StatItem icon={<Eye size={14} />} value={content.viewCount} label="views" />
                   {content.type !== 'component' && (
                     <StatItem
                       icon={<Download size={14} />}
@@ -627,16 +587,12 @@ export default function ContentDetailClient({
                     />
                   )}
                   {content.type === 'component' && (
-                    <StatItem
-                      icon={<Copy size={14} />}
-                      value={content.copyCount}
-                      label="copies"
-                    />
+                    <StatItem icon={<Copy size={14} />} value={content.copyCount} label="copies" />
                   )}
                 </div>
               </div>
 
-              <h1 className="text-neutral-900 text-4xl lg:text-2xl font-bold tracking-tight leading-[1.1]">
+              <h1 className="text-4xl leading-[1.1] font-bold tracking-tight text-neutral-900 lg:text-2xl">
                 {content.title}
               </h1>
 
@@ -644,26 +600,21 @@ export default function ContentDetailClient({
               {canDownload ? (
                 <div className="flex items-center gap-2">
                   <Link
-                    href={
-                      prevItem ? getAssetPath(prevItem.type, prevItem.id) : '#'
-                    }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${prevItem
-                      ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
-                      : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
-                      }`}
+                    href={prevItem ? getAssetPath(prevItem.type, prevItem.id) : '#'}
+                    className={`flex w-[12%] items-center justify-center rounded-xl border border-[#D3D3D3] bg-white py-3.5 transition ${
+                      prevItem
+                        ? 'text-neutral-700 shadow-sm hover:bg-neutral-100'
+                        : 'pointer-events-none cursor-not-allowed text-neutral-300 opacity-50'
+                    }`}
                     aria-disabled={!prevItem}
                   >
                     <ChevronLeft size={18} />
                   </Link>
 
                   <button
-                    onClick={
-                      content.type === 'component'
-                        ? handleCopyCode
-                        : handleDownloadFile
-                    }
+                    onClick={content.type === 'component' ? handleCopyCode : handleDownloadFile}
                     disabled={isProcessing || isFpLoading}
-                    className="w-full py-3.5 bg-neutral-900 hover:bg-black disabled:bg-neutral-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-neutral-400/20 active:scale-95"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 py-3.5 font-bold text-white shadow-lg shadow-neutral-400/20 transition hover:bg-black disabled:bg-neutral-500"
                   >
                     {isProcessing || isFpLoading ? (
                       <Loader2 size={18} className="animate-spin" />
@@ -680,46 +631,43 @@ export default function ContentDetailClient({
                   </button>
 
                   <Link
-                    href={
-                      nextItem ? getAssetPath(nextItem.type, nextItem.id) : '#'
-                    }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${nextItem
-                      ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
-                      : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
-                      }`}
+                    href={nextItem ? getAssetPath(nextItem.type, nextItem.id) : '#'}
+                    className={`flex w-[12%] items-center justify-center rounded-xl border border-[#D3D3D3] bg-white py-3.5 transition ${
+                      nextItem
+                        ? 'text-neutral-700 shadow-sm hover:bg-neutral-100'
+                        : 'pointer-events-none cursor-not-allowed text-neutral-300 opacity-50'
+                    }`}
                     aria-disabled={!nextItem}
                   >
                     <ChevronRight size={18} />
                   </Link>
                 </div>
               ) : (
-                <div className="flex h-fit gap-2 justify-between items-center">
+                <div className="flex h-fit items-center justify-between gap-2">
                   <Link
-                    href={
-                      prevItem ? getAssetPath(prevItem.type, prevItem.id) : '#'
-                    }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${prevItem
-                      ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
-                      : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
-                      }`}
+                    href={prevItem ? getAssetPath(prevItem.type, prevItem.id) : '#'}
+                    className={`flex w-[12%] items-center justify-center rounded-xl border border-[#D3D3D3] bg-white py-3.5 transition ${
+                      prevItem
+                        ? 'text-neutral-700 shadow-sm hover:bg-neutral-100'
+                        : 'pointer-events-none cursor-not-allowed text-neutral-300 opacity-50'
+                    }`}
                     aria-disabled={!prevItem}
                   >
                     <ChevronLeft size={18} />
                   </Link>
                   <Link
                     href="/pricing"
-                    className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-violet-600 hover:opacity-90 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-blue-200 active:scale-95"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 py-3.5 font-bold text-white shadow-lg shadow-blue-200 transition hover:opacity-90"
                   >
                     <Lock size={16} /> Unlock Access
                   </Link>
                   <Link
-                    href={
-                      nextItem ? getAssetPath(nextItem.type, nextItem.id) : '#'
-                    }
-                    className={`w-[12%] py-3.5 rounded-xl bg-white border border-[#D3D3D3] flex items-center justify-center transition ${nextItem
-                      ? 'hover:bg-neutral-100 text-neutral-700 shadow-sm'
-                      : 'opacity-50 cursor-not-allowed text-neutral-300 pointer-events-none'
-                      }`}
+                    href={nextItem ? getAssetPath(nextItem.type, nextItem.id) : '#'}
+                    className={`flex w-[12%] items-center justify-center rounded-xl border border-[#D3D3D3] bg-white py-3.5 transition ${
+                      nextItem
+                        ? 'text-neutral-700 shadow-sm hover:bg-neutral-100'
+                        : 'pointer-events-none cursor-not-allowed text-neutral-300 opacity-50'
+                    }`}
                     aria-disabled={!nextItem}
                   >
                     <ChevronRight size={18} />
@@ -730,13 +678,13 @@ export default function ContentDetailClient({
               <div className="relative">
                 {content.description ? (
                   <div
-                    className="prose prose-neutral prose-sm text-neutral-500 max-w-none break-words overflow-hidden"
+                    className="prose prose-neutral prose-sm max-w-none overflow-hidden break-words text-neutral-500"
                     dangerouslySetInnerHTML={{ __html: content.description }}
                   />
                 ) : (
-                  <p className="text-neutral-500 text-sm leading-relaxed">
-                    Elevate your project with this premium asset. Fully
-                    responsive, accessible, and easy to integrate.
+                  <p className="text-sm leading-relaxed text-neutral-500">
+                    Elevate your project with this premium asset. Fully responsive, accessible, and
+                    easy to integrate.
                   </p>
                 )}
               </div>
@@ -746,15 +694,15 @@ export default function ContentDetailClient({
             <div className="space-y-2">
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-xs text-neutral-400 font-semibold uppercase tracking-wider mb-1">
+                  <p className="mb-1 text-xs font-semibold tracking-wider text-neutral-400 uppercase">
                     Pricing
                   </p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-[28px] md:text-[30px] font-bold text-neutral-900">
+                    <span className="text-[28px] font-bold text-neutral-900 md:text-[30px]">
                       {content.tier === 'free' ? 'Free' : '$69'}
                     </span>
                     {content.tier !== 'free' && (
-                      <span className="text-xs text-neutral-500 font-medium bg-neutral-100 px-2 py-0.5 rounded-full">
+                      <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
                         One-time
                       </span>
                     )}
@@ -770,10 +718,9 @@ export default function ContentDetailClient({
                     href={content.linkTemplate}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-3.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-neutral-200"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 py-3.5 font-bold text-white shadow-lg shadow-neutral-200 transition hover:bg-neutral-800"
                   >
-                    Buy License{' '}
-                    <ExternalLink size={16} className="opacity-50" />
+                    Buy License <ExternalLink size={16} className="opacity-50" />
                   </a>
                 )}
                 {content.urlPreview && (
@@ -781,21 +728,19 @@ export default function ContentDetailClient({
                     href={content.urlPreview}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-3.5 bg-white border border-[#D3D3D3] hover:bg-neutral-50 text-neutral-800 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-sm"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#D3D3D3] bg-white py-3.5 font-bold text-neutral-800 shadow-sm transition hover:bg-neutral-50"
                   >
                     <Globe size={18} className="text-blue-600" /> Live Preview
                   </a>
                 )}
               </div>
-              <p className="text-center text-[10px] text-neutral-400 pt-2">
+              <p className="pt-2 text-center text-[10px] text-neutral-400">
                 Secure payment processed by LemonSqueezy. 30-day refund policy.
               </p>
             </div>
-            <div className="bg-white rounded-2xl border border-[#D3D3D3] overflow-hidden">
-              <div className="px-5 py-3 bg-neutral-50/50 border-b border-[#D3D3D3]">
-                <h3 className="text-sm font-bold text-neutral-800">
-                  Specifications
-                </h3>
+            <div className="overflow-hidden rounded-2xl border border-[#D3D3D3] bg-white">
+              <div className="border-b border-[#D3D3D3] bg-neutral-50/50 px-5 py-3">
+                <h3 className="text-sm font-bold text-neutral-800">Specifications</h3>
               </div>
               {/* Responsive Table */}
               <div className="divide-y divide-neutral-100">
@@ -806,13 +751,15 @@ export default function ContentDetailClient({
               </div>
               {/* Tags Section */}
               {Array.isArray(content.slug) && content.slug.length > 0 && (
-                <div className="px-5 py-4 border-t border-neutral-100">
-                  <p className="text-xs text-neutral-400 font-medium uppercase tracking-wider mb-3">Tags</p>
+                <div className="border-t border-neutral-100 px-5 py-4">
+                  <p className="mb-3 text-xs font-medium tracking-wider text-neutral-400 uppercase">
+                    Tags
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {(content.slug as string[]).map((tag, i) => (
                       <span
                         key={i}
-                        className="px-3 py-1 text-xs font-medium bg-neutral-100 text-neutral-600 rounded-full hover:bg-neutral-200 transition-colors cursor-default"
+                        className="cursor-default rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-200"
                       >
                         {tag}
                       </span>
@@ -828,25 +775,25 @@ export default function ContentDetailClient({
       {/* RELATED CONTENT - Only show if has data */}
       {(relevantContent.length > 0 || popularContent.length > 0) && (
         <>
-          <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-200 to-transparent my-16" />
+          <div className="my-16 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-200 to-transparent" />
 
           <div className="flex flex-col gap-16 pb-16">
             {/* More Like This - Only show if has data */}
             {relevantContent.length > 0 && (
               <div>
-                <h2 className="text-neutral-900 text-2xl md:text-3xl font-bold tracking-tight mb-6 px-2">
+                <h2 className="mb-6 px-2 text-2xl font-bold tracking-tight text-neutral-900 md:text-3xl">
                   More like this
                 </h2>
                 {/* Mobile: Horizontal Scroll Carousel */}
-                <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide sm:hidden -mx-4 px-4">
+                <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:hidden">
                   {relevantContent.map((item) => (
-                    <div key={item.id} className="flex-shrink-0 w-[280px] snap-start">
+                    <div key={item.id} className="w-[280px] flex-shrink-0 snap-start">
                       <CardItem item={item} />
                     </div>
                   ))}
                 </div>
                 {/* Desktop: Grid */}
-                <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-8">
+                <div className="hidden gap-8 sm:grid sm:grid-cols-2 md:grid-cols-3">
                   {relevantContent.map((item) => (
                     <CardItem key={item.id} item={item} />
                   ))}
@@ -856,20 +803,20 @@ export default function ContentDetailClient({
 
             {/* Most Popular - Only show if has data */}
             {popularContent.length > 0 && (
-              <div className={relevantContent.length > 0 ? 'pt-12 border-t border-[#D3D3D3]' : ''}>
-                <h2 className="text-neutral-900 text-2xl md:text-3xl font-bold tracking-tight mb-6 px-2">
+              <div className={relevantContent.length > 0 ? 'border-t border-[#D3D3D3] pt-12' : ''}>
+                <h2 className="mb-6 px-2 text-2xl font-bold tracking-tight text-neutral-900 md:text-3xl">
                   Most Popular
                 </h2>
                 {/* Mobile: Horizontal Scroll Carousel */}
-                <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide sm:hidden -mx-4 px-4">
+                <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:hidden">
                   {popularContent.map((item) => (
-                    <div key={item.id} className="flex-shrink-0 w-[280px] snap-start">
+                    <div key={item.id} className="w-[280px] flex-shrink-0 snap-start">
                       <CardItem type="" item={item} isPopular />
                     </div>
                   ))}
                 </div>
                 {/* Desktop: Grid */}
-                <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-8">
+                <div className="hidden gap-8 sm:grid sm:grid-cols-2 md:grid-cols-3">
                   {popularContent.map((item) => (
                     <CardItem type="" key={item.id} item={item} isPopular />
                   ))}
@@ -891,26 +838,26 @@ export default function ContentDetailClient({
             }
           `}</style>
           <div
-            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm overscroll-none touch-none"
+            className="fixed inset-0 z-[100] flex touch-none items-center justify-center overscroll-none bg-black/95 p-4 backdrop-blur-sm"
             onClick={() => setIsImageModalOpen(false)}
           >
             {/* Close Button - More prominent on mobile */}
             <button
               onClick={() => setIsImageModalOpen(false)}
-              className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[101] text-white p-3 sm:p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors active:scale-95"
+              className="absolute top-4 right-4 z-[101] rounded-full bg-white/20 p-3 text-white transition-colors hover:bg-white/30 sm:top-6 sm:right-6 sm:p-2"
               aria-label="Close preview"
             >
-              <X size={28} className="sm:w-6 sm:h-6" />
+              <X size={28} className="sm:h-6 sm:w-6" />
             </button>
 
             {/* Tap anywhere hint - Mobile only */}
-            <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 text-xs sm:text-sm font-medium pointer-events-none">
+            <p className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-white/60 sm:text-sm">
               Tap anywhere to close
             </p>
 
             {/* Image Container */}
             <div
-              className="relative w-full h-full max-w-6xl max-h-[85vh] sm:max-h-[90vh]"
+              className="relative h-full max-h-[85vh] w-full max-w-6xl sm:max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
               <Image
@@ -938,10 +885,9 @@ function AssetTypeBadge({ type }: { type: string }) {
     design: { icon: Monitor, color: 'text-orange-500' },
     default: { icon: Box, color: 'text-gray-500' },
   };
-  const { icon: Icon, color } =
-    config[type as keyof typeof config] || config.default;
+  const { icon: Icon, color } = config[type as keyof typeof config] || config.default;
   return (
-    <div className="absolute top-5 left-5 bg-white/90 backdrop-blur-md text-neutral-900 px-4 py-1.5 rounded-full text-xs font-bold shadow-sm border border-[#D3D3D3] flex items-center gap-2 uppercase tracking-wider z-10">
+    <div className="absolute top-5 left-5 z-10 flex items-center gap-2 rounded-full border border-[#D3D3D3] bg-white/90 px-4 py-1.5 text-xs font-bold tracking-wider text-neutral-900 uppercase shadow-sm backdrop-blur-md">
       <Icon size={14} className={color} /> {type}
     </div>
   );
@@ -957,13 +903,13 @@ function StatItem({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-2 text-neutral-600 font-medium">
-      <div className="p-1.5 bg-white rounded-md border border-[#D3D3D3] shadow-sm text-neutral-400">
+    <div className="flex items-center gap-2 font-medium text-neutral-600">
+      <div className="rounded-md border border-[#D3D3D3] bg-white p-1.5 text-neutral-400 shadow-sm">
         {icon}
       </div>
       <span className="text-sm">
         {value?.toLocaleString() || 0}{' '}
-        <span className="text-neutral-400 font-normal text-xs">{label}</span>
+        <span className="text-xs font-normal text-neutral-400">{label}</span>
       </span>
     </div>
   );
@@ -982,14 +928,15 @@ function SpecItem({
 }) {
   return (
     <div className="space-y-1">
-      <div className="flex items-center gap-2 text-neutral-400 text-xs font-medium uppercase tracking-wider">
+      <div className="flex items-center gap-2 text-xs font-medium tracking-wider text-neutral-400 uppercase">
         {icon} {label}
       </div>
       <p
-        className={`text-sm ${monospace
-          ? 'font-mono text-neutral-600 truncate'
-          : 'font-semibold text-neutral-800 capitalize'
-          }`}
+        className={`text-sm ${
+          monospace
+            ? 'truncate font-mono text-neutral-600'
+            : 'font-semibold text-neutral-800 capitalize'
+        }`}
         title={value || ''}
       >
         {value || 'N/A'}
@@ -1001,11 +948,9 @@ function SpecItem({
 // --- Responsive Table Row Component ---
 function SpecRow({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div className="flex items-center justify-between px-5 py-3 hover:bg-neutral-50/50 transition-colors">
-      <span className="text-xs text-neutral-400 font-medium uppercase tracking-wider">
-        {label}
-      </span>
-      <span className="text-sm font-semibold text-neutral-800 capitalize text-right">
+    <div className="flex items-center justify-between px-5 py-3 transition-colors hover:bg-neutral-50/50">
+      <span className="text-xs font-medium tracking-wider text-neutral-400 uppercase">{label}</span>
+      <span className="text-right text-sm font-semibold text-neutral-800 capitalize">
         {value || 'N/A'}
       </span>
     </div>
@@ -1015,13 +960,13 @@ function SpecRow({ label, value }: { label: string; value?: string | null }) {
 function TierBadge({ tier }: { tier?: string | null }) {
   if (tier === 'pro') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-bold rounded-full shadow-md shadow-indigo-200">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-1 text-xs font-bold text-white shadow-md shadow-indigo-200">
         <Check size={12} strokeWidth={3} /> Pro
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
       Free License
     </span>
   );
@@ -1038,13 +983,11 @@ function CardItem({
 }) {
   const safeImg = getSafeImageUrl(item.imageUrl);
   return (
-    <Link
-      href={getAssetPath(item.type, item.id)}
-      className="flex flex-col gap-4 group"
-    >
+    <Link href={getAssetPath(item.type, item.id)} className="group flex flex-col gap-4">
       <div
-        className={`relative w-full bg-white rounded-2xl overflow-hidden border ${type === 'templates' ? ' aspect-2/3' : ' aspect-4/3'
-          } border-[#D3D3D3] shadow-sm group-hover:shadow-xl group-hover:-translate-y-1 transition duration-500 ease-out`}
+        className={`relative w-full overflow-hidden rounded-2xl border bg-white ${
+          type === 'templates' ? 'aspect-2/3' : 'aspect-4/3'
+        } border-[#D3D3D3] shadow-sm transition duration-500 ease-out group-hover:-translate-y-1 group-hover:shadow-xl`}
       >
         {safeImg ? (
           <Image
@@ -1054,27 +997,26 @@ function CardItem({
             className="object-cover transition duration-700 group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-neutral-400 text-sm bg-neutral-50 gap-2">
+          <div className="flex h-full w-full items-center justify-center gap-2 bg-neutral-50 text-sm text-neutral-400">
             <ImageIcon size={20} /> Preview
           </div>
         )}
         {isPopular && (
-          <div className="absolute top-3 left-3 bg-amber-400 text-black text-[10px] font-bold px-2 py-1 rounded-md shadow-sm z-10 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 bg-black rounded-full animate-pulse"></span>{' '}
-            HOT
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-md bg-amber-400 px-2 py-1 text-[10px] font-bold text-black shadow-sm">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-black"></span> HOT
           </div>
         )}
       </div>
-      <div className="flex justify-between items-start px-1">
+      <div className="flex items-start justify-between px-1">
         <div className="space-y-1 overflow-hidden">
-          <h4 className="text-neutral-900 text-sm font-bold group-hover:text-blue-600 transition leading-tight truncate">
+          <h4 className="truncate text-sm leading-tight font-bold text-neutral-900 transition group-hover:text-blue-600">
             {item.title}
           </h4>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-neutral-500 font-medium px-1.5 py-0.5 bg-neutral-100 rounded">
+            <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500">
               #{item.number}
             </span>
-            <p className="text-[10px] text-neutral-400 truncate">
+            <p className="truncate text-[10px] text-neutral-400">
               {item.category?.name || 'Uncategorized'}
             </p>
           </div>
