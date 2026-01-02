@@ -118,7 +118,7 @@ const DesktopNavButton = ({
 // --- Sub-Component: Mock Browser Window ---
 const MockBrowserWindow = ({ imageSrc }: { imageSrc: string }) => {
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-xl bg-white">
+    <div className="relative h-full w-full overflow-hidden rounded-3xl bg-white">
       <AnimatePresence mode="wait">
         <motion.div
           key={imageSrc}
@@ -281,9 +281,9 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
               transition={{ duration: 0.3 }}
               className="relative w-full"
             >
-              <div className="mt-10 min-h-[620px] overflow-hidden rounded-xl bg-[#E8E8E8] shadow-[inset_0px_0px_0px_1px_rgba(211,211,211,1.00)] md:min-h-[620px] md:rounded-xl md:border-[#D3D3D3]">
+              <div className="mt-10 min-h-[620px] overflow-hidden rounded-xl bg-[#E8E8E8] shadow-[inset_0px_0px_0px_1px_rgba(211,211,211,1.00)] md:min-h-[620px] md:rounded-4xl md:border-[#D3D3D3]">
                 {/* Browser Header */}
-                <div className="relative z-20 flex h-10 items-center gap-4 border-b border-[#D3D3D3] px-4 md:h-12">
+                <div className="relative z-20 flex h-10 items-center gap-4 border-b border-[#D3D3D3] px-4 md:h-12 md:px-8">
                   <div className="flex gap-1.5">
                     <div className="h-2.5 w-2.5 rounded-full border border-black/5 bg-[#FF5F57]" />
                     <div className="h-2.5 w-2.5 rounded-full border border-black/5 bg-[#FEBC2E]" />

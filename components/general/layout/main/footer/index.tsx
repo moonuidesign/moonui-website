@@ -91,7 +91,7 @@ const defaultColumns: ExtendedFooterColumn[] = [
 
 const Footer: React.FC<FooterProps> = ({
   email = 'hey@moonui.design',
-  copyright = '© 2025 MoonUI Design. All rights reserved.',
+  copyright = `© ${new Date().getFullYear()} MoonUI Design. All rights reserved.`,
   columns = defaultColumns,
   socials = {
     x: 'https://x.com/moonuidesign',
