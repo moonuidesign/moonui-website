@@ -9,10 +9,10 @@ import Link from 'next/link';
 export default function NotFound() {
   return (
     <RootLayout>
-      <div className="relative mx-auto container max-w-[1440px] flex h-full p-4 w-screen flex-col items-center justify-between overflow-hidden bg-[#E8E8E8] font-sans dark:bg-black">
+      <div className="relative container mx-auto flex h-full w-screen max-w-[1440px] flex-col items-center justify-between overflow-hidden bg-[#E8E8E8] p-4 font-sans dark:bg-black">
         <Image
           src="/moonNotFound.png"
-          className="absolute md:-bottom-[200px] lg:top-[270px] select-none hidden md:block scale-[1.6] pointer-events-none w-max-[1318.4px] h-max-[1142px] left-[49%] md:w-[681px] md:h-[648px] lg:w-[879px] lg:h-[848px] -translate-x-1/2 -rotate-65"
+          className="w-max-[1318.4px] h-max-[1142px] pointer-events-none absolute left-[49%] hidden -translate-x-1/2 scale-[1.6] -rotate-65 select-none md:-bottom-[200px] md:block md:h-[648px] md:w-[681px] lg:top-[270px] lg:h-[848px] lg:w-[879px]"
           alt="Not Found"
           style={{
             opacity: 0.25,
@@ -21,7 +21,7 @@ export default function NotFound() {
           width={1400}
           height={1200}
         />
-        <div className="z-10 flex w-full  flex-col items-center justify-center gap-6 px-5 text-center">
+        <div className="z-10 flex w-full flex-col items-center justify-center gap-6 px-5 text-center">
           <FuzzyText
             fontSize="300px"
             fontWeight="700"
@@ -32,20 +32,13 @@ export default function NotFound() {
           >
             404
           </FuzzyText>
-          <div className="flex mt-10 flex-row items-center gap-1">
-            <h2 className="text-[30px] font-sans font-semibold">
-              We’re almost ready to launch
-            </h2>
-            <Image
-              src="/ic-rocket.svg"
-              alt="rocket MoonUi"
-              width={40}
-              height={40}
-            />
+          <div className="mt-10 flex flex-row items-center gap-1">
+            <h2 className="font-sans text-[30px] font-semibold">We’re almost ready to launch</h2>
+            <Image src="/ic-rocket.svg" alt="rocket MoonUi" width={40} height={40} />
           </div>
-          <div className="text-[18px] gap-1 w-full flex flex-row text-[#707070] justify-center items-center font-jakarta font-light">
+          <div className="font-jakarta flex w-full flex-row items-center justify-center gap-1 text-[18px] font-light text-[#707070]">
             <p>Get</p>
-            <div className="flex  flex-row">
+            <div className="flex flex-row">
               <p className="font-medium text-[#2E2E2E]">latest updates</p>
               <p>,</p>
             </div>
@@ -57,13 +50,13 @@ export default function NotFound() {
             <p className="font-medium text-[#2E2E2E]">exclusive</p>
             <p>offers from MoonUI Design.</p>
           </div>
-          <div className="flex flex-col mt-8 items-center gap-3">
+          <div className="mt-8 flex flex-col items-center gap-3">
             <div className="flex items-center gap-3 rounded-xl bg-white p-2 shadow-md">
               <span>
                 <Mail className="text-[#E8E8E8]" size={30} />
               </span>
               <Input
-                className="w-[290px] border-none outline-none shadow-none focus-visible:border-none focus-visible:ring-0"
+                className="w-[290px] border-none shadow-none outline-none focus-visible:border-none focus-visible:ring-0"
                 placeholder="Enter your email"
               />
               <button className="rounded-md border-2 border-[#E8E8E8] px-2 text-[#E8E8E8]">
@@ -75,37 +68,27 @@ export default function NotFound() {
             </span>
           </div>
         </div>
-        <div className=" flex gap-4 ">
+        <div className="flex gap-4">
           <Link
             href="x.com/moonuidesign"
             target="_blank"
-            className="flex items-center z-2 gap-2 rounded-[9px] bg-[#8A7F8D] w-[32px] h-[32px] justify-center text-white"
+            className="z-2 flex h-[32px] w-[32px] items-center justify-center gap-2 rounded-[9px] bg-[#8A7F8D] text-white"
           >
             <Image src="/x.svg" width={18} height={18} alt="Social Media X" />
           </Link>
           <Link
             href="instagram.com/moonuidesign"
             target="_blank"
-            className="flex items-center z-2 gap-2 rounded-[9px] bg-white w-[32px] h-[32px] justify-center text-[#8A7F8D]"
+            className="z-2 flex h-[32px] w-[32px] items-center justify-center gap-2 rounded-[9px] bg-white text-[#8A7F8D]"
           >
-            <Image
-              src="/instagram.svg"
-              width={18}
-              height={18}
-              alt="Social Media X"
-            />
+            <Image src="/instagram.svg" width={18} height={18} alt="Social Media X" />
           </Link>
           <Link
             href="dribbble.com/moonuidesign"
             target="_blank"
-            className="flex items-center z-2 gap-2 rounded-[9px] bg-white w-[32px] h-[32px] justify-center text-[#8A7F8D]"
+            className="z-2 flex h-[32px] w-[32px] items-center justify-center gap-2 rounded-[9px] bg-white text-[#8A7F8D]"
           >
-            <Image
-              src="/dribbble.svg"
-              width={18}
-              height={18}
-              alt="Social Media X"
-            />
+            <Image src="/dribbble.svg" width={18} height={18} alt="Social Media X" />
           </Link>
         </div>
       </div>

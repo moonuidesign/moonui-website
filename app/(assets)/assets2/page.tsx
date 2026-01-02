@@ -186,7 +186,7 @@ function AssetsPageContent() {
               {/* Mobile Filter Toggle */}
               <button
                 onClick={() => setFilterOpen(true)}
-                className="flex h-10 flex-1 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 shadow-sm transition-all active:scale-95 md:hidden"
+                className="flex h-10 flex-1 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 shadow-sm transition-all md:hidden"
               >
                 <SlidersHorizontal className="h-4 w-4 text-gray-700" />
                 <span className="text-sm font-medium text-gray-700">Filters</span>

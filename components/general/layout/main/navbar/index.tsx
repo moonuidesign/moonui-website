@@ -2,12 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useMotionValueEvent,
-} from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import {
   Search,
   Menu,
@@ -38,16 +33,8 @@ const MENU_ITEMS = [
   { label: 'Contact', href: '/contact', icon: Contact },
   { label: 'Pricing', href: '/pricing', icon: Contact },
 ];
-export function SkeletonNavbar({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn('animate-pulse rounded-md bg-zinc-200/80', className)}
-      {...props}
-    />
-  );
+export function SkeletonNavbar({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn('animate-pulse rounded-md bg-zinc-200/80', className)} {...props} />;
 }
 export default function Navbar() {
   const MotionLink = motion.create(Link);
@@ -70,10 +57,7 @@ export default function Navbar() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(event.target as Node)
-      ) {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setIsProfileOpen(false);
       }
     }
@@ -143,10 +127,10 @@ export default function Navbar() {
   }, [isOpen]);
 
   return (
-    <section className="h-24 relative z-[1000]">
+    <section className="relative z-[1000] h-24">
       <SearchCommand open={isSearchOpen} setOpen={setIsSearchOpen} />
 
-      <div className="fixed top-10 mx-auto container left-0 right-0 flex justify-center pt-6 pointer-events-none z-[60]">
+      <div className="pointer-events-none fixed top-10 right-0 left-0 z-[60] container mx-auto flex justify-center pt-6">
         <motion.nav
           initial={{
             maxWidth: isDesktop ? '80rem' : isTablet ? '64rem' : '86rem',
@@ -168,14 +152,14 @@ export default function Navbar() {
             y: isScrolled ? -55 : 0,
           }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="pointer-events-auto relative w-full h-16 md:h-20 px-4 md:px-3 grid grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-2 mx-auto"
+          className="pointer-events-auto relative mx-auto grid h-16 w-full grid-cols-[auto_1fr_auto] items-center gap-2 px-4 md:h-20 md:grid-cols-[1fr_auto_1fr] md:px-3"
         >
-          <div className="md:hidden absolute inset-0 bg-white/80 backdrop-blur-md shadow-sm border border-gray-200/60 rounded-full -z-10 md:mx-2" />
-          <div className="flex justify-start items-center w-full">
+          <div className="absolute inset-0 -z-10 rounded-full border border-gray-200/60 bg-white/80 shadow-sm backdrop-blur-md md:mx-2 md:hidden" />
+          <div className="flex w-full items-center justify-start">
             <MotionLink
               href="/"
               // Hapus p-1.5 karena kita akan atur ukuran child-nya saja agar otomatis di tengah
-              className="w-[45px] h-[45px] relative z-20 rounded-full flex items-center justify-center shrink-0 cursor-pointer group outline-none focus:outline-none focus:ring-0 select-none"
+              className="group relative z-20 flex h-[45px] w-[45px] shrink-0 cursor-pointer items-center justify-center rounded-full outline-none select-none focus:ring-0 focus:outline-none"
               animate={{
                 opacity: isMobileSearchExpanded ? 0 : 1,
                 width: isMobileSearchExpanded ? 0 : 45,
@@ -188,19 +172,20 @@ export default function Navbar() {
                 alt="MoonUI"
                 width={45}
                 height={45}
-                className="w-[45px] h-[45px] transition-all duration-300"
+                className="h-[45px] w-[45px] transition-all duration-300"
               />
             </MotionLink>
 
             {/* Mobile Search - Expandable on /assets */}
             <AnimatePresence>
               {!isMobileSearchExpanded && !isScrolled && (
-                <motion.div
+                <MotionLink
+                  href="/"
                   initial={{ opacity: 0, x: -30, width: 0 }}
                   animate={{ opacity: 1, x: 0, width: 'auto' }}
                   exit={{ opacity: 0, x: -30, width: 0 }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                  className="ml-2 hidden md:flex items-center whitespace-nowrap overflow-hidden relative z-10"
+                  transition={{ duration: 0.4, ease: 'easeInOut' }}
+                  className="relative z-10 ml-2 hidden items-center overflow-hidden whitespace-nowrap md:flex"
                 >
                   <Image
                     src="/logo-moonui.svg"
@@ -209,17 +194,18 @@ export default function Navbar() {
                     height={24}
                     className="h-6 w-auto object-contain select-none"
                   />
-                </motion.div>
+                </MotionLink>
               )}
             </AnimatePresence>
             <AnimatePresence>
               {!isMobileSearchExpanded && !isScrolled && (
-                <motion.div
+                <MotionLink
+                  href="/"
                   initial={{ opacity: 0, x: -30, width: 0 }}
                   animate={{ opacity: 1, x: 0, width: 'auto' }}
                   exit={{ opacity: 0, x: -30, width: 0 }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                  className="ml-2 md:hidden flex items-center whitespace-nowrap overflow-hidden relative z-10"
+                  transition={{ duration: 0.4, ease: 'easeInOut' }}
+                  className="relative z-10 ml-2 flex items-center overflow-hidden whitespace-nowrap md:hidden"
                 >
                   <Image
                     src="/logo-moonui.svg"
@@ -228,12 +214,12 @@ export default function Navbar() {
                     height={20}
                     className="h-5 w-auto object-contain select-none"
                   />
-                </motion.div>
+                </MotionLink>
               )}
             </AnimatePresence>
 
             {/* Mobile Search - Expandable on /assets */}
-            <div className="md:hidden ml-3 flex items-center">
+            <div className="ml-3 flex items-center md:hidden">
               {isAssetsPage ? (
                 <motion.div
                   className="flex items-center overflow-hidden"
@@ -244,8 +230,9 @@ export default function Navbar() {
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <div
-                    className={`h-9 flex items-center gap-2 border border-gray-200 rounded-full bg-white/80 transition-all ${isMobileSearchExpanded ? 'w-full px-3' : 'w-9 justify-center'
-                      }`}
+                    className={`flex h-9 items-center gap-2 rounded-full border border-gray-200 bg-white/80 transition-all ${
+                      isMobileSearchExpanded ? 'w-full px-3' : 'w-9 justify-center'
+                    }`}
                   >
                     <button
                       type="button"
@@ -275,7 +262,7 @@ export default function Navbar() {
                           value={searchValue}
                           onChange={(e) => setSearchValue(e.target.value)}
                           placeholder="Search assets..."
-                          className="bg-transparent border-none outline-none text-sm text-zinc-700 w-full placeholder:text-zinc-400 h-full"
+                          className="h-full w-full border-none bg-transparent text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
                         />
                       )}
                     </AnimatePresence>
@@ -284,7 +271,7 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-full hover:bg-gray-50 text-gray-500 bg-white/50"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white/50 text-gray-500 hover:bg-gray-50"
                 >
                   <Search size={18} />
                 </button>
@@ -293,7 +280,7 @@ export default function Navbar() {
           </div>
 
           {/* 2. CENTER: MENU & SEARCH */}
-          <div className="hidden relative justify-center md:flex items-center gap-4 px-4 py-4">
+          <div className="relative hidden items-center justify-center gap-4 px-4 py-4 md:flex">
             {/* Animated Background Pill */}
             <motion.div
               initial={false}
@@ -320,15 +307,15 @@ export default function Navbar() {
                 x: '-50%',
                 zIndex: -1,
               }}
-              className="bg-white/80 backdrop-blur-md shadow-sm border border-gray-200/60"
+              className="border border-gray-200/60 bg-white/80 shadow-sm backdrop-blur-md"
             />
 
-            <div className="flex items-center gap-4 lg:gap-6 w-full z-10">
+            <div className="z-10 flex w-full items-center gap-4 lg:gap-6">
               {MENU_ITEMS.map((label, idx) => (
                 <Link
                   key={idx}
                   href={label.href}
-                  className="text-sm font-medium flex gap-2 justify-center items-center text-neutral-500 hover:text-black transition-colors whitespace-nowrap"
+                  className="flex items-center justify-center gap-2 text-sm font-medium whitespace-nowrap text-neutral-500 transition-colors hover:text-black"
                 >
                   <span className="hidden lg:block"></span>
                   {label.label}
@@ -336,28 +323,26 @@ export default function Navbar() {
               ))}
             </div>
 
-            <div className="hidden md:block ml-2 lg:ml-4 z-10">
+            <div className="z-10 ml-2 hidden md:block lg:ml-4">
               {isAssetsPage ? (
-                <div className="w-48 lg:w-64 h-9 px-2 bg-zinc-100/50 rounded-full border border-zinc-200 flex items-center gap-2 hover:bg-zinc-200/50 transition-colors focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-500">
-                  <Search size={14} className="text-zinc-400 ml-1" />
+                <div className="flex h-9 w-48 items-center gap-2 rounded-full border border-zinc-200 bg-zinc-100/50 px-2 transition-colors focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20 hover:bg-zinc-200/50 lg:w-64">
+                  <Search size={14} className="ml-1 text-zinc-400" />
                   <input
                     type="text"
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
                     placeholder="Search..."
-                    className="bg-transparent border-none outline-none text-sm text-zinc-700 w-full placeholder:text-zinc-400 h-full"
+                    className="h-full w-full border-none bg-transparent text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
                   />
                 </div>
               ) : (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="w-48 lg:w-64 h-9 px-2 bg-zinc-100/50 rounded-full border border-zinc-200 flex items-center gap-2 hover:bg-zinc-200/50 transition-colors text-left"
+                  className="flex h-9 w-48 items-center gap-2 rounded-full border border-zinc-200 bg-zinc-100/50 px-2 text-left transition-colors hover:bg-zinc-200/50 lg:w-64"
                 >
-                  <Search size={14} className="text-zinc-400 ml-1" />
-                  <span className="text-sm text-zinc-400 flex-1 truncate">
-                    Search...
-                  </span>
-                  <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded-full border bg-white px-1.5 font-mono text-[10px] font-medium text-zinc-500">
+                  <Search size={14} className="ml-1 text-zinc-400" />
+                  <span className="flex-1 truncate text-sm text-zinc-400">Search...</span>
+                  <kbd className="hidden h-5 items-center gap-1 rounded-full border bg-white px-1.5 font-mono text-[10px] font-medium text-zinc-500 lg:inline-flex">
                     <span className="text-xs">⌘</span>K
                   </kbd>
                 </button>
@@ -365,19 +350,18 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="flex items-center justify-end w-full gap-2 md:gap-4">
-
+          <div className="flex w-full items-center justify-end gap-2 md:gap-4">
             {isSessionLoading ? (
-              <div className="hidden md:flex items-center gap-3">
-                <SkeletonNavbar className="h-9 w-9 md:w-10 md:h-10 rounded-full" />
+              <div className="hidden items-center gap-3 md:flex">
+                <SkeletonNavbar className="h-9 w-9 rounded-full md:h-10 md:w-10" />
               </div>
             ) : session?.user ? (
               <div className="relative z-50" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-3 p-1 rounded-full bg-[#1B1B1B] border transition-all cursor-pointer group"
+                  className="group flex cursor-pointer items-center gap-3 rounded-full border bg-[#1B1B1B] p-1 transition-all"
                 >
-                  <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-200 relative shrink-0">
+                  <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-200 md:h-9 md:w-9">
                     {session.user.image ? (
                       <Image
                         src={session.user.image}
@@ -387,16 +371,16 @@ export default function Navbar() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-orange-600 text-white font-bold text-xs md:text-sm">
+                      <div className="flex h-full w-full items-center justify-center bg-orange-600 text-xs font-bold text-white md:text-sm">
                         {session.user.name?.charAt(0) || 'U'}
                       </div>
                     )}
                   </div>
-                  <div className="text-left hidden xl:block xl:mr-2 ">
-                    <p className="text-sm font-medium text-[#D3D3D3] group-hover:text-white transition-colors">
+                  <div className="hidden text-left xl:mr-2 xl:block">
+                    <p className="text-sm font-medium text-[#D3D3D3] transition-colors group-hover:text-white">
                       {session.user.name}
                     </p>
-                    <p className="text-[10px] text-gray-300 group-hover:text-white transition-colors">
+                    <p className="text-[10px] text-gray-300 transition-colors group-hover:text-white">
                       Pro Plan
                     </p>
                   </div>
@@ -409,29 +393,28 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2, type: 'spring' }}
-                      className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden p-1.5"
+                      className="absolute top-full right-0 mt-2 w-56 overflow-hidden rounded-xl border border-gray-100 bg-white p-1.5 shadow-xl"
                     >
-                      <div className="px-3 py-2 border-b border-gray-100 mb-1">
-                        <p className="text-xs font-medium text-gray-500">
-                          Signed in as
-                        </p>
-                        <p className="text-sm font-semibold text-gray-900 truncate">
+                      <div className="mb-1 border-b border-gray-100 px-3 py-2">
+                        <p className="text-xs font-medium text-gray-500">Signed in as</p>
+                        <p className="truncate text-sm font-semibold text-gray-900">
                           {session.user.email}
                         </p>
                       </div>
-                      {session.user.roleUser === 'admin' || session.user.roleUser === 'superadmin' && (
-                        <Link
-                          href="/dashboard"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <LayoutDashboard size={16} />
-                          Dashboard
-                        </Link>
-                      )}
+                      {session.user.roleUser === 'admin' ||
+                        (session.user.roleUser === 'superadmin' && (
+                          <Link
+                            href="/dashboard"
+                            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                            onClick={() => setIsProfileOpen(false)}
+                          >
+                            <LayoutDashboard size={16} />
+                            Dashboard
+                          </Link>
+                        ))}
                       <Link
                         href="/profile"
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <User size={16} />
@@ -439,18 +422,18 @@ export default function Navbar() {
                       </Link>
                       <Link
                         href="/settings"
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <Settings size={16} />
                         Settings
                       </Link>
 
-                      <div className="h-px bg-gray-100 my-1" />
+                      <div className="my-1 h-px bg-gray-100" />
 
                       <button
                         onClick={() => signOut()}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
                       >
                         <LogOut size={16} />
                         Sign Out
@@ -460,16 +443,16 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
             ) : (
-              <div className="hidden md:flex items-center gap-3">
+              <div className="hidden items-center gap-3 md:flex">
                 <Link
                   href="/signin"
-                  className="h-9 px-4 bg-white hover:text-white hover:bg-[#FF4F00] shadow-[0_1px_1px_0.5px_rgba(41,41,41,0.04),0_3px_3px_-1.5px_rgba(41,41,41,0.02),0_6px_6px_-3px_rgba(41,41,41,0.04),0_12px_12px_-6px_rgba(41,41,41,0.04),0_24px_24px_-12px_rgba(41,41,41,0.04),0_48px_48px_-24px_rgba(41,41,41,0.04),0_0_0_1px_rgba(41,41,41,0.04),inset_0_-1px_1px_-0.5px_rgba(51,51,51,0.06)] text-[#D3D3D3] py-2 border border-[#D3D3D3] rounded-full text-sm font-medium text-neutral-600  flex items-center"
+                  className="flex h-9 items-center rounded-full border border-[#D3D3D3] bg-white px-4 py-2 text-sm font-medium text-[#D3D3D3] text-neutral-600 shadow-[0_1px_1px_0.5px_rgba(41,41,41,0.04),0_3px_3px_-1.5px_rgba(41,41,41,0.02),0_6px_6px_-3px_rgba(41,41,41,0.04),0_12px_12px_-6px_rgba(41,41,41,0.04),0_24px_24px_-12px_rgba(41,41,41,0.04),0_48px_48px_-24px_rgba(41,41,41,0.04),0_0_0_1px_rgba(41,41,41,0.04),inset_0_-1px_1px_-0.5px_rgba(51,51,51,0.06)] hover:bg-[#FF4F00] hover:text-white"
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/Get Started"
-                  className="h-9 px-4 hidden md:hidden lg:flex shadow-[0_1px_1px_0.5px_rgba(41,41,41,0.04),0_3px_3px_-1.5px_rgba(41,41,41,0.02),0_6px_6px_-3px_rgba(41,41,41,0.04),0_12px_12px_-6px_rgba(41,41,41,0.04),0_24px_24px_-12px_rgba(41,41,41,0.04),0_48px_48px_-24px_rgba(41,41,41,0.04),0_0_0_1px_rgba(41,41,41,0.04),inset_0_-1px_1px_-0.5px_rgba(51,51,51,0.06)] flex gap-2 bg-[#1B1B1B] hover:bg-[#FF4F00] text-white py-2  rounded-full text-sm font-medium text-neutral-600  flex items-center"
+                  className="flex hidden h-9 items-center gap-2 rounded-full bg-[#1B1B1B] px-4 py-2 text-sm font-medium text-neutral-600 text-white shadow-[0_1px_1px_0.5px_rgba(41,41,41,0.04),0_3px_3px_-1.5px_rgba(41,41,41,0.02),0_6px_6px_-3px_rgba(41,41,41,0.04),0_12px_12px_-6px_rgba(41,41,41,0.04),0_24px_24px_-12px_rgba(41,41,41,0.04),0_48px_48px_-24px_rgba(41,41,41,0.04),0_0_0_1px_rgba(41,41,41,0.04),inset_0_-1px_1px_-0.5px_rgba(51,51,51,0.06)] hover:bg-[#FF4F00] md:hidden lg:flex"
                 >
                   <Image src="/ic-diamond-small.svg" width={15} height={15} alt="arrow-right" />
                   Get Started
@@ -479,7 +462,7 @@ export default function Navbar() {
 
             <button
               onClick={() => setIsOpen(true)}
-              className="md:hidden w-9 h-9 flex items-center justify-center border border-gray-200 rounded-full hover:bg-gray-50 text-gray-500 bg-white/50"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white/50 text-gray-500 hover:bg-gray-50 md:hidden"
             >
               <Menu size={18} />
             </button>
@@ -494,7 +477,7 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-black/20 z-[60] backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-sm md:hidden"
           />
         )}
         {isOpen && (
@@ -503,11 +486,11 @@ export default function Navbar() {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 left-0 h-full w-[85%] sm:w-[320px] bg-zinc-50 z-[70] md:hidden flex flex-col"
+            className="fixed top-0 left-0 z-[70] flex h-full w-[85%] flex-col bg-zinc-50 sm:w-[320px] md:hidden"
           >
-            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 bg-zinc-50 sticky top-0 z-10 shrink-0">
+            <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-gray-200 bg-zinc-50 px-5 py-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 flex justify-center items-center h-8 bg-[#1B1B1B] rounded-lg">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1B1B1B]">
                   {/* CONTAINER LOGO */}
                   <div
                     /* PERBAIKAN ADA DI SINI:
@@ -515,7 +498,7 @@ export default function Navbar() {
                       2. Ganti 'to-transparent' menjadi 'to-gray-400' agar ada efek metallic/silver seperti di gambar.
                       3. Gunakan 'bg-gradient-to-b' (ke bawah) atau 'to-br' sesuai arah cahaya yang diinginkan.
                     */
-                    className="w-6 h-6 bg-gradient-to-b from-white to-gray-500"
+                    className="h-6 w-6 bg-gradient-to-b from-white to-gray-500"
                     style={{
                       maskImage: 'url(/logo.svg)',
                       WebkitMaskImage: 'url(/logo.svg)',
@@ -542,71 +525,57 @@ export default function Navbar() {
             </div>
 
             <div className="flex-1 overflow-y-auto">
-              <motion.div
-                className="px-6 flex flex-col"
-                initial="closed"
-                animate="open"
-              >
-
+              <motion.div className="flex flex-col px-6" initial="closed" animate="open">
                 {MENU_ITEMS.map((item, i) => (
                   <div
                     key={i}
-                    className="py-5 flex items-center gap-3 border-b border-dashed border-gray-200"
+                    className="flex items-center gap-3 border-b border-dashed border-gray-200 py-5"
                   >
                     <item.icon className="size-6 text-gray-400" />
-                    <span className="text-gray-700 font-medium">
-                      {item.label}
-                    </span>
+                    <span className="font-medium text-gray-700">{item.label}</span>
                   </div>
                 ))}
               </motion.div>
 
               {isAssetsPage && (
-                <div className="mb-4 mt-4 px-6">
+                <div className="mt-4 mb-4 px-6">
                   <GoProCard />
                 </div>
               )}
             </div>
 
-            <div className="p-5 border-t border-gray-200 bg-white shrink-0 pb-8">
+            <div className="shrink-0 border-t border-gray-200 bg-white p-5 pb-8">
               {isSessionLoading ? (
                 <div className="flex items-center gap-3">
-                  <SkeletonNavbar className="w-10 h-10 rounded-full" />
-                  <div className="flex-1 min-w-0 space-y-2">
+                  <SkeletonNavbar className="h-10 w-10 rounded-full" />
+                  <div className="min-w-0 flex-1 space-y-2">
                     <SkeletonNavbar className="h-4 w-24" />
                     <SkeletonNavbar className="h-3 w-32" />
                   </div>
                 </div>
               ) : session?.user ? (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-200 relative">
+                  <div className="relative h-10 w-10 overflow-hidden rounded-full border border-gray-200 bg-gray-200">
                     {session.user.image ? (
-                      <Image
-                        src={session.user.image}
-                        alt="User"
-                        fill
-                        className="object-cover"
-                      />
+                      <Image src={session.user.image} alt="User" fill className="object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-orange-600 text-white font-bold">
+                      <div className="flex h-full w-full items-center justify-center bg-orange-600 font-bold text-white">
                         {session.user.name?.charAt(0) || 'U'}
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-gray-900">
                       {session.user.name}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {session.user.email}
-                    </p>
+                    <p className="truncate text-xs text-gray-500">{session.user.email}</p>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
                   <Link
                     href="/signin"
-                    className="h-10 px-4 bg-white border border-gray-200 rounded-lg text-sm font-medium text-neutral-600 hover:bg-gray-50 w-full flex items-center justify-center"
+                    className="flex h-10 w-full items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-neutral-600 hover:bg-gray-50"
                   >
                     Sign in
                   </Link>

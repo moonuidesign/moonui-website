@@ -19,9 +19,9 @@ export default function ContactSection() {
     const mailSubject = encodeURIComponent(`[Contact Form] ${subject}`);
     const mailBody = encodeURIComponent(
       `Full Name: ${fullname}\n` +
-      `Email: ${email}\n` +
-      `Product: ${product}\n\n` +
-      `Message:\n${message}`,
+        `Email: ${email}\n` +
+        `Product: ${product}\n\n` +
+        `Message:\n${message}`,
     );
 
     window.location.href = `mailto:${emailTujuan}?subject=${mailSubject}&body=${mailBody}`;
@@ -29,7 +29,7 @@ export default function ContactSection() {
 
   return (
     <div className="container mx-auto px-4">
-      <div className="flex flex-col items-start pt-11 md:items-center md:pt-16 md:text-center font-sans">
+      <div className="flex flex-col items-start pt-11 font-sans md:items-center md:pt-16 md:text-center">
         {/* Branding Icon Badge */}
         <div className="hidden size-10 items-center justify-center rounded-[13px] bg-[#3d3d3d] shadow-[0_0_0_1px_rgba(41,41,41,0.08)] md:flex">
           <svg
@@ -63,7 +63,7 @@ export default function ContactSection() {
           </svg>
         </div>
 
-        <div className="text-[16px] leading-[24px] tracking-[-0.01em] font-medium text-[rgb(143,143,143)] md:hidden">
+        <div className="text-[16px] leading-[24px] font-medium tracking-[-0.01em] text-[rgb(143,143,143)] md:hidden">
           Contact with us
         </div>
 
@@ -71,30 +71,25 @@ export default function ContactSection() {
           Let&apos;s talk, we&apos;re here.
         </h1>
 
-        <p className="mt-3 text-pretty text-[16px] leading-[24px] tracking-[-0.01em] font-normal text-[rgb(112,112,112)] xl:mt-2">
+        <p className="mt-3 text-[16px] leading-[24px] font-normal tracking-[-0.01em] text-pretty text-[rgb(112,112,112)] xl:mt-2">
           We&apos;re here to help, so contact us with any questions or feedback.
           <br className="hidden md:inline" />
           <span className="md:hidden"> → </span>
-          <a
-            href="mailto:hey@moonui.design"
-            className="font-medium text-[#5c5c5c]"
-          >
+          <a href="mailto:hey@moonui.design" className="font-medium text-[#5c5c5c]">
             hey@moonui.design
           </a>
         </p>
       </div>
 
-      <div className="mx-2 md:mx-0 ">
-        <div className="w-full max-w-[440px] rounded-3xl bg-white p-6 shadow-[0_1px_1px_0.5px_rgba(41,41,41,0.04),0_3px_3px_-1.5px_rgba(41,41,41,0.02),0_6px_6px_-3px_rgba(41,41,41,0.04),0_12px_12px_-6px_rgba(41,41,41,0.04),0_24px_24px_-12px_rgba(41,41,41,0.04),0_48px_48px_-24px_rgba(41,41,41,0.04),0_0_0_1px_rgba(41,41,41,0.04),inset_0_-1px_1px_-0.5px_rgba(51,51,51,0.06)] xl:rounded-[28px] mx-auto mt-11 md:mt-12">
-          <div className="text-[18px] font-bold text-[rgb(46,46,46)]">
-            Contact Form
-          </div>
+      <div className="mx-2 md:mx-0">
+        <div className="mx-auto mt-11 w-full max-w-[440px] rounded-3xl bg-white p-6 shadow-[0_1px_1px_0.5px_rgba(41,41,41,0.04),0_3px_3px_-1.5px_rgba(41,41,41,0.02),0_6px_6px_-3px_rgba(41,41,41,0.04),0_12px_12px_-6px_rgba(41,41,41,0.04),0_24px_24px_-12px_rgba(41,41,41,0.04),0_48px_48px_-24px_rgba(41,41,41,0.04),0_0_0_1px_rgba(41,41,41,0.04),inset_0_-1px_1px_-0.5px_rgba(51,51,51,0.06)] md:mt-12 xl:rounded-[28px]">
+          <div className="text-[18px] font-bold text-[rgb(46,46,46)]">Contact Form</div>
           <p className="mt-1 text-[16px] leading-[24px] text-[#5c5c5c] xl:text-[14px]">
             Contact us to report issues, give feedback, and more.
           </p>
 
           <div
-            className="h-1 w-full my-6 opacity-30"
+            className="my-6 h-1 w-full opacity-30"
             style={{
               background:
                 'linear-gradient(90deg, #d1d1d1 4px, transparent 4px) 50% 50% / 8px 1px repeat-x',
@@ -106,18 +101,15 @@ export default function ContactSection() {
             <div className="flex flex-col gap-3">
               {/* Full Name */}
               <div className="flex w-full flex-col gap-1">
-                <label
-                  htmlFor="fullname"
-                  className="text-[12px] font-semibold text-[#3d3d3d]"
-                >
+                <label htmlFor="fullname" className="text-[12px] font-semibold text-[#3d3d3d]">
                   Full Name
                 </label>
-                <div className="relative group">
+                <div className="group relative">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 16 16"
-                    className="pointer-events-none absolute left-[9px] top-1/2 size-[18px] -translate-y-1/2 text-[#a3a3a3] group-focus-within:text-[#ff4f00]"
+                    className="pointer-events-none absolute top-1/2 left-[9px] size-[18px] -translate-y-1/2 text-[#a3a3a3] group-focus-within:text-[#ff4f00]"
                   >
                     <path
                       fill="currentColor"
@@ -130,7 +122,7 @@ export default function ContactSection() {
                     name="fullname"
                     id="fullname"
                     required
-                    className="h-9 w-full rounded-[9px] bg-white px-2.5 py-2 pl-[35px] text-[14px] text-[rgb(46,46,46)] shadow-[0_3px_6px_-1.5px_rgba(51,51,51,.06)] ring-1 ring-[#eeeeee] outline-none transition-all focus:ring-[#ff4f00] hover:bg-[#fcfcfc] placeholder:text-[#a3a3a3]"
+                    className="h-9 w-full rounded-[9px] bg-white px-2.5 py-2 pl-[35px] text-[14px] text-[rgb(46,46,46)] shadow-[0_3px_6px_-1.5px_rgba(51,51,51,.06)] ring-1 ring-[#eeeeee] transition-all outline-none placeholder:text-[#a3a3a3] hover:bg-[#fcfcfc] focus:ring-[#ff4f00]"
                     placeholder="Enter your name..."
                     type="text"
                   />
@@ -139,18 +131,15 @@ export default function ContactSection() {
 
               {/* Email */}
               <div className="flex w-full flex-col gap-1">
-                <label
-                  htmlFor="email"
-                  className="text-[12px] font-semibold text-[#3d3d3d]"
-                >
+                <label htmlFor="email" className="text-[12px] font-semibold text-[#3d3d3d]">
                   Email
                 </label>
-                <div className="relative group">
+                <div className="group relative">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 18 18"
-                    className="pointer-events-none absolute left-[9px] top-1/2 size-[18px] -translate-y-1/2 text-[#a3a3a3] group-focus-within:text-[#ff4f00]"
+                    className="pointer-events-none absolute top-1/2 left-[9px] size-[18px] -translate-y-1/2 text-[#a3a3a3] group-focus-within:text-[#ff4f00]"
                   >
                     <path
                       fill="currentColor"
@@ -165,7 +154,7 @@ export default function ContactSection() {
                     name="email"
                     id="email"
                     required
-                    className="h-9 w-full rounded-[9px] bg-white px-2.5 py-2 pl-[35px] text-[14px] text-[rgb(46,46,46)] shadow-[0_3px_6px_-1.5px_rgba(51,51,51,.06)] ring-1 ring-[#eeeeee] outline-none transition-all focus:ring-[#ff4f00] hover:bg-[#fcfcfc]"
+                    className="h-9 w-full rounded-[9px] bg-white px-2.5 py-2 pl-[35px] text-[14px] text-[rgb(46,46,46)] shadow-[0_3px_6px_-1.5px_rgba(51,51,51,.06)] ring-1 ring-[#eeeeee] transition-all outline-none hover:bg-[#fcfcfc] focus:ring-[#ff4f00]"
                     placeholder="Enter your email address..."
                     type="email"
                   />
@@ -174,15 +163,13 @@ export default function ContactSection() {
 
               {/* Subject */}
               <div className="flex w-full flex-col gap-1">
-                <label className="text-[12px] font-semibold text-[#3d3d3d]">
-                  Subject
-                </label>
-                <div className="relative group">
+                <label className="text-[12px] font-semibold text-[#3d3d3d]">Subject</label>
+                <div className="group relative">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 18 18"
-                    className="pointer-events-none absolute left-[9px] top-1/2 size-[18px] -translate-y-1/2 text-[#a3a3a3] group-focus-within:text-[#ff4f00]"
+                    className="pointer-events-none absolute top-1/2 left-[9px] size-[18px] -translate-y-1/2 text-[#a3a3a3] group-focus-within:text-[#ff4f00]"
                   >
                     <path
                       fill="currentColor"
@@ -194,19 +181,15 @@ export default function ContactSection() {
                   <select
                     name="subject"
                     required
-                    className="h-9 w-full appearance-none rounded-[9px] bg-white px-2.5 py-2 pl-[35px] pr-10 text-[14px] text-[rgb(46,46,46)] shadow-[0_3px_6px_-1.5px_rgba(51,51,51,.06)] ring-1 ring-[#eeeeee] outline-none transition-all focus:ring-[#ff4f00] hover:bg-[#fcfcfc]"
+                    className="h-9 w-full appearance-none rounded-[9px] bg-white px-2.5 py-2 pr-10 pl-[35px] text-[14px] text-[rgb(46,46,46)] shadow-[0_3px_6px_-1.5px_rgba(51,51,51,.06)] ring-1 ring-[#eeeeee] transition-all outline-none hover:bg-[#fcfcfc] focus:ring-[#ff4f00]"
                   >
                     <option value="">Select a subject...</option>
                     <option value="Feedback">Give Feedback</option>
                     <option value="Issue">Report an Issue/Bug</option>
                     <option value="Feature">Request a Feature</option>
                   </select>
-                  <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[rgb(143,143,143)]">
-                    <svg
-                      className="size-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                  <div className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-[rgb(143,143,143)]">
+                    <svg className="size-5" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"></path>
                     </svg>
                   </div>
@@ -215,10 +198,7 @@ export default function ContactSection() {
 
               {/* Message */}
               <div className="flex w-full flex-col gap-1">
-                <label
-                  htmlFor="message"
-                  className="text-[12px] font-semibold text-[#3d3d3d]"
-                >
+                <label htmlFor="message" className="text-[12px] font-semibold text-[#3d3d3d]">
                   Message
                 </label>
                 <div className="group/textarea relative flex w-full flex-col rounded-[11px] bg-white pb-3 shadow-[0_3px_6px_-1.5px_rgba(51,51,51,.06)] ring-1 ring-[#eeeeee] transition duration-200 focus-within:ring-[#ff4f00]">
@@ -228,7 +208,7 @@ export default function ContactSection() {
                     required
                     maxLength={200}
                     onChange={(e) => setCharCount(e.target.value.length)}
-                    className="block w-full resize-none text-[14px] text-[rgb(46,46,46)] h-full min-h-[76px] bg-transparent p-3 outline-none"
+                    className="block h-full min-h-[76px] w-full resize-none bg-transparent p-3 text-[14px] text-[rgb(46,46,46)] outline-none"
                     placeholder="Enter your message..."
                   ></textarea>
                   <div className="pointer-events-none flex items-center justify-end gap-1.5 px-3">
@@ -236,10 +216,7 @@ export default function ContactSection() {
                       {charCount}/200
                     </span>
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path
-                        d="M9.11111 2L2 9.11111M10 6.44444L6.44444 10"
-                        stroke="#d1d1d1"
-                      ></path>
+                      <path d="M9.11111 2L2 9.11111M10 6.44444L6.44444 10" stroke="#d1d1d1"></path>
                     </svg>
                   </div>
                 </div>
@@ -247,16 +224,13 @@ export default function ContactSection() {
 
               {/* Product Name */}
               <div className="flex w-full flex-col gap-1">
-                <label
-                  htmlFor="product"
-                  className="text-[12px] font-semibold text-[#3d3d3d]"
-                >
+                <label htmlFor="product" className="text-[12px] font-semibold text-[#3d3d3d]">
                   Product Name
                 </label>
                 <input
                   name="product"
                   id="product"
-                  className="h-9 w-full rounded-[9px] bg-white px-2.5 py-2 text-[14px] text-[rgb(46,46,46)] shadow-[0_3px_6px_-1.5px_rgba(51,51,51,.06)] ring-1 ring-[#eeeeee] outline-none transition-all focus:ring-[#ff4f00]"
+                  className="h-9 w-full rounded-[9px] bg-white px-2.5 py-2 text-[14px] text-[rgb(46,46,46)] shadow-[0_3px_6px_-1.5px_rgba(51,51,51,.06)] ring-1 ring-[#eeeeee] transition-all outline-none focus:ring-[#ff4f00]"
                   placeholder="Which product is this about?"
                   type="text"
                 />
@@ -264,7 +238,7 @@ export default function ContactSection() {
 
               {/* Submit Button */}
               <button
-                className="mt-3 flex h-10 items-center justify-center rounded-[11px] bg-[rgb(46,46,46)] px-3.5 text-[13px] font-bold text-white shadow-md hover:bg-[#3d3d3d] active:scale-95 transition duration-200"
+                className="mt-3 flex h-10 items-center justify-center rounded-[11px] bg-[rgb(46,46,46)] px-3.5 text-[13px] font-bold text-white shadow-md transition duration-200 hover:bg-[#3d3d3d]"
                 type="submit"
               >
                 Submit Message

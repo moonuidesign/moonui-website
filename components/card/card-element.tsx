@@ -3,40 +3,31 @@ export type TierType = 'free' | 'pro' | 'pro_plus';
 
 // 1. Badge "New"
 export const NewBadge = () => (
-  <div className="ml-2 px-1.5 py-1 bg-orange-600 rounded-md shadow-sm inline-flex flex-col justify-start items-start">
-    <div className="text-white text-[10px] font-semibold font-['Inter'] leading-[10px]">
-      New
-    </div>
+  <div className="ml-2 inline-flex flex-col items-start justify-start rounded-md bg-orange-600 px-1.5 py-1 shadow-sm">
+    <div className="font-['Inter'] text-[10px] leading-[10px] font-semibold text-white">New</div>
   </div>
 );
 
 export const TierIndicator = ({ tier }: { tier: TierType }) => {
   if (tier === 'free') {
-    return (
-      <span className="text-sm text-zinc-500 font-medium font-['Inter']">
-        Free
-      </span>
-    );
+    return <span className="font-['Inter'] text-sm font-medium text-zinc-500">Free</span>;
   }
 
   const isProPlus = tier === 'pro_plus';
 
   return (
-    <div className="flex justify-center items-center gap-1">
+    <div className="flex items-center justify-center gap-1">
       {/* Icon Bar Warna-Warni */}
       <div className="flex items-center gap-[1px]">
-        <div className="w-3.5 h-2.5 bg-sky-400 rounded-[1px]" />
-        <div className="w-1 h-2.5 bg-amber-400 rounded-[1px]" />
-        <div className="w-1.5 h-2 bg-yellow-500 rounded-[1px]" />
-        {isProPlus && (
-          <div className="w-1 h-2 bg-purple-500 rounded-[1px]" />
-        )}{' '}
-        {/* Pembeda Pro+ */}
-        <div className="w-1 h-2 bg-orange-300 rounded-[1px]" />
+        <div className="h-2.5 w-3.5 rounded-[1px] bg-sky-400" />
+        <div className="h-2.5 w-1 rounded-[1px] bg-amber-400" />
+        <div className="h-2 w-1.5 rounded-[1px] bg-yellow-500" />
+        {isProPlus && <div className="h-2 w-1 rounded-[1px] bg-purple-500" />} {/* Pembeda Pro+ */}
+        <div className="h-2 w-1 rounded-[1px] bg-orange-300" />
       </div>
 
       <div
-        className={`text-right justify-center text-sm font-semibold font-['Inter'] leading-6 ${
+        className={`justify-center text-right font-['Inter'] text-sm leading-6 font-semibold ${
           isProPlus ? 'text-indigo-600' : 'text-[#3D3D3D]'
         }`}
       >
@@ -53,23 +44,15 @@ interface ActionBtnProps {
   onClick: () => void;
 }
 
-export const ActionButton: React.FC<ActionBtnProps> = ({
-  label,
-  icon,
-  onClick,
-}) => (
+export const ActionButton: React.FC<ActionBtnProps> = ({ label, icon, onClick }) => (
   <button
     onClick={(e) => {
       e.stopPropagation();
       onClick();
     }}
-    className="h-8 px-3 bg-white rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-1.5 border border-zinc-100 cursor-pointer"
+    className="flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border border-zinc-100 bg-white px-3 shadow-lg transition-all duration-200 hover:scale-105"
   >
-    <span className="flex items-center justify-center text-[#3D3D3D]">
-      {icon}
-    </span>
-    <span className="text-[#3D3D3D] text-xs font-medium font-['Inter']">
-      {label}
-    </span>
+    <span className="flex items-center justify-center text-[#3D3D3D]">{icon}</span>
+    <span className="font-['Inter'] text-xs font-medium text-[#3D3D3D]">{label}</span>
   </button>
 );

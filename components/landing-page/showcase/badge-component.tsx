@@ -1,7 +1,7 @@
 export const ComponentBadge = () => (
   // Menggunakan shadow dan border yang lebih halus agar cocok di background putih/abu
-  <div className="h-7 md:h-8 pl-1.5 pr-2.5 py-1 bg-[#FD4F12] rounded-lg shadow-sm border border-gray-200 inline-flex items-center gap-1.5">
-    <div className="w-4 h-4 relative flex justify-center items-center">
+  <div className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-gray-200 bg-[#FD4F12] py-1 pr-2.5 pl-1.5 shadow-sm md:h-8">
+    <div className="relative flex h-4 w-4 items-center justify-center">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -19,14 +19,10 @@ export const ComponentBadge = () => (
       </svg>
     </div>
 
-    <span className="text-white text-sm font-medium font-sans leading-5">
-      Components & Blocks
-    </span>
+    <span className="font-sans text-sm leading-5 font-medium text-white">Components & Blocks</span>
 
-    <div className="px-[5px] py-[3px] flex justify-center items-center bg-orange-100 rounded-[5px]  ml-1">
-      <span className="text-orange-600 text-[10px] font-bold font-sans leading-none block">
-        PRO
-      </span>
+    <div className="flex items-start rounded-[5px] bg-white/50 px-1.5 py-[3px]">
+      <span className="text-[11px] leading-[10px] font-semibold text-white">PRO</span>
     </div>
   </div>
 );

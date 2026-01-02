@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { TicketPercent } from 'lucide-react';
 import { ArrowRight2 } from 'iconsax-reactjs';
+import Image from 'next/image';
 
 // ==========================================
 // 2. DATA PAKET
@@ -174,7 +175,7 @@ const PricingCard = ({
 
       <div className="flex flex-1 flex-col gap-6 pt-4">
         {/* FITUR LIST */}
-        <ul className="flex flex-1 flex-col gap-3">
+        <ul className="flex flex-1 flex-col gap-3 px-2">
           {plan.features.map((feature, i) => (
             <li key={i} className="flex items-center gap-3">
               <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded bg-orange-600">
@@ -249,12 +250,13 @@ const PricingCard = ({
 
         {/* BUTTON */}
         <button
-          className={`w-full cursor-pointer rounded-xl py-4 font-semibold shadow-lg transition-all ${
+          className={`flex w-full cursor-pointer flex-row items-center justify-center gap-4 rounded-xl py-4 font-semibold shadow-lg transition-all ${
             plan.isDark
               ? 'bg-white text-zinc-900 hover:bg-[#ff4f00] hover:text-white'
               : 'bg-zinc-900 text-white hover:bg-[#ff4f00]'
           }`}
         >
+          <Image width={24} height={24} src="/ic-diamond-small.svg" alt="" />
           {plan.buttonText}
         </button>
       </div>

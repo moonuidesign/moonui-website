@@ -29,25 +29,25 @@ const defaultColumns: ExtendedFooterColumn[] = [
     title: 'Products',
     links: [
       {
-        label: 'MoonUI Components',
-        href: '/assets',
-        contentType: 'components',
-      },
-      {
         label: 'MoonUI Templates',
         href: '/assets',
         contentType: 'templates',
       },
       {
-        label: 'MoonUI Gradients',
+        label: 'MoonUI Components',
         href: '/assets',
-        contentType: 'gradients',
+        contentType: 'components',
       },
       {
         label: 'MoonUI Assets',
         href: '/assets',
 
         contentType: 'components',
+      },
+      {
+        label: 'MoonUI Gradients',
+        href: '/assets',
+        contentType: 'gradients',
       },
     ],
   },
@@ -63,7 +63,7 @@ const defaultColumns: ExtendedFooterColumn[] = [
   {
     title: 'MoonUI Design',
     links: [
-      { label: 'Explore Now', href: '/about' },
+      { label: 'Explore Now', href: '/assets' },
       {
         label: 'Become an Affiliate',
         href: '/about',

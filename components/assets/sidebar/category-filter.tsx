@@ -28,21 +28,17 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   const [isSubCategoriesOpen, setIsSubCategoriesOpen] = useState(true);
 
   // Get visible sub-categories (Children of active parents)
-  const activeParentNodes = categories.filter((cat) =>
-    activeSlugs.includes(cat.slug),
-  );
-  const visibleSubCategories = activeParentNodes.flatMap(
-    (cat) => cat.children || [],
-  );
+  const activeParentNodes = categories.filter((cat) => activeSlugs.includes(cat.slug));
+  const visibleSubCategories = activeParentNodes.flatMap((cat) => cat.children || []);
 
   return (
-    <div className="w-full bg-white rounded-xl lg:rounded-2xl shadow-card-sm overflow-hidden border border-gray-100 transition-all">
+    <div className="shadow-card-sm w-full overflow-hidden rounded-xl border border-gray-100 bg-white transition-all lg:rounded-2xl">
       {/* Header / Accordion Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-10 lg:h-12 px-3 lg:px-4 flex justify-between items-center bg-white hover:bg-gray-50 transition-colors border-b border-gray-100/50"
+        className="flex h-10 w-full items-center justify-between border-b border-gray-100/50 bg-white px-3 transition-colors hover:bg-gray-50 lg:h-12 lg:px-4"
       >
-        <span className="text-xs lg:text-sm font-semibold text-gray-800 font-['Plus_Jakarta_Sans']">
+        <span className="font-['Plus_Jakarta_Sans'] text-xs font-semibold text-gray-800 lg:text-sm">
           {title}
         </span>
         {isOpen ? (
@@ -54,26 +50,26 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
       {/* Content */}
       {isOpen && (
-        <div className="p-3 lg:p-4 flex flex-col gap-4 lg:gap-6">
+        <div className="flex flex-col gap-4 p-3 lg:gap-6 lg:p-4">
           {/* MAIN CATEGORIES */}
           <div className="flex flex-col gap-2">
             {categories.length > 0 && (
               <button
                 onClick={() => setIsMainCategoriesOpen(!isMainCategoriesOpen)}
-                className="flex items-center justify-between w-full group"
+                className="group flex w-full items-center justify-between"
               >
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">
+                <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase transition-colors group-hover:text-gray-600">
                   Main Categories
                 </span>
                 {isMainCategoriesOpen ? (
-                  <ChevronDown className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  <ChevronDown className="h-3 w-3 text-gray-400 transition-colors group-hover:text-gray-600" />
                 ) : (
-                  <ChevronRight className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  <ChevronRight className="h-3 w-3 text-gray-400 transition-colors group-hover:text-gray-600" />
                 )}
               </button>
             )}
             {isMainCategoriesOpen && (
-              <div className="flex flex-wrap gap-2 animate-in slide-in-from-top-1 fade-in duration-200">
+              <div className="animate-in slide-in-from-top-1 fade-in flex flex-wrap gap-2 duration-200">
                 <CategoryChip
                   label="All"
                   isActive={activeSlugs.length === 0}
@@ -99,25 +95,25 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
           {/* SUB CATEGORIES */}
           {visibleSubCategories.length > 0 && (
-            <div className="flex flex-col gap-2 animate-in slide-in-from-top-1 fade-in duration-300">
+            <div className="animate-in slide-in-from-top-1 fade-in flex flex-col gap-2 duration-300">
               <button
                 onClick={() => setIsSubCategoriesOpen(!isSubCategoriesOpen)}
-                className="flex items-center justify-between w-full border-t border-gray-100 pt-4 group"
+                className="group flex w-full items-center justify-between border-t border-gray-100 pt-4"
               >
                 <div className="flex items-center gap-1.5">
-                  <Layers className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">
+                  <Layers className="h-3 w-3 text-gray-400 transition-colors group-hover:text-gray-600" />
+                  <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase transition-colors group-hover:text-gray-600">
                     Sub Categories
                   </span>
                 </div>
                 {isSubCategoriesOpen ? (
-                  <ChevronDown className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  <ChevronDown className="h-3 w-3 text-gray-400 transition-colors group-hover:text-gray-600" />
                 ) : (
-                  <ChevronRight className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  <ChevronRight className="h-3 w-3 text-gray-400 transition-colors group-hover:text-gray-600" />
                 )}
               </button>
               {isSubCategoriesOpen && (
-                <div className="flex flex-wrap gap-2 animate-in slide-in-from-top-1 fade-in duration-200">
+                <div className="animate-in slide-in-from-top-1 fade-in flex flex-wrap gap-2 duration-200">
                   {visibleSubCategories.map((sub) => (
                     <CategoryChip
                       key={sub.id}
@@ -155,20 +151,18 @@ function CategoryChip({
     <button
       onClick={onClick}
       className={cn(
-        'px-3 py-1.5 rounded-lg text-xs font-medium transition-all border active:scale-95 flex items-center gap-2',
+        'flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all',
         isActive
-          ? 'bg-zinc-900 text-white border-zinc-900 shadow-sm'
-          : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50',
-        variant === 'sub' &&
-        !isActive &&
-        'bg-gray-50/50 border-gray-100 text-gray-500',
+          ? 'border-zinc-900 bg-zinc-900 text-white shadow-sm'
+          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50',
+        variant === 'sub' && !isActive && 'border-gray-100 bg-gray-50/50 text-gray-500',
       )}
     >
       <span>{label}</span>
       {count !== undefined && count > 0 && (
         <span
           className={cn(
-            'text-[10px] px-1.5 py-0.5 rounded-full',
+            'rounded-full px-1.5 py-0.5 text-[10px]',
             isActive ? 'bg-zinc-700 text-white' : 'bg-gray-100 text-gray-400',
           )}
         >
