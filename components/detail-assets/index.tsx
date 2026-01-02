@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import {
   ArrowLeft,
   Check,
@@ -14,8 +14,6 @@ import {
   Lock,
   Code,
   Layers,
-  Tag,
-  Hash,
   Box,
   ExternalLink,
   Maximize2,
@@ -205,9 +203,64 @@ export default function ContentDetailClient({
   const [isProcessing, setIsProcessing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // --- REFS ---
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // --- HOOKS ---
   const { visitorId, isLoading: isFpLoading } = useFingerprint();
   const { copy } = UseCopyToClipboard();
+
+  // --- SCROLL LOGIC FOR STICKY SIDEBAR ---
+  const { scrollY } = useScroll();
+  const [measurements, setMeasurements] = useState({ top: 0, cHeight: 0, sHeight: 0 });
+
+  useEffect(() => {
+    const update = () => {
+      if (!containerRef.current || !sidebarRef.current) return;
+
+      const cRect = containerRef.current.getBoundingClientRect();
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+      setMeasurements({
+        top: cRect.top + scrollTop,
+        cHeight: containerRef.current.offsetHeight,
+        sHeight: sidebarRef.current.offsetHeight,
+      });
+    };
+
+    update();
+    // Helper to debounce or just run
+    const ro = new ResizeObserver(update);
+    if (containerRef.current) ro.observe(containerRef.current);
+    if (sidebarRef.current) ro.observe(sidebarRef.current);
+    window.addEventListener('resize', update);
+
+    return () => {
+      window.removeEventListener('resize', update);
+      ro.disconnect();
+    };
+  }, [content]);
+
+  const rawY = useTransform(scrollY, (latest) => {
+    if (typeof window === 'undefined') return 0;
+    const { top, cHeight, sHeight } = measurements;
+
+    // Safety
+    if (sHeight >= cHeight) return 0;
+
+    const topOffset = 140;
+    const relative = latest - top + topOffset;
+    const max = cHeight - sHeight;
+
+    return Math.max(0, Math.min(relative, max));
+  });
+
+  const y = useSpring(rawY, {
+    stiffness: 800,
+    damping: 40,
+    mass: 0.2,
+  });
 
   // --- LOGIC ---
   // Lock: content tier is 'pro' and user is 'free'
@@ -304,6 +357,7 @@ export default function ContentDetailClient({
   }, [content.codeSnippets]);
 
   // --- HANDLERS ---
+  // --- HANDLERS ---
   const handleCopyCode = async () => {
     if (isFpLoading) {
       toast.info('Initializing security check...');
@@ -389,7 +443,7 @@ export default function ContentDetailClient({
         </Link>
       </div>
 
-      <div className="relative flex flex-col items-start gap-6 lg:flex-row">
+      <div ref={containerRef} className="relative flex flex-col gap-6 lg:flex-row">
         {/* --- LEFT COLUMN: MEDIA & CODE --- */}
         <div className="relative w-full lg:w-[65%]">
           <div
@@ -416,7 +470,7 @@ export default function ContentDetailClient({
                     src={mainImage}
                     alt={`${content.title} - Main Preview`}
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="object-cover transition-transform duration-700"
                     priority
                   />
                 </div>
@@ -470,7 +524,7 @@ export default function ContentDetailClient({
                         src={src}
                         alt={`${content.title} - Preview ${index + 2}`}
                         fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="object-cover transition-transform duration-700"
                       />
                     </div>
                     <div className="absolute right-4 bottom-4 z-20">
@@ -570,8 +624,12 @@ export default function ContentDetailClient({
         </div>
 
         {/* --- RIGHT COLUMN: INFO --- */}
-        <div className="sticky top-8 h-fit w-full pt-2 lg:w-[35%]">
-          <div className="flex flex-col gap-8">
+        <div className="relative w-full lg:w-[35%]">
+          <motion.div
+            ref={sidebarRef}
+            style={{ y, willChange: 'transform' }} // Hint browser optimization
+            className={`flex w-full flex-col gap-8 lg:max-h-[calc(100vh-120px)] lg:w-[calc(1280px*0.35-3rem)] lg:overflow-y-auto`}
+          >
             <div className="space-y-4">
               <div className="mb-2 flex items-center gap-2">
                 <span className="flex items-center justify-center rounded bg-neutral-200 px-2 py-0.5 text-center text-[14px] font-bold tracking-wider text-neutral-600 uppercase">
@@ -768,7 +826,7 @@ export default function ContentDetailClient({
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 
@@ -810,7 +868,7 @@ export default function ContentDetailClient({
                 {/* Mobile: Horizontal Scroll Carousel */}
                 <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:hidden">
                   {popularContent.map((item) => (
-                    <div key={item.id} className="w-[280px] flex-shrink-0 snap-start">
+                    <div key={item.id} className="s<nap-start w-[280px] flex-shrink-0">
                       <CardItem type="" item={item} isPopular />
                     </div>
                   ))}
@@ -994,7 +1052,7 @@ function CardItem({
             src={safeImg}
             alt={item.title}
             fill
-            className="object-cover transition duration-700 group-hover:scale-105"
+            className="object-cover transition duration-700"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center gap-2 bg-neutral-50 text-sm text-neutral-400">

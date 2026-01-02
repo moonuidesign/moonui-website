@@ -168,7 +168,7 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
       const validFiles = newFiles.filter((file) => file.size <= 10 * 1024 * 1024); // Max 10MB
 
       if (validFiles.length !== newFiles.length) {
-        toast.warning('Beberapa file dilewati karena lebih dari 10MB');
+        toast.warning('Some files skipped because they exceed 10MB');
       }
 
       const mergedFiles = [...selectedFiles, ...validFiles];
@@ -393,7 +393,7 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
 
         if (payloadSize > 4.5 * 1024 * 1024) {
           toast.error(
-            `ERROR: Payload terlalu besar (${sizeInMB} MB). Batas Vercel ~4.5MB. Kurangi konten deskripsi.`,
+            `ERROR: Payload too large (${sizeInMB} MB). Vercel limit ~4.5MB. Reduce description content.`,
           );
           return;
         }
@@ -781,11 +781,11 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
                             const file = e.target.files?.[0];
                             if (file) {
                               if (file.size > 100 * 1024 * 1024) {
-                                toast.error('File maksimal 100MB');
+                                toast.error('Max file size is 100MB');
                                 return;
                               }
                               field.onChange(file);
-                              toast.success(`File ${file.name} siap diupload`);
+                              toast.success(`File ${file.name} is ready for upload`);
                             }
                           }}
                           className="hidden"

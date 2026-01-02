@@ -5,6 +5,7 @@ import { db } from '@/libs/drizzle';
 import { contentTemplates } from '@/db/migration';
 import { auth } from '@/libs/auth';
 import { AssetItem, ContentTemplateSchema } from './validator';
+import { asc } from 'drizzle-orm';
 
 // Definisikan tipe return yang spesifik (Strict)
 type ActionResponse = { success: string } | { error: string };
@@ -15,7 +16,7 @@ export async function createContentTemplate(formData: FormData): Promise<ActionR
   const session = await auth();
   if (!session?.user?.id) {
     console.error('[CreateTemplate] Unauthorized');
-    return { error: 'Unauthorized: Harap login.' };
+    return { error: 'Unauthorized: Please login.' };
   }
   const userId = session.user.id;
   console.log('[CreateTemplate] UserId:', userId);
@@ -24,7 +25,7 @@ export async function createContentTemplate(formData: FormData): Promise<ActionR
   const rawData = formData.get('data');
   if (!rawData || typeof rawData !== 'string') {
     console.error('[CreateTemplate] Invalid Data');
-    return { error: 'Data form rusak atau tidak valid.' };
+    return { error: 'Form data corrupt or invalid.' };
   }
 
   // 3. Validasi Zod
@@ -34,7 +35,7 @@ export async function createContentTemplate(formData: FormData): Promise<ActionR
     console.log('[CreateTemplate] Parsed JSON:', parsedJson);
   } catch (e) {
     console.error('[CreateTemplate] JSON Parse Error:', e);
-    return { error: 'Format JSON tidak valid.' };
+    return { error: 'Invalid JSON format.' };
   }
 
   // Inject 'newImages' from formData for validation
@@ -52,7 +53,7 @@ export async function createContentTemplate(formData: FormData): Promise<ActionR
   if (!validated.success) {
     console.error('[CreateTemplate] Validation Error:', validated.error.flatten());
     const errorDetails = validated.error.issues.map((i) => i.message).join('\n');
-    return { error: errorDetails || 'Input tidak valid. Periksa kembali form anda.' };
+    return { error: errorDetails || 'Invalid input. Please check your form.' };
   }
 
   const values = validated.data;
@@ -78,6 +79,21 @@ export async function createContentTemplate(formData: FormData): Promise<ActionR
 
   // 6. Insert ke Database
   try {
+    // Gap-Filling Number Logic
+    const existingNumbers = await db
+      .select({ number: contentTemplates.number })
+      .from(contentTemplates)
+      .orderBy(asc(contentTemplates.number));
+
+    let nextNumber = 1;
+    for (const item of existingNumbers) {
+      if (item.number === nextNumber) {
+        nextNumber++;
+      } else {
+        break;
+      }
+    }
+
     const insertData = {
       id: crypto.randomUUID(),
       title: values.title,
@@ -98,7 +114,9 @@ export async function createContentTemplate(formData: FormData): Promise<ActionR
       updatedAt: new Date(),
       copyCount: 0,
       downloadCount: 0,
+
       imagesUrl: finalAssets, // Simpan juga di kolom imagesUrl jika schema DB mendukung
+      number: nextNumber,
     };
     console.log('[CreateTemplate] Inserting DB:', insertData);
 
@@ -106,9 +124,9 @@ export async function createContentTemplate(formData: FormData): Promise<ActionR
 
     console.log('[CreateTemplate] DB Insert Success');
     revalidatePath('/dashboard/templates');
-    return { success: 'Template berhasil dibuat!' };
+    return { success: 'Template created successfully!' };
   } catch (error) {
     console.error('[CreateTemplate] DB Insert Error:', error);
-    return { error: 'Gagal menyimpan data ke database.' };
+    return { error: 'Failed to save data to database.' };
   }
 }

@@ -242,7 +242,7 @@ export default function ComponentForm({
           textContent = await (await item.getType('text/plain')).text();
       }
 
-      if (!htmlContent && !textContent) return toast.warn('Clipboard kosong');
+      if (!htmlContent && !textContent) return toast.warn('Clipboard is empty');
 
       const source = validateClipboardSource(htmlContent);
 
@@ -272,35 +272,34 @@ export default function ComponentForm({
           shouldValidate: true,
         });
       } else {
-        toast.error('⛔ Format Ditolak! Hanya menerima Figma/Framer.', {
+        toast.error('⛔ Format Rejected! Only Figma/Framer accepted.', {
           autoClose: 4000,
         });
       }
     } catch (e) {
-      toast.error('Gagal membaca clipboard. Izinkan akses di browser.');
+      toast.error('Failed to read clipboard. Allow access in browser.');
     }
   };
 
   const clearVisualData = () => {
     form.setValue('copyComponentTextHTML', '', { shouldValidate: true });
     form.setValue('copyComponentTextPlain', '', { shouldValidate: true });
-    toast.info('Visual Reference dibersihkan.');
+    toast.info('Visual Reference cleared.');
   };
 
   const copyPreviewToRaw = () => {
     const val = form.getValues('copyComponentTextHTML');
     if (val) {
       form.setValue('rawHtmlInput', val, { shouldValidate: true });
-      toast.success('Disalin ke Source Engine.');
+      toast.success('Copied to Source Engine.');
     }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) return toast.error('Format harus gambar');
-      if (file.size > 5 * 1024 * 1024) return toast.error('Max 5MB');
-      if (file.size > 5 * 1024 * 1024) return toast.error('Max 5MB');
+      if (!file.type.startsWith('image/')) return toast.error('Format must be an image');
+      if (file.size > 100 * 1024 * 1024) return toast.error('Max 100MB');
       setSelectedFile(file);
       form.setValue('previewImage', file, { shouldValidate: true });
       const reader = new FileReader();
@@ -354,7 +353,7 @@ export default function ComponentForm({
 
   const onSubmit = (values: ContentComponentFormValues) => {
     if (!values.rawHtmlInput?.trim() && !isEditMode) {
-      if (!confirm('⚠️ Source Engine (HTML) kosong. AI tidak akan berjalan. Lanjutkan?')) return;
+      if (!confirm('⚠️ Source Engine (HTML) is empty. AI will not run. Continue?')) return;
     }
 
     setIsUploading(true);
@@ -392,7 +391,7 @@ export default function ComponentForm({
             : await createContentComponent(payload, undefined);
 
           if (!res?.success) {
-            throw new Error(res?.error || 'Gagal menyimpan data.');
+            throw new Error(res?.error || 'Failed to save data.');
           }
           return res.message;
         };
@@ -421,7 +420,7 @@ export default function ComponentForm({
         }
       } catch (error: any) {
         console.error('Submit Error:', error);
-        toast.error(error.message || 'Gagal menyimpan komponen.');
+        toast.error(error.message || 'Failed to save component.');
       } finally {
         setIsUploading(false);
       }

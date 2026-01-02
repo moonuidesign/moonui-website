@@ -256,7 +256,7 @@ const PricingCard = ({
               : 'bg-zinc-900 text-white hover:bg-[#ff4f00]'
           }`}
         >
-          <Image width={24} height={24} src="/ic-diamond-small.svg" alt="" />
+          {index !== 0 && <Image width={24} height={24} src="/ic-diamond-small.svg" alt="" />}
           {plan.buttonText}
         </button>
       </div>
@@ -345,7 +345,7 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
       </div>
 
       {/* BANNER BAWAH */}
-      <div className="w-full max-w-7xl">
+      <div className="w-full max-w-6xl">
         <div className="flex w-full flex-col items-center justify-between gap-6 rounded-[30px] border border-zinc-100 bg-white p-6 shadow-lg md:flex-row md:p-6">
           <div className="flex flex-col items-center gap-6 text-center md:flex-row md:text-left">
             <div className="flex h-16 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-gray-200 to-stone-300">

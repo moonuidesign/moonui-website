@@ -1,6 +1,6 @@
 export const ComponentBadge = () => (
   // Menggunakan shadow dan border yang lebih halus agar cocok di background putih/abu
-  <div className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-gray-200 bg-[#FD4F12] py-1 pr-2.5 pl-1.5 shadow-sm md:h-8">
+  <div className="inline-flex h-7 items-center gap-1.5 rounded-lg bg-[#FD4F12] py-1 pr-2.5 pl-1.5 shadow-sm md:h-8">
     <div className="relative flex h-4 w-4 items-center justify-center">
       <svg
         xmlns="http://www.w3.org/2000/svg"

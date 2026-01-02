@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { motion, LayoutGroup, AnimatePresence } from 'framer-motion';
 import { Copy, Plus, Share, ChevronLeft, ChevronRight, Layers } from 'lucide-react';
 import Image from 'next/image';
+import { ArrowRight2 } from 'iconsax-reactjs';
 
 // --- Types ---
 export interface SubTabItem {
@@ -118,7 +119,7 @@ const DesktopNavButton = ({
 // --- Sub-Component: Mock Browser Window ---
 const MockBrowserWindow = ({ imageSrc }: { imageSrc: string }) => {
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-xl bg-white">
+    <div className="relative h-full w-full overflow-hidden rounded-3xl bg-white">
       <AnimatePresence mode="wait">
         <motion.div
           key={imageSrc}
@@ -281,9 +282,9 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
               transition={{ duration: 0.3 }}
               className="relative w-full"
             >
-              <div className="mt-10 min-h-[620px] overflow-hidden rounded-xl bg-[#E8E8E8] shadow-[inset_0px_0px_0px_1px_rgba(211,211,211,1.00)] md:min-h-[620px] md:rounded-xl md:border-[#D3D3D3]">
+              <div className="mt-10 min-h-[620px] overflow-hidden rounded-xl bg-[#E8E8E8] shadow-[inset_0px_0px_0px_1px_rgba(211,211,211,1.00)] md:min-h-[620px] md:rounded-4xl md:border-[#D3D3D3]">
                 {/* Browser Header */}
-                <div className="relative z-20 flex h-10 items-center gap-4 border-b border-[#D3D3D3] px-4 md:h-12">
+                <div className="relative z-20 flex h-10 items-center gap-4 border-b border-[#D3D3D3] px-4 md:h-12 md:px-8">
                   <div className="flex gap-1.5">
                     <div className="h-2.5 w-2.5 rounded-full border border-black/5 bg-[#FF5F57]" />
                     <div className="h-2.5 w-2.5 rounded-full border border-black/5 bg-[#FEBC2E]" />
@@ -559,12 +560,16 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
                     </p>
                     <button
                       onClick={onCtaClick}
-                      className="group flex cursor-pointer items-center gap-2 rounded-full bg-[#1A1A1A] py-2.5 pr-4 pl-5 text-sm font-medium text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-black hover:shadow-xl"
+                      className="group flex cursor-pointer items-center gap-2 rounded-full bg-[#2E2E2E] py-2.5 pr-4 pl-5 text-sm font-medium text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-all hover:-translate-y-0.5 hover:bg-black hover:shadow-xl"
                     >
                       {activeTab.ctaButtonText || ctaButtonText}
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px] transition-transform group-hover:translate-x-0.5">
-                        ›
-                      </span>
+                      <div className="relative flex h-full w-5 items-center justify-center">
+                        <div className="absolute top-0 top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 transform flex-col items-center justify-center overflow-hidden text-white">
+                          <div className="relative flex flex-1 items-center justify-center transition-transform group-hover:translate-x-1">
+                            <ArrowRight2 size={18} />
+                          </div>
+                        </div>
+                      </div>
                     </button>
                   </div>
                 </div>

@@ -27,7 +27,7 @@ export const contentComponents = pgTable('content_components', {
     angular: string;
     html: string;
   }>(),
-  number: serial('number').notNull(),
+  number: serial('number').notNull().unique(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),

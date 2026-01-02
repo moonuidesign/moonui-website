@@ -304,7 +304,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
             mainFileUrl = await uploadFileToR2(values.sourceFile, 'designs/source');
           } catch (err) {
             console.error(err);
-            toast.error('Gagal upload source file. Cek koneksi atau coba lagi.');
+            toast.error('Failed to upload source file. Check connection or try again.');
             return;
           }
         } else if (typeof values.sourceFile === 'string' && design?.size) {
@@ -358,7 +358,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
         console.log(`Payload Size: ${(totalPayloadSize / 1024 / 1024).toFixed(2)} MB`);
         if (descriptionSize > 4 * 1024 * 1024) {
           toast.warning(
-            'Deskripsi terlalu panjang/besar (banyak gambar?). Mohon kurangi agar tidak error.',
+            'Description too long/large (many images?). Please reduce to avoid errors.',
           );
         }
 
@@ -396,7 +396,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
         }
       } catch (error: unknown) {
         console.error('Submit Error:', error);
-        const msg = error instanceof Error ? error.message : 'Terjadi kesalahan saat menyimpan.';
+        const msg = error instanceof Error ? error.message : 'An error occurred while saving.';
         toast.error(msg);
       } finally {
         setIsUploading(false);
@@ -719,11 +719,11 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                               const file = e.target.files?.[0];
                               if (file) {
                                 if (file.size > 100 * 1024 * 1024) {
-                                  toast.error('File maksimal 100MB');
+                                  toast.error('Max file size is 100MB');
                                   return;
                                 }
                                 field.onChange(file); // Update form state
-                                toast.success(`File ${file.name} siap diupload`);
+                                toast.success(`File ${file.name} is ready for upload`);
                               }
                             }}
                             className="hidden"

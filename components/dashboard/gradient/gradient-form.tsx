@@ -178,7 +178,7 @@ export default function GradientForm({ categories, gradient }: GradientFormProps
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) return toast.error('Max 5MB');
+      if (file.size > 100 * 1024 * 1024) return toast.error('Max 100MB');
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (ev) => setImagePreview(ev.target?.result as string);
@@ -295,7 +295,7 @@ export default function GradientForm({ categories, gradient }: GradientFormProps
         router.push('/dashboard/content/gradients');
       } catch (error: any) {
         console.error('Submit Error:', error);
-        toast.error(error.message || 'Gagal menyimpan gradient.');
+        toast.error(error.message || 'Failed to save gradient.');
       } finally {
         setIsUploading(false);
       }

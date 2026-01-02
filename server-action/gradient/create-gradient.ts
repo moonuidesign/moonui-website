@@ -5,7 +5,7 @@ import { db } from '@/libs/drizzle';
 import { contentGradients } from '@/db/migration';
 import { auth } from '@/libs/auth';
 
-import { desc } from 'drizzle-orm';
+import { asc } from 'drizzle-orm';
 import { ContentGradientSchema } from './gradient-validator';
 import { cookies } from 'next/headers';
 
@@ -13,7 +13,6 @@ type ActionResponse = { success: string } | { error: string };
 
 export async function createContentGradient(formData: FormData): Promise<ActionResponse> {
   console.log('[CreateGradient] START');
-
   try {
     const c = await cookies();
     const hasToken = c.has('authjs.session-token') || c.has('next-auth.session-token');
@@ -39,7 +38,7 @@ export async function createContentGradient(formData: FormData): Promise<ActionR
   try {
     parsedJson = JSON.parse(rawData);
   } catch (e) {
-    return { error: 'JSON Parse Error' };
+    return { error: 'Invalid JSON Format' };
   }
 
   // 2. Prepare Data for Validation
@@ -71,12 +70,19 @@ export async function createContentGradient(formData: FormData): Promise<ActionR
   const fileSize = values.size || 'Unknown';
   const fileFormat = values.format || imageUrl.split('.').pop()?.toUpperCase() || 'IMG';
 
-  const lastItem = await db
+  const existingNumbers = await db
     .select({ number: contentGradients.number })
     .from(contentGradients)
-    .orderBy(desc(contentGradients.number))
-    .limit(1);
-  const nextNumber = (lastItem[0]?.number ?? 0) + 1;
+    .orderBy(asc(contentGradients.number));
+
+  let nextNumber = 1;
+  for (const item of existingNumbers) {
+    if (item.number === nextNumber) {
+      nextNumber++;
+    } else {
+      break;
+    }
+  }
 
   // 5. Insert DB
   try {
@@ -101,9 +107,9 @@ export async function createContentGradient(formData: FormData): Promise<ActionR
     await db.insert(contentGradients).values(insertData);
 
     revalidatePath('/dashboard/gradients');
-    return { success: 'Gradient berhasil dibuat!' };
+    return { success: 'Gradient created successfully!' };
   } catch (error) {
     console.error('[CreateGradient] DB Insert Failed:', error);
-    return { error: 'Gagal menyimpan ke database.' };
+    return { error: 'Failed to save to database.' };
   }
 }

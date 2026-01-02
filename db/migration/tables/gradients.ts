@@ -1,12 +1,4 @@
-import {
-  pgTable,
-  text,
-  varchar,
-  timestamp,
-  integer,
-  jsonb,
-  serial,
-} from 'drizzle-orm/pg-core';
+import { pgTable, text, varchar, timestamp, integer, jsonb, serial } from 'drizzle-orm/pg-core';
 import { categoryGradients, users } from '@tables';
 
 export const contentGradients = pgTable('content_gradients', {
@@ -17,7 +9,7 @@ export const contentGradients = pgTable('content_gradients', {
   slug: jsonb('slug').notNull(),
   description: jsonb('description'),
   colors: jsonb('colors').notNull(),
-  number: serial('number').notNull(),
+  number: serial('number').notNull().unique(),
   typeGradient: varchar('type_gradient', {
     length: 50,
     enum: ['linear', 'radial', 'conic'],
@@ -35,10 +27,9 @@ export const contentGradients = pgTable('content_gradients', {
   tier: varchar('tier', { length: 50, enum: ['free', 'pro'] })
     .default('free')
     .notNull(),
-  categoryGradientsId: text('category_gradients_id').references(
-    () => categoryGradients.id,
-    { onDelete: 'set null' },
-  ),
+  categoryGradientsId: text('category_gradients_id').references(() => categoryGradients.id, {
+    onDelete: 'set null',
+  }),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow(),
 });

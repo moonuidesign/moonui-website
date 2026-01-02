@@ -7,13 +7,13 @@ import Meteors from '@/components/ui/meteors';
 
 const HeroSection = () => {
   return (
-    <div className=" md:pt-0 mx-auto w-7xl  md:max-w-3xl lg:max-w-7xl relative mb-10 gap-3 md:mt-[48px] px-[24px] md:px-0   container flex flex-col justify-start items-center md:justify-start md:items-center h-fit lg:h-[969px]   ">
-      <div className="absolute hidden md:block h-full w-full -top-[200px] -z-10 left-1/2 -translate-x-1/2 overflow-visible">
+    <div className="relative container mx-auto mb-10 flex h-fit w-7xl flex-col items-center justify-start gap-3 px-[24px] md:mt-[48px] md:max-w-3xl md:items-center md:justify-start md:px-0 md:pt-0 lg:h-[969px] lg:max-w-7xl">
+      <div className="absolute -top-[200px] left-1/2 -z-10 hidden h-full w-full -translate-x-1/2 overflow-visible md:block">
         <Meteors minDuration={2.8} maxDuration={4.8} maxDelay={5.8} minDelay={2.5} number={5} />
       </div>
       <Image
         src="/moonNotFound.png"
-        className="absolute md:top-[40%] lg:top-[21%] z-100 select-none hidden md:block scale-[1.25] pointer-events-none md:w-max-[846px] md:h-max-[839px] lg:w-max-[1318.4px] h-max-[1142px] left-[49%] md:w-[681px] md:h-[648px] lg:w-[1103px] lg:h-[1069px] -translate-x-1/2 -rotate-65"
+        className="md:w-max-[846px] md:h-max-[839px] lg:w-max-[1318.4px] h-max-[1142px] pointer-events-none absolute left-[49%] z-100 hidden -translate-x-1/2 scale-[1.25] -rotate-65 select-none md:top-[40%] md:block md:h-[648px] md:w-[681px] lg:top-[21%] lg:h-[1069px] lg:w-[1103px]"
         alt="Not Found"
         draggable={false}
         style={{
@@ -24,95 +24,89 @@ const HeroSection = () => {
         height={1200}
       />
 
-      <div className="md:px-2 relative bg-[#E7E7E7] z-10  w-full md:max-w-2xl lg:max-w-xl md:py-1.5 rounded-full md:shadow-[0px_0px_0px_1px_rgba(211,211,211,1.00)] flex-col md:w-lg lg:w-[26rem] md:flex-row  inline-flex md:justify-start md:items-center md:gap-3">
+      <div className="relative z-10 inline-flex w-full flex-col rounded-full bg-[#E7E7E7] md:w-lg md:max-w-2xl md:flex-row md:items-center md:justify-start md:gap-3 md:px-2 md:py-1.5 md:shadow-[0px_0px_0px_1px_rgba(211,211,211,1.00)] lg:w-[26rem] lg:max-w-xl">
         <AvatarGroup />
-        <div className="w-[0.01px] hidden md:flex h-4 relative">
-          <div className="w-px h-4 left-0 top-0 absolute bg-[#D3D3D3]"></div>
+        <div className="relative hidden h-4 w-[0.01px] md:flex">
+          <div className="absolute top-0 left-0 h-4 w-px bg-[#D3D3D3]"></div>
         </div>
-        <div className="text-neutral-500 text-sm font-normal font-['Inter'] leading-5">
-          Trusted by <span className="text-[#3D3D3D] font-medium">2,000+ users {" "}</span>
+        <div className="font-['Inter'] text-sm leading-5 font-normal text-neutral-500">
+          Trusted by <span className="font-medium text-[#3D3D3D]">2,000+ users </span>
           for premium design!
         </div>
       </div>
-      <div className="md:pt-5  relative z-10 flex flex-col w-full lg:w-full md:w-full  justify-start items-start md:justify-center md:items-center lg:justify-center lg:items-center text-center lg:max-w-6xl lg:px-4">
-        <div className="text-[#3D3D3D] w-full justify-start items-start md:justify-center md:items-center">
+      <div className="relative z-10 flex w-full flex-col items-start justify-start text-center md:w-full md:items-center md:justify-center md:pt-5 lg:w-full lg:max-w-6xl lg:items-center lg:justify-center lg:px-4">
+        <div className="w-full items-start justify-start text-[#3D3D3D] md:items-center md:justify-center">
           <TextType
-            className="font-semibold md:text-center text-left font-jakarta text-[28px] md:text-[56px] lg:text-[78px] w-full"
-            text={[
-              'Designer & Businesses',
-              'Project & Management',
-              'Design & Development',
-            ]}
+            className="font-jakarta w-full text-left text-[28px] font-semibold md:text-center md:text-[56px] lg:text-[78px]"
+            text={['Designer & Businesses', 'Project & Management', 'Design & Development']}
             typingSpeed={75}
             pauseDuration={1500}
             showCursor={true}
             cursorCharacter="|"
           />
-          <div className=" md:text-center text-left lg:text-center  text-[#3D3D3D] text-[28px] md:text-[56px] lg:text-[72px] font-semibold font-jakarta lg:leading-[88px]">
+          <div className="font-jakarta text-left text-[28px] font-semibold text-[#3D3D3D] md:text-center md:text-[56px] lg:text-center lg:text-[72px] lg:leading-[88px]">
             perfectly to the moon
           </div>
         </div>
       </div>
-      <div className="lg:pt-6 relative z-10 flex flex-col justify-start items-start lg:px-4">
-        <div className="flex flex-col justify-start items-center">
-          <div className="text-left lg:text-center justify-center text-neutral-600 text-base font-normal font-['Inter'] lg:leading-7 lg:max-w-2xl">
+      <div className="relative z-10 flex flex-col items-start justify-start lg:px-4 lg:pt-6">
+        <div className="flex flex-col items-center justify-start">
+          <div className="justify-center text-left font-['Inter'] text-base font-normal text-neutral-600 lg:max-w-2xl lg:text-center lg:leading-7">
             ⁠Flexible assets, consistent UI, quick MVP launch, easy integration
           </div>
         </div>
       </div>
-      <div className="lg:pt-[24px] relative z-10 w-full flex flex-col justify-start items-start lg:justify-center lg:items-center">
-        <div className="inline-flex  w-full justify-start items-center md:justify-center md:items-center gap-1 flex-wrap">
-          <span className="text-neutral-500 text-base font-normal font-['Inter'] leading-6">
+      <div className="relative z-10 flex w-full flex-col items-start justify-start lg:items-center lg:justify-center lg:pt-[24px]">
+        <div className="inline-flex w-full flex-wrap items-center justify-start gap-1 md:items-center md:justify-center">
+          <span className="font-['Inter'] text-base leading-6 font-normal text-neutral-500">
             Built for
           </span>
 
           {/* Figma */}
-          <div className="flex justify-start items-center gap-1 px-1">
+          <div className="flex items-center justify-start gap-1 px-1">
             <Image
               alt="Logo Figma"
               width={100}
               height={100}
               src="/ic-figma.svg"
-              className="w-[20px] h-[20px]"
+              className="h-[20px] w-[20px]"
             />
-            <span className="text-neutral-700 text-base font-medium font-['Inter'] leading-6">
+            <span className="font-['Inter'] text-base leading-6 font-medium text-neutral-700">
               Figma
             </span>
           </div>
 
-          <span className="text-neutral-500 text-base font-normal font-['Inter'] leading-6">
+          <span className="font-['Inter'] text-base leading-6 font-normal text-neutral-500">
             and
           </span>
-          <div className="flex justify-start items-center gap-1 px-1">
+          <div className="flex items-center justify-start gap-1 px-1">
             <Image
               alt="Logo Framer"
               width={100}
               height={100}
               src="/ic-framer.svg"
-              className="w-[20px] h-[20px]"
+              className="h-[20px] w-[20px]"
             />
-            <span className="text-neutral-700 text-base font-medium font-['Inter'] leading-6">
+            <span className="font-['Inter'] text-base leading-6 font-medium text-neutral-700">
               Framer
             </span>
           </div>
         </div>
       </div>
-      <div className="lg:pt-8 flex relative z-10 mt-5 flex-col w-full justify-start md:justify-center md:items-center items-start">
-        <button className="h-11 px-4 bg-zinc-800 rounded-xl shadow-button hover:bg-zinc-700 transition-colors flex justify-center items-center gap-3.5 overflow-hidden cursor-pointer group">
-          <div className="flex justify-start items-center gap-1">
-            <span className="text-white text-sm font-medium font-['Inter'] leading-5">
+      <div className="relative z-10 mt-5 flex w-full flex-col items-start justify-start md:items-center md:justify-center lg:pt-8">
+        <button className="group relative z-[110] flex h-11 cursor-pointer items-center gap-3 rounded-[13px] bg-[#2E2E2E] px-5 text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-colors hover:bg-black">
+          <div className="flex items-center justify-start gap-1">
+            <span className="font-['Inter'] text-sm leading-5 font-medium text-white">
               Get Started
             </span>
-            <span className="text-neutral-600 text-sm font-normal font-['Inter'] leading-5">
-              -
-            </span>
-            <span className="text-neutral-400 text-sm font-normal font-['Inter'] leading-5">
+            <span className="font-['Inter'] text-sm leading-5 font-normal text-neutral-600">-</span>
+            <span className="font-['Inter'] text-sm leading-5 font-normal text-neutral-400">
               It’s free
             </span>
           </div>
-          <div className="w-5 h-full relative flex justify-center items-center">
-            <div className=" text-white left-1/2 transform -translate-x-1/2 top-1/2 -translate-y-1/2 top-0 absolute inline-flex flex-col justify-center items-center overflow-hidden">
-              <div className="flex-1 relative flex justify-center items-center group-hover:translate-x-1 transition-transform">
+          <div className="relative flex h-full w-5 items-center justify-center">
+            <div className="absolute top-0 top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 transform flex-col items-center justify-center overflow-hidden text-white">
+              <div className="relative flex flex-1 items-center justify-center transition-transform group-hover:translate-x-1">
                 <ArrowRight2 size={18} />
               </div>
             </div>
