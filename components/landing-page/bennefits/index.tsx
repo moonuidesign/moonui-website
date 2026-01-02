@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  ArrowRight2,
   Calendar,
   Chart,
   Grid1,
@@ -398,13 +399,19 @@ export default function Bennefits() {
           </AnimatePresence>
         </div>
 
-        <button className="relative bottom-16 z-[110] mt-4 flex h-11 items-center gap-3 rounded-[13px] bg-[#2E2E2E] px-5 text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-colors hover:bg-black">
+        <button className="group relative bottom-16 z-[110] mt-4 flex h-11 items-center gap-3 rounded-[13px] bg-[#2E2E2E] px-5 text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-colors hover:bg-black">
           <div className="flex items-center gap-1.5 text-sm">
             <span className="font-medium">Explore Template</span>
             <span className="opacity-30">-</span>
             <span className="font-medium capitalize opacity-70">{activeConfig?.title}</span>
           </div>
-          <Icons.ArrowRight />
+          <div className="relative flex h-full w-5 items-center justify-center">
+            <div className="absolute top-0 top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 transform flex-col items-center justify-center overflow-hidden text-white">
+              <div className="relative flex flex-1 items-center justify-center transition-transform group-hover:translate-x-1">
+                <ArrowRight2 size={18} />
+              </div>
+            </div>
+          </div>
         </button>
       </div>
       <div className="pointer-events-none absolute bottom-[0px] left-0 z-[10] h-[250px] w-full bg-gradient-to-t from-[#e8e8e8] via-[#e8e8e8] to-transparent lg:-bottom-10 lg:h-[500px]"></div>

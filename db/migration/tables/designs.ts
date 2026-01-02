@@ -1,12 +1,4 @@
-import {
-  text,
-  varchar,
-  timestamp,
-  integer,
-  jsonb,
-  pgTable,
-  serial,
-} from 'drizzle-orm/pg-core';
+import { text, varchar, timestamp, integer, jsonb, pgTable, serial } from 'drizzle-orm/pg-core';
 import { categoryDesigns, users } from '@tables';
 
 export const contentDesigns = pgTable('content_designs', {
@@ -24,17 +16,16 @@ export const contentDesigns = pgTable('content_designs', {
   size: text('size'),
   format: text('format'),
   linkDownload: text('link_download').notNull(),
-  number: serial('number').notNull(),
+  number: serial('number').notNull().unique(),
   statusContent: text('status_content').default('draft').notNull(),
   viewCount: integer('view_count').default(0).notNull(),
   downloadCount: integer('download_count').default(0),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  categoryDesignsId: text('category_designs_id').references(
-    () => categoryDesigns.id,
-    { onDelete: 'set null' },
-  ),
+  categoryDesignsId: text('category_designs_id').references(() => categoryDesigns.id, {
+    onDelete: 'set null',
+  }),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow(),
 });

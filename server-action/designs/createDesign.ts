@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/libs/drizzle';
 import { contentDesigns } from '@/db/migration';
 import { auth } from '@/libs/auth';
+import { asc } from 'drizzle-orm';
 
 import { ContentDesignSchema } from './validator';
 
@@ -14,7 +15,7 @@ export async function createContentDesign(formData: FormData): Promise<ActionRes
   const session = await auth();
   if (!session?.user?.id) {
     console.error('[CreateDesign] Unauthorized: No session or user ID');
-    return { error: 'Unauthorized: Harap login.' };
+    return { error: 'Unauthorized: Please login.' };
   }
   const userId = session.user.id;
   console.log('[CreateDesign] UserId:', userId);
@@ -22,7 +23,7 @@ export async function createContentDesign(formData: FormData): Promise<ActionRes
   const rawData = formData.get('data');
   if (!rawData || typeof rawData !== 'string') {
     console.error('[CreateDesign] Invalid Data: data field missing or not string');
-    return { error: 'Data form rusak atau tidak valid.' };
+    return { error: 'Form data corrupt or invalid.' };
   }
 
   let parsedJson: unknown;
@@ -31,7 +32,7 @@ export async function createContentDesign(formData: FormData): Promise<ActionRes
     console.log('[CreateDesign] Parsed JSON:', parsedJson);
   } catch (e) {
     console.error('[CreateDesign] JSON Parse Error:', e);
-    return { error: 'Format JSON tidak valid.' };
+    return { error: 'Invalid JSON format.' };
   }
 
   // Inject 'newImages' from formData for validation
@@ -51,7 +52,7 @@ export async function createContentDesign(formData: FormData): Promise<ActionRes
   const validated = ContentDesignSchema.safeParse(parsedJson);
   if (!validated.success) {
     console.error('[CreateDesign] Validation Error:', validated.error.flatten());
-    return { error: 'Input tidak valid. Periksa kembali form anda.' };
+    return { error: 'Invalid input. Please check your form.' };
   }
 
   const values = validated.data;
@@ -77,6 +78,21 @@ export async function createContentDesign(formData: FormData): Promise<ActionRes
     (linkDownload ? linkDownload.split('.').pop()?.toUpperCase() || 'FILE' : 'FILE');
 
   try {
+    // Gap-Filling Number Logic
+    const existingNumbers = await db
+      .select({ number: contentDesigns.number })
+      .from(contentDesigns)
+      .orderBy(asc(contentDesigns.number));
+
+    let nextNumber = 1;
+    for (const item of existingNumbers) {
+      if (item.number === nextNumber) {
+        nextNumber++;
+      } else {
+        break;
+      }
+    }
+
     const insertData = {
       id: crypto.randomUUID(),
       userId,
@@ -93,15 +109,17 @@ export async function createContentDesign(formData: FormData): Promise<ActionRes
       statusContent: values.statusContent,
       createdAt: new Date(),
       updatedAt: new Date(),
+      downloadCount: 0,
+      number: nextNumber,
     };
     console.log('[CreateDesign] Inserting DB:', insertData);
     await db.insert(contentDesigns).values(insertData);
 
     console.log('[CreateDesign] DB Insert Success');
     revalidatePath('/dashboard/designs');
-    return { success: 'Design berhasil dibuat!' };
+    return { success: 'Design created successfully!' };
   } catch (error) {
     console.error('[CreateDesign] DB Insert Error:', error);
-    return { error: 'Gagal menyimpan data ke database.' };
+    return { error: 'Failed to save data to database.' };
   }
 }

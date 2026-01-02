@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/libs/auth';
 import { db } from '@/libs/drizzle';
 import { contentComponents } from '@/db/migration';
+import { asc } from 'drizzle-orm';
 import OpenAI from 'openai';
 import { ContentComponentFormValues, ContentComponentSchema } from './component-validator';
 
@@ -65,7 +66,7 @@ function safeParseJSON(text: string, rawInput: string): CodeSnippets {
       html: json.html || rawInput,
     };
   } catch (e) {
-    console.error('[AI Parse Error] Output bukan JSON valid.');
+    console.error('[AI Parse Error] Output is not valid JSON.');
     throw new Error('AI Output Invalid JSON'); // Throw error agar ditangkap wrapper
   }
 }
@@ -225,7 +226,7 @@ export async function createContentComponent(
 
   // 4. DB INSERT
   try {
-    await db.insert(contentComponents).values({
+    const payloadCommon = {
       userId: session.user.id,
       title,
       typeContent: type,
@@ -243,6 +244,28 @@ export async function createContentComponent(
       imageUrl,
       size: fileSize,
       format: fileFormat,
+      downloadCount: 0,
+      copyCount: 0,
+    };
+
+    // Gap-Filling Number Logic
+    const existingNumbers = await db
+      .select({ number: contentComponents.number })
+      .from(contentComponents)
+      .orderBy(asc(contentComponents.number));
+
+    let nextNumber = 1;
+    for (const item of existingNumbers) {
+      if (item.number === nextNumber) {
+        nextNumber++;
+      } else {
+        break;
+      }
+    }
+
+    await db.insert(contentComponents).values({
+      ...payloadCommon,
+      number: nextNumber,
     });
 
     revalidatePath('/dashboard/components');
@@ -250,11 +273,11 @@ export async function createContentComponent(
     return {
       success: true,
       message: codeSnippets.react.includes('AI Generation Failed')
-        ? 'Komponen dibuat (AI Busy/Limit - Code kosong). Silakan edit manual.'
-        : 'Komponen berhasil dibuat & Code Generated!',
+        ? 'Component created (AI Busy/Limit - Code empty). Please edit manually.'
+        : 'Component and Code created successfully!',
     };
   } catch (error) {
     console.error('[DB Error]', error);
-    return { success: false, error: 'Terjadi kesalahan database.' };
+    return { success: false, error: 'Database error occurred.' };
   }
 }
