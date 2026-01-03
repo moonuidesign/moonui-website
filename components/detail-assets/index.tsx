@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   Check,
@@ -204,63 +204,10 @@ export default function ContentDetailClient({
   const [isExpanded, setIsExpanded] = useState(false);
 
   // --- REFS ---
-  const sidebarRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // --- HOOKS ---
   const { visitorId, isLoading: isFpLoading } = useFingerprint();
   const { copy } = UseCopyToClipboard();
-
-  // --- SCROLL LOGIC FOR STICKY SIDEBAR ---
-  const { scrollY } = useScroll();
-  const [measurements, setMeasurements] = useState({ top: 0, cHeight: 0, sHeight: 0 });
-
-  useEffect(() => {
-    const update = () => {
-      if (!containerRef.current || !sidebarRef.current) return;
-
-      const cRect = containerRef.current.getBoundingClientRect();
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-
-      setMeasurements({
-        top: cRect.top + scrollTop,
-        cHeight: containerRef.current.offsetHeight,
-        sHeight: sidebarRef.current.offsetHeight,
-      });
-    };
-
-    update();
-    // Helper to debounce or just run
-    const ro = new ResizeObserver(update);
-    if (containerRef.current) ro.observe(containerRef.current);
-    if (sidebarRef.current) ro.observe(sidebarRef.current);
-    window.addEventListener('resize', update);
-
-    return () => {
-      window.removeEventListener('resize', update);
-      ro.disconnect();
-    };
-  }, [content]);
-
-  const rawY = useTransform(scrollY, (latest) => {
-    if (typeof window === 'undefined') return 0;
-    const { top, cHeight, sHeight } = measurements;
-
-    // Safety
-    if (sHeight >= cHeight) return 0;
-
-    const topOffset = 140;
-    const relative = latest - top + topOffset;
-    const max = cHeight - sHeight;
-
-    return Math.max(0, Math.min(relative, max));
-  });
-
-  const y = useSpring(rawY, {
-    stiffness: 800,
-    damping: 40,
-    mass: 0.2,
-  });
 
   // --- LOGIC ---
   // Lock: content tier is 'pro' and user is 'free'
@@ -427,12 +374,7 @@ export default function ContentDetailClient({
     typeof content.slug === 'string' ? content.slug : content.slug?.current || 'N/A';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="relative mx-auto min-h-screen w-full max-w-[1280px] p-4 font-sans md:p-8"
-    >
+    <div className="relative mx-auto min-h-screen w-full max-w-[1280px] p-4 font-sans md:p-8">
       {/* --- TOP NAVIGATION --- */}
       <div className="mb-8 flex items-center justify-between">
         <Link
@@ -443,7 +385,7 @@ export default function ContentDetailClient({
         </Link>
       </div>
 
-      <div ref={containerRef} className="relative flex flex-col gap-6 lg:flex-row">
+      <div className="relative flex flex-col gap-6 lg:flex-row">
         {/* --- LEFT COLUMN: MEDIA & CODE --- */}
         <div className="relative w-full lg:w-[65%]">
           <div
@@ -625,10 +567,8 @@ export default function ContentDetailClient({
 
         {/* --- RIGHT COLUMN: INFO --- */}
         <div className="relative w-full lg:w-[35%]">
-          <motion.div
-            ref={sidebarRef}
-            style={{ y, willChange: 'transform' }} // Hint browser optimization
-            className={`flex w-full flex-col gap-8 lg:max-h-[calc(100vh-120px)] lg:w-[calc(1280px*0.35-3rem)] lg:overflow-y-auto`}
+          <div
+            className={`sticky top-24 flex w-full flex-col gap-8 self-start lg:max-h-[calc(100vh-120px)] lg:w-[calc(1280px*0.35-3rem)] lg:overflow-y-auto`}
           >
             <div className="space-y-4">
               <div className="mb-2 flex items-center gap-2">
@@ -826,7 +766,7 @@ export default function ContentDetailClient({
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
@@ -930,7 +870,7 @@ export default function ContentDetailClient({
           </div>
         </>
       )}
-    </motion.div>
+    </div>
   );
 }
 

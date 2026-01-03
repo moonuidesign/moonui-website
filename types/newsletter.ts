@@ -1,4 +1,4 @@
-export type BroadcastType = 'general' | 'discount' | 'new_component';
+export type BroadcastType = 'general' | 'discount' | 'asset_release';
 
 export interface GeneralPayload {
   subject: string;
@@ -15,16 +15,27 @@ export interface DiscountPayload {
   ctaLink: string;
 }
 
-export interface NewComponentPayload {
-  subject: string;
-  componentName: string;
-  description: string;
+export interface RelatedAsset {
+  id: string;
+  title: string;
   imageUrl: string;
-  demoUrl: string;
-  badgeText?: string; // e.g. "New Arrival"
+  type: 'components' | 'templates' | 'designs' | 'gradients';
+  tier?: 'free' | 'pro' | 'pro_plus';
 }
 
-export type BroadcastPayload = 
+export interface AssetReleasePayload {
+  subject: string;
+  assetType: 'components' | 'templates' | 'designs' | 'gradients';
+  assetId: string;
+  assetName: string;
+  description: string;
+  imageUrl: string;
+  demoUrl?: string; // Optional, defaults to dynamic route
+  badgeText?: string;
+  relatedAssets?: RelatedAsset[];
+}
+
+export type BroadcastPayload =
   | { type: 'general'; data: GeneralPayload }
   | { type: 'discount'; data: DiscountPayload }
-  | { type: 'new_component'; data: NewComponentPayload };
+  | { type: 'asset_release'; data: AssetReleasePayload };

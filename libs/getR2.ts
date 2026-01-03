@@ -1,7 +1,3 @@
-// Lokasi: src/server-actions/r2/index.ts
-
-'use server';
-
 import { auth } from '@/libs/auth';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -12,30 +8,23 @@ import crypto from 'crypto';
 // =================================================================
 
 // Ambil konfigurasi dari environment variables untuk Cloudflare R2
-const BUCKET_NAME = process.env.R2_BUCKET_NAME!;
-const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID!;
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID!;
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY!;
+const BUCKET_NAME = process.env.BUCKET_NAME!;
+const CLOUDFLARE_ACCOUNT_ID = process.env.ACCOUNT_CLOUDFLARE!;
+const R2_ACCESS_KEY_ID = process.env.ACCESS_KEY_ID!;
+const R2_SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY!;
 // Opsional: Domain publik kustom yang terhubung ke bucket R2 Anda
 const R2_PUBLIC_DOMAIN = process.env.R2_PUBLIC_DOMAIN;
 
 // Validasi bahwa semua variabel lingkungan telah diatur
-if (
-  !BUCKET_NAME ||
-  !CLOUDFLARE_ACCOUNT_ID ||
-  !R2_ACCESS_KEY_ID ||
-  !R2_SECRET_ACCESS_KEY
-) {
-  throw new Error(
-    'Variabel lingkungan Cloudflare R2 tidak dikonfigurasi dengan benar.',
-  );
+if (!BUCKET_NAME || !CLOUDFLARE_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
+  throw new Error('Variabel lingkungan Cloudflare R2 tidak dikonfigurasi dengan benar.');
 }
 
 // Buat URL endpoint untuk R2
 const R2_ENDPOINT = `https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`;
 
 // Inisialisasi S3 Client yang dikonfigurasi untuk R2
-const r2Client = new S3Client({
+export const r2Client = new S3Client({
   region: 'auto', // Cloudflare R2 menggunakan 'auto'
   endpoint: R2_ENDPOINT,
   credentials: {
@@ -171,9 +160,9 @@ export async function uploadFileToR2(file: File, userId: string): Promise<string
       Body: buffer,
       ContentType: file.type,
       Metadata: {
-        userId: userId
-      }
-    })
+        userId: userId,
+      },
+    }),
   );
 
   return R2_PUBLIC_DOMAIN

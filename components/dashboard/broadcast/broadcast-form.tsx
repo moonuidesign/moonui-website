@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { broadcastNewsletter } from '@/server-action/newsletter';
+import { getAssetsItems } from '@/server-action/getAssetsItems';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,14 +15,33 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-import { BroadcastType, BroadcastPayload } from '@/types/newsletter';
+import { BroadcastType, BroadcastPayload, RelatedAsset } from '@/types/newsletter';
+import { Label } from '@/components/ui/label';
+import { Search, X, ChevronsUpDown, Check } from 'lucide-react';
+import Image from 'next/image';
 import {
-  Form,
-  FormControl,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
+// Debounce hook helper
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 export default function BroadcastForm() {
   const [isPending, startTransition] = useTransition();
@@ -43,21 +63,128 @@ export default function BroadcastForm() {
   const [discountValidUntil, setDiscountValidUntil] = useState('');
   const [discountLink, setDiscountLink] = useState('');
 
-  // New Component
-  const [compName, setCompName] = useState('');
-  const [compDesc, setCompDesc] = useState('');
-  const [compImage, setCompImage] = useState('');
-  const [compDemo, setCompDemo] = useState('');
-  const [compBadge, setCompBadge] = useState('New Arrival');
+  // Asset Release
+  const [assetType, setAssetType] = useState<'components' | 'templates' | 'designs' | 'gradients'>(
+    'components',
+  );
+  const [assetSearch, setAssetSearch] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const debouncedSearch = useDebounce(assetSearch, 500);
+
+  // Selected Main Asset values (auto-filled but editable)
+  const [selectedAssetId, setSelectedAssetId] = useState('');
+  const [assetName, setAssetName] = useState('');
+  const [assetDesc, setAssetDesc] = useState('');
+  const [assetImage, setAssetImage] = useState('');
+  const [assetDemo, setAssetDemo] = useState('');
+  const [assetBadge, setAssetBadge] = useState('New Release');
+  console.log(assetImage);
+  // Related Assets
+  const [relatedAssets, setRelatedAssets] = useState<RelatedAsset[]>([]);
+  const [relatedSearch, setRelatedSearch] = useState('');
+  const [relatedResults, setRelatedResults] = useState<any[]>([]);
+  const debouncedRelatedSearch = useDebounce(relatedSearch, 500);
+  const [openRelated, setOpenRelated] = useState(false);
+
+  // Clear related assets when assetType changes
+  useEffect(() => {
+    setRelatedAssets([]);
+    setRelatedSearch('');
+    setRelatedResults([]);
+  }, [assetType]);
+
+  // Search Effect for Main Asset
+  useEffect(() => {
+    if (!debouncedSearch) {
+      setSearchResults([]);
+      return;
+    }
+    const fetchAssets = async () => {
+      setIsSearching(true);
+      const res = await getAssetsItems(
+        {
+          contentType: assetType,
+          searchQuery: debouncedSearch,
+        },
+        { limit: 5 },
+      );
+      setSearchResults(res.items);
+      setIsSearching(false);
+    };
+    fetchAssets();
+  }, [debouncedSearch, assetType]);
+
+  // Search Effect for Related Assets
+  useEffect(() => {
+    if (!debouncedRelatedSearch) {
+      setRelatedResults([]);
+      return;
+    }
+    const fetchRelated = async () => {
+      const res = await getAssetsItems(
+        {
+          // Search across all types or just the current type?
+          // User request implies "relevant cards", usually same category or manually picked.
+          // Let's assume we can search current type for now, or maybe add a type selector for related.
+          // For simplicity, let's search the SAME assetType first.
+          contentType: assetType,
+          searchQuery: debouncedRelatedSearch,
+        },
+        { limit: 5 },
+      );
+      setRelatedResults(res.items);
+    };
+    fetchRelated();
+  }, [debouncedRelatedSearch, assetType]);
+
+  const normalizeImageUrl = (url: any): string => {
+    if (!url) return '';
+    if (typeof url === 'string') return url;
+    if (Array.isArray(url)) {
+      return normalizeImageUrl(url[0]);
+    }
+    if (typeof url === 'object' && 'url' in url) {
+      return url.url;
+    }
+    return '';
+  };
+
+  const selectMainAsset = (item: any) => {
+    setSelectedAssetId(item.id);
+    setAssetName(item.title);
+    setAssetDesc(item.description || item.title + ' - A new premium asset.'); // Fallback description
+    setAssetImage(normalizeImageUrl(item.imageUrl));
+    setAssetDemo(`${process.env.NEXT_PUBLIC_APP_URL}/${assetType}/${item.slug}`);
+    setSubject(`New Release: ${item.title}`);
+    setAssetSearch(''); // Clear search to hide list
+  };
+
+  const addRelatedAsset = (item: any) => {
+    if (relatedAssets.length >= 3) return toast.error('Max 3 related assets');
+    if (relatedAssets.find((a) => a.id === item.id)) return toast.error('Already added');
+
+    setRelatedAssets([
+      ...relatedAssets,
+      {
+        id: item.id,
+        title: item.title,
+        imageUrl: normalizeImageUrl(item.imageUrl),
+        type: assetType, // Currently restricted to same type
+        tier: item.tier,
+      },
+    ]);
+    setRelatedSearch('');
+  };
+
+  const removeRelatedAsset = (id: string) => {
+    setRelatedAssets(relatedAssets.filter((a) => a.id !== id));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !confirm(
-        'Are you sure you want to send this broadcast to ALL active subscribers?',
-      )
-    ) {
+    if (!confirm('Are you sure you want to send this broadcast to ALL active subscribers?')) {
       return;
     }
 
@@ -93,18 +220,21 @@ export default function BroadcastForm() {
         },
       };
     } else {
-      if (!subject || !compName || !compDesc || !compImage || !compDemo) {
+      if (!subject || !assetName || !assetDesc || !assetImage) {
         return toast.error('Fill all required fields');
       }
       payload = {
-        type: 'new_component',
+        type: 'asset_release',
         data: {
           subject,
-          componentName: compName,
-          description: compDesc,
-          imageUrl: compImage,
-          demoUrl: compDemo,
-          badgeText: compBadge,
+          assetType,
+          assetId: selectedAssetId,
+          assetName,
+          description: assetDesc,
+          imageUrl: assetImage,
+          demoUrl: assetDemo,
+          badgeText: assetBadge,
+          relatedAssets,
         },
       };
     }
@@ -121,14 +251,14 @@ export default function BroadcastForm() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-2xl px-6 py-16">
         {/* Header Section */}
         <div className="mb-16">
-          <h1 className="text-5xl font-bold tracking-tight text-foreground mb-4 text-balance">
+          <h1 className="text-foreground mb-4 text-5xl font-bold tracking-tight text-balance">
             Broadcast Newsletter
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed">
+          <p className="text-muted-foreground text-lg leading-relaxed">
             Send updates, offers, or announcements to all your subscribers.
           </p>
         </div>
@@ -137,257 +267,392 @@ export default function BroadcastForm() {
           {/* Section: Configuration */}
           <section className="space-y-8">
             <div className="flex items-center gap-4">
-              <div className="h-px flex-1 bg-border/40" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="bg-border/40 h-px flex-1" />
+              <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                 Configuration
               </h2>
-              <div className="h-px flex-1 bg-border/40" />
+              <div className="bg-border/40 h-px flex-1" />
             </div>
 
             <div className="space-y-8">
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-foreground">
-                  Broadcast Type
-                </FormLabel>
+              <div className="space-y-2">
+                <Label className="text-foreground text-sm font-medium">Broadcast Type</Label>
                 <Select
                   value={type}
                   onValueChange={(v) => setType(v as BroadcastType)}
                   disabled={isPending}
                 >
-                  <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
+                  <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="general">
-                      General Message / Announcement
-                    </SelectItem>
+                    <SelectItem value="general">General Message / Announcement</SelectItem>
                     <SelectItem value="discount">Discount / Offer</SelectItem>
-                    <SelectItem value="new_component">
-                      New Component Release
-                    </SelectItem>
+                    <SelectItem value="asset_release">Asset Release</SelectItem>
                   </SelectContent>
                 </Select>
-              </FormItem>
+              </div>
 
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-foreground">
-                  Email Subject
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="e.g. Special Update for You"
-                    disabled={isPending}
-                    required
-                    className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
-                  />
-                </FormControl>
-              </FormItem>
+              <div className="space-y-2">
+                <Label className="text-foreground text-sm font-medium">Email Subject</Label>
+
+                <Input
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="e.g. Special Update for You"
+                  disabled={isPending}
+                  required
+                  className="bg-muted/30 border-border/60 hover:border-border h-14 text-base transition-colors"
+                />
+              </div>
             </div>
           </section>
 
           {/* Section: Content based on Type */}
           <section className="space-y-8">
             <div className="flex items-center gap-4">
-              <div className="h-px flex-1 bg-border/40" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="bg-border/40 h-px flex-1" />
+              <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                 Content Details
               </h2>
-              <div className="h-px flex-1 bg-border/40" />
+              <div className="bg-border/40 h-px flex-1" />
             </div>
 
             {type === 'general' && (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-foreground">
+              <div className="space-y-2">
+                <Label className="text-foreground text-sm font-medium">
                   Content (HTML supported)
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="<p>Hello world...</p>"
-                    className="min-h-[300px] font-mono bg-muted/30 border-border/60 hover:border-border transition-colors"
-                    disabled={isPending}
-                    required
-                  />
-                </FormControl>
-              </FormItem>
+                </Label>
+
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="<p>Hello world...</p>"
+                  className="bg-muted/30 border-border/60 hover:border-border min-h-[300px] font-mono transition-colors"
+                  disabled={isPending}
+                  required
+                />
+              </div>
             )}
 
             {type === 'discount' && (
               <div className="space-y-8">
                 <div className="grid gap-8 sm:grid-cols-2">
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-foreground">
-                      Offer Title
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        value={discountTitle}
-                        onChange={(e) => setDiscountTitle(e.target.value)}
-                        placeholder="e.g. Black Friday Sale"
-                        disabled={isPending}
-                        className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors"
-                      />
-                    </FormControl>
-                  </FormItem>
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-foreground">
-                      Discount Amount
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        value={discountAmount}
-                        onChange={(e) => setDiscountAmount(e.target.value)}
-                        placeholder="e.g. 50% OFF"
-                        disabled={isPending}
-                        className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors"
-                      />
-                    </FormControl>
-                  </FormItem>
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm font-medium">Offer Title</Label>
+
+                    <Input
+                      value={discountTitle}
+                      onChange={(e) => setDiscountTitle(e.target.value)}
+                      placeholder="e.g. Black Friday Sale"
+                      disabled={isPending}
+                      className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm font-medium">Discount Amount</Label>
+
+                    <Input
+                      value={discountAmount}
+                      onChange={(e) => setDiscountAmount(e.target.value)}
+                      placeholder="e.g. 50% OFF"
+                      disabled={isPending}
+                      className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid gap-8 sm:grid-cols-2">
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-foreground">
-                      Coupon Code
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        value={discountCode}
-                        onChange={(e) => setDiscountCode(e.target.value)}
-                        placeholder="e.g. MOON50"
-                        className="h-14 font-mono uppercase bg-muted/30 border-border/60 hover:border-border transition-colors"
-                        disabled={isPending}
-                      />
-                    </FormControl>
-                  </FormItem>
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-foreground">
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm font-medium">Coupon Code</Label>
+
+                    <Input
+                      value={discountCode}
+                      onChange={(e) => setDiscountCode(e.target.value)}
+                      placeholder="e.g. MOON50"
+                      className="bg-muted/30 border-border/60 hover:border-border h-14 font-mono uppercase transition-colors"
+                      disabled={isPending}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm font-medium">
                       Valid Until (Optional)
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        value={discountValidUntil}
-                        onChange={(e) => setDiscountValidUntil(e.target.value)}
-                        placeholder="e.g. Dec 31, 2025"
-                        disabled={isPending}
-                        className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors"
-                      />
-                    </FormControl>
-                  </FormItem>
+                    </Label>
+
+                    <Input
+                      value={discountValidUntil}
+                      onChange={(e) => setDiscountValidUntil(e.target.value)}
+                      placeholder="e.g. Dec 31, 2025"
+                      disabled={isPending}
+                      className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors"
+                    />
+                  </div>
                 </div>
 
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-foreground">
-                    CTA Link
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      value={discountLink}
-                      onChange={(e) => setDiscountLink(e.target.value)}
-                      placeholder="https://moonui.com/pricing"
-                      disabled={isPending}
-                      className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors"
-                    />
-                  </FormControl>
-                </FormItem>
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm font-medium">CTA Link</Label>
 
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-foreground">
-                    Description
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      value={discountDesc}
-                      onChange={(e) => setDiscountDesc(e.target.value)}
-                      placeholder="Get premium access for half the price..."
-                      disabled={isPending}
-                      className="min-h-[150px] bg-muted/30 border-border/60 hover:border-border transition-colors"
-                    />
-                  </FormControl>
-                </FormItem>
+                  <Input
+                    value={discountLink}
+                    onChange={(e) => setDiscountLink(e.target.value)}
+                    placeholder="https://moonui.com/pricing"
+                    disabled={isPending}
+                    className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm font-medium">Description</Label>
+
+                  <Textarea
+                    value={discountDesc}
+                    onChange={(e) => setDiscountDesc(e.target.value)}
+                    placeholder="Get premium access for half the price..."
+                    disabled={isPending}
+                    className="bg-muted/30 border-border/60 hover:border-border min-h-[150px] transition-colors"
+                  />
+                </div>
               </div>
             )}
 
-            {type === 'new_component' && (
+            {type === 'asset_release' && (
               <div className="space-y-8">
-                <div className="grid gap-8 sm:grid-cols-2">
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-foreground">
-                      Component Name
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        value={compName}
-                        onChange={(e) => setCompName(e.target.value)}
-                        placeholder="e.g. Animated Grid"
-                        disabled={isPending}
-                        className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors"
-                      />
-                    </FormControl>
-                  </FormItem>
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-foreground">
-                      Badge Text
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        value={compBadge}
-                        onChange={(e) => setCompBadge(e.target.value)}
-                        placeholder="New Arrival"
-                        disabled={isPending}
-                        className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors"
-                      />
-                    </FormControl>
-                  </FormItem>
+                {/* Asset Type Selector */}
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm font-medium">Asset Type</Label>
+                  <Select
+                    value={assetType}
+                    onValueChange={(v: any) => setAssetType(v)}
+                    disabled={isPending}
+                  >
+                    <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="components">Components</SelectItem>
+                      <SelectItem value="templates">Templates</SelectItem>
+                      <SelectItem value="designs">Designs</SelectItem>
+                      <SelectItem value="gradients">Gradients</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-foreground">
-                    Description
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      value={compDesc}
-                      onChange={(e) => setCompDesc(e.target.value)}
-                      placeholder="A beautiful grid layout with animations..."
-                      disabled={isPending}
-                      className="min-h-[150px] bg-muted/30 border-border/60 hover:border-border transition-colors"
-                    />
-                  </FormControl>
-                </FormItem>
-
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-foreground">
-                    Image URL (Preview)
-                  </FormLabel>
-                  <FormControl>
+                {/* Main Asset Search */}
+                <div className="relative space-y-2">
+                  <Label className="text-foreground text-sm font-medium">Search Asset</Label>
+                  <div className="relative">
+                    <Search className="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
                     <Input
-                      value={compImage}
-                      onChange={(e) => setCompImage(e.target.value)}
-                      placeholder="https://..."
-                      disabled={isPending}
-                      className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors"
+                      value={assetSearch}
+                      onChange={(e) => setAssetSearch(e.target.value)}
+                      placeholder={`Search ${assetType}...`}
+                      className="bg-muted/30 border-border/60 hover:border-border h-14 pl-12 transition-colors"
                     />
-                  </FormControl>
-                </FormItem>
+                  </div>
 
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-foreground">
-                    Demo/Component URL
-                  </FormLabel>
-                  <FormControl>
+                  {/* Search Results Dropdown */}
+                  {assetSearch && searchResults.length > 0 && (
+                    <div className="bg-background border-border absolute top-full right-0 left-0 z-10 mt-2 max-h-60 overflow-hidden overflow-y-auto rounded-lg border shadow-xl">
+                      {searchResults.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => selectMainAsset(item)}
+                          className="hover:bg-muted flex cursor-pointer items-center gap-3 p-3 transition-colors"
+                        >
+                          <div className="bg-muted relative h-10 w-10 shrink-0 overflow-hidden rounded">
+                            {(item.imageUrl || item.image) && (
+                              <Image
+                                src={normalizeImageUrl(item.imageUrl || item.image)}
+                                alt={item.title}
+                                fill
+                                className="object-cover"
+                              />
+                            )}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium">{item.title}</div>
+                            <div className="text-muted-foreground text-xs capitalize">
+                              {item.tier || 'Free'}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid gap-8 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm font-medium">Asset Name</Label>
                     <Input
-                      value={compDemo}
-                      onChange={(e) => setCompDemo(e.target.value)}
-                      placeholder="https://moonui.com/components/..."
+                      value={assetName}
+                      onChange={(e) => setAssetName(e.target.value)}
                       disabled={isPending}
-                      className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors"
+                      className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors"
                     />
-                  </FormControl>
-                </FormItem>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm font-medium">Badge Text</Label>
+                    <Input
+                      value={assetBadge}
+                      onChange={(e) => setAssetBadge(e.target.value)}
+                      disabled={isPending}
+                      className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm font-medium">Description</Label>
+                  <Textarea
+                    value={assetDesc}
+                    onChange={(e) => setAssetDesc(e.target.value)}
+                    disabled={isPending}
+                    className="bg-muted/30 border-border/60 hover:border-border min-h-[150px] transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm font-medium">Image URL (Preview)</Label>
+                  <Input
+                    value={assetImage}
+                    onChange={(e) => setAssetImage(e.target.value)}
+                    disabled={isPending}
+                    className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors"
+                  />
+                  {assetImage && (
+                    <div className="relative h-48 w-full overflow-hidden rounded-lg border">
+                      <Image src={assetImage} alt="Preview" fill className="object-cover" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm font-medium">Demo/Asset URL</Label>
+                  <Input
+                    value={assetDemo}
+                    onChange={(e) => setAssetDemo(e.target.value)}
+                    disabled={isPending}
+                    className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors"
+                  />
+                </div>
+
+                {/* Related Assets Section */}
+                <div className="border-border/50 border-t pt-8">
+                  <h3 className="mb-4 text-lg font-semibold">Related Assets (Max 3)</h3>
+
+                  {/* Related Search Combobox */}
+                  <div className="mb-6 space-y-2">
+                    <Label className="text-foreground text-sm font-medium">Add Related Asset</Label>
+                    <Popover open={openRelated} onOpenChange={setOpenRelated}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openRelated}
+                          className="bg-muted/30 border-border/60 hover:border-border h-14 w-full justify-between px-3 text-base font-normal transition-colors"
+                          disabled={relatedAssets.length >= 3}
+                        >
+                          <span className="text-muted-foreground w-full text-left">
+                            {relatedAssets.length >= 3 ? 'Max assets added' : 'Search to add...'}
+                          </span>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-[var(--radix-popover-trigger-width)] p-0"
+                        align="start"
+                      >
+                        <Command shouldFilter={false}>
+                          <CommandInput
+                            placeholder={`Search ${assetType}...`}
+                            value={relatedSearch}
+                            onValueChange={setRelatedSearch}
+                          />
+                          <CommandList>
+                            {isSearching && (
+                              <div className="py-6 text-center text-sm">Searching...</div>
+                            )}
+                            {!isSearching && relatedResults.length === 0 && (
+                              <CommandEmpty>No results found.</CommandEmpty>
+                            )}
+                            <CommandGroup>
+                              {relatedResults.map((item) => (
+                                <CommandItem
+                                  key={item.id}
+                                  value={item.id} // or item.title
+                                  onSelect={() => {
+                                    addRelatedAsset(item);
+                                    setOpenRelated(false);
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  <div className="flex w-full items-center gap-3">
+                                    <div className="bg-muted relative h-8 w-8 shrink-0 overflow-hidden rounded">
+                                      {(item.imageUrl || item.image) && (
+                                        <Image
+                                          src={normalizeImageUrl(item.imageUrl || item.image)}
+                                          alt={item.title}
+                                          fill
+                                          className="object-cover"
+                                        />
+                                      )}
+                                    </div>
+                                    <div className="flex-1 truncate">
+                                      <span className="font-medium">{item.title}</span>
+                                      <span className="text-muted-foreground ml-2 text-xs capitalize">
+                                        {item.tier}
+                                      </span>
+                                    </div>
+                                    {relatedAssets.some((a) => a.id === item.id) && (
+                                      <Check className="ml-auto h-4 w-4 opacity-50" />
+                                    )}
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  {/* Selected Related Assets List */}
+                  {relatedAssets.length > 0 && (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      {relatedAssets.map((item) => (
+                        <div
+                          key={item.id}
+                          className="group bg-muted/10 relative rounded-lg border p-3"
+                        >
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+                            onClick={() => removeRelatedAsset(item.id)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                          <div className="bg-muted relative mb-2 aspect-[4/3] overflow-hidden rounded-md">
+                            {item.imageUrl && (
+                              <Image
+                                src={normalizeImageUrl(item.imageUrl)}
+                                alt={item.title}
+                                fill
+                                className="object-cover"
+                              />
+                            )}
+                          </div>
+                          <div className="truncate text-sm font-medium">{item.title}</div>
+                          <div className="text-muted-foreground text-xs capitalize">
+                            {item.tier || 'Free'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </section>
@@ -397,7 +662,7 @@ export default function BroadcastForm() {
               type="submit"
               disabled={isPending}
               size="lg"
-              className="w-full h-14 text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
+              className="bg-primary hover:bg-primary/90 h-14 w-full text-base font-semibold transition-all"
             >
               {isPending ? 'Sending...' : 'Send Broadcast'}
             </Button>
@@ -406,7 +671,7 @@ export default function BroadcastForm() {
               variant="outline"
               onClick={() => router.back()}
               disabled={isPending}
-              className="w-full h-14 mt-4 text-base font-medium border-border/60 hover:bg-muted/50"
+              className="border-border/60 hover:bg-muted/50 mt-4 h-14 w-full text-base font-medium"
             >
               Cancel
             </Button>

@@ -3,7 +3,7 @@
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@/libs/auth';
-import { s3Client } from '@/libs/getR2 copy';
+import { r2Client } from '@/libs/getR2';
 
 // Define allowed types if restricted, or allow generic types for templates
 // For templates, we might allow zip, fig, etc.
@@ -127,10 +127,9 @@ export async function getPresignedUrl({
       Bucket: process.env.BUCKET_NAME,
       Key: key,
       ContentType: fileType,
-      // ACL: 'public-read', // R2 usually doesn't use ACLs the same way, public access is via bucket policy or custom domain
     });
 
-    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // 1 hour
+    const uploadUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 }); // 1 hour
 
     // Construct public URL
     // Try to find the public domain env var or fallback

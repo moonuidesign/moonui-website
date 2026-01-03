@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '150mb',
     },
     scrollRestoration: true,
-    optimizeCss: true,
+    optimizeCss: false,
   },
   images: {
     remotePatterns: [
