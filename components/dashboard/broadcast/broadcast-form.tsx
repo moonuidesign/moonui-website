@@ -77,7 +77,6 @@ export default function BroadcastForm() {
   const [assetName, setAssetName] = useState('');
   const [assetDesc, setAssetDesc] = useState('');
   const [assetImage, setAssetImage] = useState('');
-  const [assetDemo, setAssetDemo] = useState('');
   const [assetBadge, setAssetBadge] = useState('New Release');
   console.log(assetImage);
   // Related Assets
@@ -140,14 +139,30 @@ export default function BroadcastForm() {
 
   const normalizeImageUrl = (url: any): string => {
     if (!url) return '';
-    if (typeof url === 'string') return url;
-    if (Array.isArray(url)) {
-      return normalizeImageUrl(url[0]);
+
+    let urlString = '';
+    if (typeof url === 'string') {
+      urlString = url;
+    } else if (Array.isArray(url) && url.length > 0) {
+      if (typeof url[0] === 'string') urlString = url[0];
+      else if (typeof url[0] === 'object' && url[0]?.url) urlString = url[0].url;
+    } else if (typeof url === 'object' && 'url' in url) {
+      urlString = url.url;
     }
-    if (typeof url === 'object' && 'url' in url) {
-      return url.url;
+
+    if (!urlString) return '';
+
+    // Check if relative path (starts with /) - Next.js Image supports this
+    if (urlString.startsWith('/')) return urlString;
+
+    // Check if valid absolute URL
+    try {
+      new URL(urlString);
+      return urlString;
+    } catch (e) {
+      // Not a valid absolute URL and not a relative path starting with /
+      return '';
     }
-    return '';
   };
 
   const selectMainAsset = (item: any) => {
@@ -155,7 +170,6 @@ export default function BroadcastForm() {
     setAssetName(item.title);
     setAssetDesc(item.description || item.title + ' - A new premium asset.'); // Fallback description
     setAssetImage(normalizeImageUrl(item.imageUrl));
-    setAssetDemo(`${process.env.NEXT_PUBLIC_APP_URL}/${assetType}/${item.slug}`);
     setSubject(`New Release: ${item.title}`);
     setAssetSearch(''); // Clear search to hide list
   };
@@ -232,7 +246,6 @@ export default function BroadcastForm() {
           assetName,
           description: assetDesc,
           imageUrl: assetImage,
-          demoUrl: assetDemo,
           badgeText: assetBadge,
           relatedAssets,
         },
@@ -460,14 +473,12 @@ export default function BroadcastForm() {
                           className="hover:bg-muted flex cursor-pointer items-center gap-3 p-3 transition-colors"
                         >
                           <div className="bg-muted relative h-10 w-10 shrink-0 overflow-hidden rounded">
-                            {(item.imageUrl || item.image) && (
-                              <Image
-                                src={normalizeImageUrl(item.imageUrl || item.image)}
-                                alt={item.title}
-                                fill
-                                className="object-cover"
-                              />
-                            )}
+                            {(() => {
+                              const src = normalizeImageUrl(item.imageUrl || item.image);
+                              return src ? (
+                                <Image src={src} alt={item.title} fill className="object-cover" />
+                              ) : null;
+                            })()}
                           </div>
                           <div>
                             <div className="text-sm font-medium">{item.title}</div>
@@ -520,21 +531,14 @@ export default function BroadcastForm() {
                     disabled={isPending}
                     className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors"
                   />
-                  {assetImage && (
-                    <div className="relative h-48 w-full overflow-hidden rounded-lg border">
-                      <Image src={assetImage} alt="Preview" fill className="object-cover" />
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-foreground text-sm font-medium">Demo/Asset URL</Label>
-                  <Input
-                    value={assetDemo}
-                    onChange={(e) => setAssetDemo(e.target.value)}
-                    disabled={isPending}
-                    className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors"
-                  />
+                  {(() => {
+                    const src = normalizeImageUrl(assetImage);
+                    return src ? (
+                      <div className="relative h-48 w-full overflow-hidden rounded-lg border">
+                        <Image src={src} alt="Preview" fill className="object-cover" />
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
 
                 {/* Related Assets Section */}
@@ -589,14 +593,17 @@ export default function BroadcastForm() {
                                 >
                                   <div className="flex w-full items-center gap-3">
                                     <div className="bg-muted relative h-8 w-8 shrink-0 overflow-hidden rounded">
-                                      {(item.imageUrl || item.image) && (
-                                        <Image
-                                          src={normalizeImageUrl(item.imageUrl || item.image)}
-                                          alt={item.title}
-                                          fill
-                                          className="object-cover"
-                                        />
-                                      )}
+                                      {(() => {
+                                        const src = normalizeImageUrl(item.imageUrl || item.image);
+                                        return src ? (
+                                          <Image
+                                            src={src}
+                                            alt={item.title}
+                                            fill
+                                            className="object-cover"
+                                          />
+                                        ) : null;
+                                      })()}
                                     </div>
                                     <div className="flex-1 truncate">
                                       <span className="font-medium">{item.title}</span>
@@ -635,14 +642,12 @@ export default function BroadcastForm() {
                             <X className="h-3 w-3" />
                           </Button>
                           <div className="bg-muted relative mb-2 aspect-[4/3] overflow-hidden rounded-md">
-                            {item.imageUrl && (
-                              <Image
-                                src={normalizeImageUrl(item.imageUrl)}
-                                alt={item.title}
-                                fill
-                                className="object-cover"
-                              />
-                            )}
+                            {(() => {
+                              const src = normalizeImageUrl(item.imageUrl);
+                              return src ? (
+                                <Image src={src} alt={item.title} fill className="object-cover" />
+                              ) : null;
+                            })()}
                           </div>
                           <div className="truncate text-sm font-medium">{item.title}</div>
                           <div className="text-muted-foreground text-xs capitalize">

@@ -13,10 +13,6 @@ import { z } from 'zod';
 import { BroadcastPayload } from '@/types/newsletter';
 import { newsletterSubscribers } from '@/db/migration/tables/newsletter';
 
-// ... (omitted)
-
-// ... inside broadcastNewsletter
-
 const subscribeSchema = z.object({
   email: z.string().email(),
 });

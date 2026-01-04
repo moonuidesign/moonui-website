@@ -336,6 +336,18 @@ export async function getAssetsItems(filters: FilterParams, pagination: Paginati
         }
       }
 
+      // Prepend R2 Domain if it's a relative path (e.g. 'designs/xyz.png')
+      // and not an absolute URL (http/https).
+      if (
+        validImageUrl &&
+        typeof validImageUrl === 'string' &&
+        !validImageUrl.startsWith('http') &&
+        !validImageUrl.startsWith('/')
+      ) {
+        const r2Domain = process.env.R2_PUBLIC_DOMAIN || 'cdn.moonui.design';
+        validImageUrl = `https://${r2Domain}/${validImageUrl}`;
+      }
+
       const common = {
         id: item.id,
         tier: item.tier,
