@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import CategoryForm from '@/components/dashboard/category/category-form';
 import { CategoryType } from '@/server-action/category/category-validator';
 
@@ -21,9 +21,6 @@ const CategoryCreatePage = ({ categoryType, initialCategories }: CategoryCreateP
 
   return (
     <Card className="mx-auto max-w-2xl">
-      <CardHeader>
-        <CardTitle className="text-2xl capitalize">Create New {categoryType} Category</CardTitle>
-      </CardHeader>
       <CardContent>
         <CategoryForm
           categoryType={categoryType}

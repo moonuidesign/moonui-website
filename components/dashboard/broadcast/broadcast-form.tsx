@@ -531,6 +531,13 @@ export default function BroadcastForm() {
                     disabled={isPending}
                     className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors"
                   />
+                  {assetImage && assetImage.toLowerCase().endsWith('.svg') && (
+                    <div className="mt-1 flex items-center gap-2 text-sm text-amber-600">
+                      <span>
+                        ⚠️ Warning: SVG images often fail to load in Gmail. Please use PNG or JPG.
+                      </span>
+                    </div>
+                  )}
                   {(() => {
                     const src = normalizeImageUrl(assetImage);
                     return src ? (

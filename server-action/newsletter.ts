@@ -91,15 +91,15 @@ export async function broadcastNewsletter(payload: BroadcastPayload) {
     switch (payload.type) {
       case 'general':
         subject = payload.data.subject;
-        htmlContent = generateGeneralEmailHtml(payload.data.content);
+        htmlContent = await generateGeneralEmailHtml(payload.data.content);
         break;
       case 'discount':
         subject = payload.data.subject;
-        htmlContent = generateDiscountEmailHtml(payload.data);
+        htmlContent = await generateDiscountEmailHtml(payload.data);
         break;
       case 'asset_release':
         subject = payload.data.subject;
-        htmlContent = generateAssetReleaseEmailHtml(payload.data);
+        htmlContent = await generateAssetReleaseEmailHtml(payload.data);
         break;
     }
 
