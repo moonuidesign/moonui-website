@@ -105,7 +105,7 @@ function AssetsPageContent() {
     <div className="flex min-h-[85vh] gap-4 lg:gap-8">
       {/* Sidebar Column */}
       <div className="hidden shrink-0 md:block md:w-52 lg:w-64">
-        <div className="sticky top-6 flex-col gap-4 lg:flex lg:gap-8">
+        <div className="sticky top-24 flex flex-col gap-4 self-start lg:gap-8">
           <div className="flex flex-col gap-2 lg:gap-4">
             <h1 className="font-['Plus_Jakarta_Sans'] text-lg font-semibold text-[#3D3D3D] lg:text-[24px]">
               What’s new?

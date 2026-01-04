@@ -18,7 +18,7 @@ import { SQL, eq } from 'drizzle-orm';
 import { db } from '@/libs/drizzle';
 
 // S3 / R2 Imports
-import { s3Client } from '@/libs/getR2 copy';
+import { r2Client } from '@/libs/getR2';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import crypto from 'crypto';
 
@@ -60,13 +60,12 @@ async function uploadImageToS3(imageFile: File): Promise<string> {
   const fileName = `categories/${Date.now()}-${crypto.randomUUID()}.${ext}`;
   const buffer = Buffer.from(await imageFile.arrayBuffer());
 
-  await s3Client.send(
+  await r2Client.send(
     new PutObjectCommand({
       Bucket: process.env.BUCKET_NAME!,
       Key: fileName,
       Body: buffer,
       ContentType: imageFile.type,
-      // ACL: 'public-read', // Uncomment jika bucket tidak public by policy
     }),
   );
 
@@ -120,10 +119,7 @@ export async function createCategory(
 
     // 3. Insert to DB
     const categoryTable = getCategoryTable(categoryType);
-    const newCategory = await db
-      .insert(categoryTable)
-      .values(payload)
-      .returning();
+    const newCategory = await db.insert(categoryTable).values(payload).returning();
 
     revalidatePath(`/dashboard/content/${categoryType}/category`);
 
@@ -248,10 +244,7 @@ export async function getCategoryById(
     const categoryTable = getCategoryTable(categoryType);
 
     // Query langsung berdasarkan ID
-    const result = await db
-      .select()
-      .from(categoryTable)
-      .where(eq(categoryTable.id, id));
+    const result = await db.select().from(categoryTable).where(eq(categoryTable.id, id));
 
     // Cek apakah data ditemukan
     if (result.length === 0) {
@@ -297,8 +290,7 @@ export async function deleteCategory(
     if ((e as any).code === '23503') {
       return {
         success: false,
-        error:
-          'Tidak dapat menghapus kategori ini karena masih digunakan oleh item lain.',
+        error: 'Tidak dapat menghapus kategori ini karena masih digunakan oleh item lain.',
       };
     }
     return {

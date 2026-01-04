@@ -33,10 +33,7 @@ interface PaginationParams {
 }
 
 // --- Main Action ---
-export async function getAssetsItems(
-  filters: FilterParams,
-  pagination: PaginationParams,
-) {
+export async function getAssetsItems(filters: FilterParams, pagination: PaginationParams) {
   const page = pagination.page || 1;
   const limit = pagination.limit || 12;
   const offset = pagination.offset;
@@ -104,9 +101,7 @@ export async function getAssetsItems(
     },
   ];
 
-  const activeSources = contentType
-    ? sources.filter((s) => s.type === contentType)
-    : sources;
+  const activeSources = contentType ? sources.filter((s) => s.type === contentType) : sources;
 
   try {
     const promises = activeSources.map(async (source) => {
@@ -134,9 +129,7 @@ export async function getAssetsItems(
 
       // Gradient Type Check
       if (source.type === 'gradients' && gradientTypes.length > 0) {
-        conditions.push(
-          inArray((source.table as any).typeGradient, gradientTypes),
-        );
+        conditions.push(inArray((source.table as any).typeGradient, gradientTypes));
       }
 
       // Search Query
@@ -197,13 +190,9 @@ export async function getAssetsItems(
         selectedSubIds.forEach((id) => finalIdsToInclude.add(id));
 
         selectedParentIds.forEach((parentId) => {
-          const children = allCategories.filter(
-            (c) => (c as any).parentId === parentId,
-          );
+          const children = allCategories.filter((c) => (c as any).parentId === parentId);
           const childrenIds = children.map((c) => c.id);
-          const hasSelectedChild = childrenIds.some((cid) =>
-            selectedSubIds.includes(cid),
-          );
+          const hasSelectedChild = childrenIds.some((cid) => selectedSubIds.includes(cid));
 
           if (!hasSelectedChild) {
             finalIdsToInclude.add(parentId);
@@ -212,9 +201,7 @@ export async function getAssetsItems(
         });
 
         if (finalIdsToInclude.size > 0) {
-          conditions.push(
-            inArray(source.catIdField as any, Array.from(finalIdsToInclude)),
-          );
+          conditions.push(inArray(source.catIdField as any, Array.from(finalIdsToInclude)));
         } else {
           conditions.push(sql`1 = 0`);
         }
@@ -325,16 +312,46 @@ export async function getAssetsItems(
     const normalizedItems = details.map((item: any) => {
       const type = item._type;
       let validImageUrl = item.imageUrl || item.image || '';
+
+      // Normalize validImageUrl if it's an object with url property
+      if (validImageUrl && typeof validImageUrl === 'object' && 'url' in validImageUrl) {
+        validImageUrl = validImageUrl.url;
+      }
+
       if (!validImageUrl && item.imagesUrl) {
-        validImageUrl = Array.isArray(item.imagesUrl)
-          ? item.imagesUrl[0]
-          : item.imagesUrl;
+        // Handle imagesUrl which could be string[], string, or object with url
+        const imgs = item.imagesUrl;
+        if (Array.isArray(imgs)) {
+          // If array, take first string or first object's url
+          const first = imgs[0];
+          if (typeof first === 'object' && first !== null && 'url' in first) {
+            validImageUrl = first.url;
+          } else {
+            validImageUrl = first;
+          }
+        } else if (typeof imgs === 'object' && imgs !== null && 'url' in imgs) {
+          validImageUrl = imgs.url;
+        } else {
+          validImageUrl = imgs;
+        }
+      }
+
+      // Prepend R2 Domain if it's a relative path (e.g. 'designs/xyz.png')
+      // and not an absolute URL (http/https).
+      if (
+        validImageUrl &&
+        typeof validImageUrl === 'string' &&
+        !validImageUrl.startsWith('http') &&
+        !validImageUrl.startsWith('/')
+      ) {
+        const r2Domain = process.env.R2_PUBLIC_DOMAIN || 'cdn.moonui.design';
+        validImageUrl = `https://${r2Domain}/${validImageUrl}`;
       }
 
       const common = {
         id: item.id,
         tier: item.tier,
-        slug: typeof item.slug === 'string' ? item.slug : item.slug?.current,
+        slug: (typeof item.slug === 'string' ? item.slug : item.slug?.current) || item.id,
         createdAt: item.createdAt,
         author: item.user?.name || 'MoonUI Team',
         categorySlug: item.category?.name || 'Uncategorized',
@@ -353,8 +370,7 @@ export async function getAssetsItems(
         },
         templates: {
           title: item.title,
-          imageUrl: validImageUrl,
-
+          imageUrl: Array.isArray(validImageUrl) ? validImageUrl[0] : validImageUrl,
           downloadUrl: item.linkDonwload,
           size: item.size,
           format: item.format,
@@ -371,7 +387,7 @@ export async function getAssetsItems(
         },
         designs: {
           title: item.title,
-          imageUrl: validImageUrl,
+          imageUrl: Array.isArray(validImageUrl) ? validImageUrl[0] : validImageUrl,
           downloadUrl: item.linkDownload,
           size: item.size,
           format: item.format,
@@ -387,9 +403,7 @@ export async function getAssetsItems(
         const countB = Number(b.count) || 0;
         if (countA !== countB) return countB - countA;
       }
-      return (
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
     return { items: finalSorted, totalCount };

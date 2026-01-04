@@ -6,7 +6,7 @@ import {
   sendBroadcastEmail,
   generateGeneralEmailHtml,
   generateDiscountEmailHtml,
-  generateNewComponentEmailHtml,
+  generateAssetReleaseEmailHtml,
 } from '@/libs/mail';
 import { eq, desc } from 'drizzle-orm';
 import { z } from 'zod';
@@ -97,9 +97,9 @@ export async function broadcastNewsletter(payload: BroadcastPayload) {
         subject = payload.data.subject;
         htmlContent = generateDiscountEmailHtml(payload.data);
         break;
-      case 'new_component':
+      case 'asset_release':
         subject = payload.data.subject;
-        htmlContent = generateNewComponentEmailHtml(payload.data);
+        htmlContent = generateAssetReleaseEmailHtml(payload.data);
         break;
     }
 
