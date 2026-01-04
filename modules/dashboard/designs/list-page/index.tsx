@@ -144,7 +144,7 @@ export default async function ListDesign({ searchParams }: { searchParams: Searc
             Manage your design assets, figma files, and templates here.
           </p>
         </div>
-        <Link href="/dashboard/content/design/create">
+        <Link href="/dashboard/content/designs/create">
           <Button size="lg" className="shadow-sm">
             <Plus className="mr-2 h-4 w-4" />
             Create New Design

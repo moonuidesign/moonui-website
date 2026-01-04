@@ -53,11 +53,6 @@ const CategoryEditPage = ({
 
   return (
     <Card className="mx-auto max-w-2xl">
-      <CardHeader>
-        <CardTitle className="text-2xl capitalize">
-          Edit {categoryType} Category: {initialData.name}
-        </CardTitle>
-      </CardHeader>
       <CardContent>
         <CategoryForm
           categoryType={categoryType}

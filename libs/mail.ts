@@ -1,24 +1,14 @@
 import { Resend } from 'resend';
+import { render } from '@react-email/components';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { r2Client as s3Client } from './getR2';
-import {
-  generateOTPEmailHtml,
-  generateFooterHtml,
-  generateGeneralEmailHtml,
-  generateDiscountEmailHtml,
-  generateAssetReleaseEmailHtml,
-  BG_COLOR,
-  APP_URL,
-} from './email-templates';
 
-// Re-export for compatibility with other server actions
-export {
-  generateOTPEmailHtml,
-  generateFooterHtml,
-  generateGeneralEmailHtml,
-  generateDiscountEmailHtml,
-  generateAssetReleaseEmailHtml,
-};
+// Import React Email templates
+import { OTPEmail } from '@/emails/templates/otp-email';
+import { GeneralEmail } from '@/emails/templates/general-email';
+import { DiscountEmail } from '@/emails/templates/discount-email';
+import { AssetReleaseEmail } from '@/emails/templates/asset-release-email';
+import { EmailFooter } from '@/emails/components/email-footer';
 
 interface ResendError extends Error {
   statusCode?: number;
@@ -49,12 +39,62 @@ const EMAIL_DOMAIN = process.env.EMAIL_DOMAIN || 'fajarfe.me';
 const FROM_NAME = process.env.EMAIL_FROM_NAME || 'MoonUI';
 const FROM_EMAIL = process.env.EMAIL_FROM_ADDRESS || `noreply@${EMAIL_DOMAIN}`;
 const SENDER = `${FROM_NAME} <${FROM_EMAIL}>`;
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://moonui.design';
+const BG_COLOR = '#f6f6f6';
+
+// --- HELPER FUNCTIONS FOR BACKWARD COMPATIBILITY ---
+
+export async function generateOTPEmailHtml(
+  title: string,
+  otp: string,
+  buttonText: string,
+  buttonUrl: string = '#',
+) {
+  return await render(OTPEmail({ title, otp, buttonText, buttonUrl }));
+}
+
+export async function generateFooterHtml() {
+  return await render(EmailFooter());
+}
+
+export async function generateGeneralEmailHtml(content: string) {
+  return await render(GeneralEmail({ content }));
+}
+
+export async function generateDiscountEmailHtml(data: {
+  title: string;
+  discountAmount: string;
+  description: string;
+  code: string;
+  ctaLink: string;
+}) {
+  return await render(DiscountEmail(data));
+}
+
+export async function generateAssetReleaseEmailHtml(data: {
+  assetName: string;
+  assetId: string;
+  assetType: string;
+  imageUrl: string;
+  description: string;
+  badgeText?: string;
+  relatedAssets?: Array<{
+    id: string;
+    title: string;
+    imageUrl: string;
+    tier?: string;
+    type?: string;
+    author?: string;
+  }>;
+}) {
+  return await render(AssetReleaseEmail(data));
+}
 
 // --- EMAIL SENDING FUNCTIONS ---
 
 export async function sendVerificationEmail(email: string, otp: string) {
   try {
-    const html = generateOTPEmailHtml('MoonUI Verification', otp, 'Verify Email');
+    const html = await generateOTPEmailHtml('MoonUI Verification', otp, 'Verify Email');
 
     const data = await resend.emails.send({
       from: SENDER,
@@ -77,7 +117,12 @@ export async function sendVerificationEmail(email: string, otp: string) {
 export async function sendPasswordResetEmail(email: string, otp: string, resetUrl?: string) {
   try {
     const fullResetUrl = resetUrl ? `${APP_URL}${resetUrl}` : '#';
-    const html = generateOTPEmailHtml('MoonUI Password Reset', otp, 'Reset Password', fullResetUrl);
+    const html = await generateOTPEmailHtml(
+      'MoonUI Password Reset',
+      otp,
+      'Reset Password',
+      fullResetUrl,
+    );
 
     const data = await resend.emails.send({
       from: SENDER,
@@ -175,6 +220,7 @@ export async function sendContactForm(formData: {
 
 export async function sendNewsletterWelcomeEmail(email: string) {
   try {
+    const footerHtml = await generateFooterHtml();
     const data = await resend.emails.send({
       from: SENDER,
       to: email,
@@ -184,7 +230,7 @@ export async function sendNewsletterWelcomeEmail(email: string) {
         <div style="background-color: white; border-radius: 8px; padding: 20px;">
           <h2 style="color: #111827; text-align: center;">Welcome Aboard!</h2>
           <p style="text-align: center;">Thank you for subscribing to MoonUI Newsletter.</p>
-          ${generateFooterHtml()}
+          ${footerHtml}
         </div>
       </div>
     `,
@@ -221,6 +267,7 @@ export async function sendBroadcastEmail(
 
 export async function sendExpirationNoticeEmail(email: string, daysLeft: number) {
   try {
+    const footerHtml = await generateFooterHtml();
     const data = await resend.emails.send({
       from: SENDER,
       to: email,
@@ -233,7 +280,7 @@ export async function sendExpirationNoticeEmail(email: string, daysLeft: number)
           <div style="text-align: center; margin-top: 20px;">
              <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings" style="background-color: #111827; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Renew License</a>
           </div>
-          ${generateFooterHtml()}
+          ${footerHtml}
         </div>
       </div>
     `,
@@ -246,7 +293,12 @@ export async function sendExpirationNoticeEmail(email: string, daysLeft: number)
 
 export async function sendInviteEmail(email: string, otp: string, inviteUrl: string, role: string) {
   try {
-    const html = generateOTPEmailHtml(`Invited as ${role}`, otp, 'Accept Invitation', inviteUrl);
+    const html = await generateOTPEmailHtml(
+      `Invited as ${role}`,
+      otp,
+      'Accept Invitation',
+      inviteUrl,
+    );
     const data = await resend.emails.send({
       from: SENDER,
       to: email,
