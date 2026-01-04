@@ -8,6 +8,7 @@ interface EmailAssetCardProps {
   url?: string;
   type?: string;
   author?: string;
+  createdAt?: Date | string | null;
 }
 
 export const EmailAssetCard = ({
@@ -18,20 +19,35 @@ export const EmailAssetCard = ({
   url = '#',
   type = 'components',
   author,
+  createdAt,
 }: EmailAssetCardProps) => {
   const isTemplate = type === 'templates';
-  // Templates: taller (360/480 = 0.75), Others: wider (360/260 = 1.38)
-  const imageHeight = isTemplate ? 200 : 120;
+
+  // Match ResourceCard: templates use fixed height 420px, others use aspect ratio 360/260
+  // For email, we calculate: 360/260 = 1.384... so height = width * 260/360 = 72.22%
+  // Using paddingBottom trick for aspect ratio in email won't work well, so we use fixed heights
+  // Non-templates: aspect 360/260 means for a ~340px card width, height ~= 245px
+  // Templates: fixed 420px height
+  const imageHeight = isTemplate ? 420 : 245;
   const objectPosition = isTemplate ? 'top' : 'center';
 
   const tierLabel = tier === 'pro_plus' ? 'Pro Plus' : tier === 'pro' ? 'Pro' : 'Free';
   const showDiamond = tier !== 'free';
 
+  // Calculate isNew - items created within last 30 days
+  const isNew = createdAt
+    ? (new Date().getTime() - new Date(createdAt).getTime()) / (1000 * 3600 * 24) < 30
+    : false;
+
+  // Use badge prop if provided, otherwise check isNew
+  const showBadge = badge || isNew;
+  const badgeLabel = badge || (isNew ? 'New' : '');
+
   return (
     <Section style={cardStyle}>
-      {/* Image Container */}
-      <Link href={url} style={{ textDecoration: 'none' }}>
-        <div style={imageContainerStyle}>
+      {/* Image Container - matches ResourceCard's rounded-2xl border border-white bg-white */}
+      <Link href={url} style={{ textDecoration: 'none', display: 'block' }}>
+        <div style={{ ...imageContainerStyle, height: `${imageHeight}px` }}>
           {imageUrl ? (
             <Img
               src={imageUrl}
@@ -41,61 +57,74 @@ export const EmailAssetCard = ({
               style={{
                 objectFit: 'cover',
                 objectPosition,
-                borderRadius: '8px',
+                borderRadius: '16px',
                 display: 'block',
+                width: '100%',
+                height: `${imageHeight}px`,
               }}
             />
           ) : (
-            <div style={noPreviewStyle}>No Preview</div>
+            <div style={{ ...noPreviewStyle, height: `${imageHeight}px` }}>No Preview</div>
           )}
         </div>
       </Link>
 
-      {/* Meta Info */}
+      {/* Meta Info - matches ResourceCard's px-2 layout with flex between */}
       <Row style={metaRowStyle}>
-        <Column style={{ verticalAlign: 'middle' }}>
-          {/* Title and Badge */}
-          <Row>
-            <Column style={{ verticalAlign: 'middle' }}>
-              <Link href={url} style={titleStyle}>
-                {title.length > 15 ? `${title.substring(0, 15)}...` : title}
-              </Link>
-            </Column>
-            {badge && (
-              <Column style={{ verticalAlign: 'middle', paddingLeft: '8px' }}>
-                <span style={badgeStyle}>{badge}</span>
-              </Column>
-            )}
-          </Row>
+        {/* Left side: Title + Badge + Author */}
+        <Column style={{ verticalAlign: 'top' }}>
+          {/* Title and Badge row */}
+          <table cellPadding="0" cellSpacing="0" style={{ border: 0 }}>
+            <tr>
+              <td style={{ verticalAlign: 'middle' }}>
+                <Link href={url} style={titleStyle}>
+                  {title.length > 18 ? `${title.substring(0, 18)}...` : title}
+                </Link>
+              </td>
+              {showBadge && (
+                <td style={{ verticalAlign: 'middle', paddingLeft: '8px' }}>
+                  <span style={badgeStyle}>{badgeLabel}</span>
+                </td>
+              )}
+            </tr>
+          </table>
           {/* Author */}
           {author && <Text style={authorStyle}>by {author}</Text>}
         </Column>
 
-        {/* Tier */}
+        {/* Right side: Tier indicator */}
         <Column style={tierColumnStyle}>
-          {showDiamond && (
-            <Img
-              src="https://moonui.design/ic-diamond-small.png"
-              alt="Pro"
-              width={14}
-              height={14}
-              style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}
-            />
-          )}
-          <span style={tierLabelStyle}>{tierLabel}</span>
+          <table cellPadding="0" cellSpacing="0" style={{ border: 0, marginLeft: 'auto' }}>
+            <tr>
+              {showDiamond && (
+                <td style={{ verticalAlign: 'middle', paddingRight: '4px' }}>
+                  <Img
+                    src="https://moonui.design/ic-diamond-small.png"
+                    alt="Pro"
+                    width={14}
+                    height={14}
+                    style={{ display: 'block' }}
+                  />
+                </td>
+              )}
+              <td style={{ verticalAlign: 'middle' }}>
+                <span style={tierLabelStyle}>{tierLabel}</span>
+              </td>
+            </tr>
+          </table>
         </Column>
       </Row>
     </Section>
   );
 };
 
-// Styles
+// Styles - matching ResourceCard exactly
 const cardStyle: React.CSSProperties = {
-  backgroundColor: 'white',
-  border: '1px solid #f3f4f6',
+  backgroundColor: '#ffffff',
+  border: '1px solid #ffffff',
   borderRadius: '16px',
   overflow: 'hidden',
-  boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
   width: '100%',
   fontFamily: "'Inter', 'Arial', sans-serif",
 };
@@ -103,23 +132,24 @@ const cardStyle: React.CSSProperties = {
 const imageContainerStyle: React.CSSProperties = {
   width: '100%',
   overflow: 'hidden',
-  backgroundColor: '#f3f4f6',
-  borderRadius: '8px',
+  backgroundColor: '#ffffff',
+  borderRadius: '16px',
+  border: '1px solid #ffffff',
 };
 
 const noPreviewStyle: React.CSSProperties = {
   width: '100%',
-  height: '120px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   color: '#9ca3af',
   fontSize: '14px',
   backgroundColor: '#f3f4f6',
+  borderRadius: '16px',
 };
 
 const metaRowStyle: React.CSSProperties = {
-  padding: '12px 8px',
+  padding: '12px 8px 8px 8px',
 };
 
 const titleStyle: React.CSSProperties = {
@@ -130,7 +160,6 @@ const titleStyle: React.CSSProperties = {
   lineHeight: '24px',
   textDecoration: 'none',
   display: 'inline-block',
-  maxWidth: '100px',
 };
 
 const badgeStyle: React.CSSProperties = {
@@ -151,11 +180,12 @@ const authorStyle: React.CSSProperties = {
   fontSize: '12px',
   fontWeight: 400,
   margin: '2px 0 0 0',
+  lineHeight: '1',
 };
 
 const tierColumnStyle: React.CSSProperties = {
   textAlign: 'right',
-  verticalAlign: 'middle',
+  verticalAlign: 'top',
   whiteSpace: 'nowrap',
 };
 
@@ -165,7 +195,6 @@ const tierLabelStyle: React.CSSProperties = {
   fontSize: '14px',
   fontWeight: 600,
   lineHeight: '24px',
-  verticalAlign: 'middle',
 };
 
 export default EmailAssetCard;
