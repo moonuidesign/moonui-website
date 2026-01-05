@@ -60,7 +60,7 @@ export const AppliedFilters = () => {
   const handleShowMoreInfo = () => {
     toast.info(
       `Showing ${MAX_VISIBLE_FILTERS} of ${totalFilters} filters. Clear some filters to see others.`,
-      { autoClose: 3000 }
+      { autoClose: 3000 },
     );
   };
 
@@ -82,42 +82,43 @@ export const AppliedFilters = () => {
   const visibleTiers = remaining > 0 ? selectedTiers.slice(0, remaining) : [];
 
   return (
-    <div className="w-full pt-1 pb-3 lg:pb-4 bg-white rounded-xl lg:rounded-2xl shadow-card-sm flex flex-col justify-start items-center gap-2 overflow-hidden mb-3 lg:mb-4 animate-in fade-in zoom-in duration-200">
-      <div className="self-stretch h-7 lg:h-8 px-3 rounded-[10px] inline-flex justify-between items-center">
-        <div className="text-[#3D3D3D] text-[11px] lg:text-xs font-medium">
-          Applied Filter {totalFilters > 0 && <span className="text-gray-400">({totalFilters})</span>}
+    <div className="shadow-card-sm animate-in fade-in zoom-in flex w-full flex-col items-center justify-start gap-2 overflow-hidden rounded-xl border border-gray-200 bg-white pt-1 pb-3 shadow-sm duration-200 lg:rounded-2xl">
+      <div className="inline-flex h-7 items-center justify-between self-stretch rounded-[10px] px-3 lg:h-8">
+        <div className="text-[11px] font-medium text-[#3D3D3D] lg:text-xs">
+          Applied Filter{' '}
+          {totalFilters > 0 && <span className="text-gray-400">({totalFilters})</span>}
         </div>
         <button
           onClick={clearAllFilters}
-          className="text-orange-600 text-[11px] lg:text-xs font-medium hover:underline"
+          className="text-[11px] font-medium text-orange-600 hover:underline lg:text-xs"
         >
           Clear All
         </button>
       </div>
 
-      <div className="w-full px-3 flex flex-wrap justify-start items-start gap-1.5 lg:gap-2">
+      <div className="flex w-full flex-wrap items-start justify-start gap-1.5 px-3 lg:gap-2">
         {/* A. COLORS (Logic Baru) */}
         {visibleColors.map((color) => (
           <div
             key={color}
-            className="h-7 pl-1 pr-1 bg-zinc-100 border border-zinc-200 rounded-lg flex items-center gap-1.5"
+            className="flex h-7 items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-100 pr-1 pl-1"
           >
             {/* Dot Warna */}
             <div
-              className="w-3.5 h-3.5 rounded-full border border-black/10 shadow-sm"
+              className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-sm"
               style={{ backgroundColor: getColorValue(color) }}
             />
 
             {/* Text Label (Hex atau Nama) */}
-            <span className="text-zinc-600 text-[10px] font-semibold uppercase font-mono">
+            <span className="font-mono text-[10px] font-semibold text-zinc-600 uppercase">
               {color}
             </span>
 
             <button
               onClick={() => toggleColor(color)}
-              className="hover:bg-zinc-200 rounded-full p-0.5"
+              className="rounded-full p-0.5 hover:bg-zinc-200"
             >
-              <X className="w-3 h-3 text-zinc-500" />
+              <X className="h-3 w-3 text-zinc-500" />
             </button>
           </div>
         ))}
@@ -126,16 +127,14 @@ export const AppliedFilters = () => {
         {visibleCategories.map((slug) => (
           <div
             key={slug}
-            className="h-7 pl-2 pr-1 bg-orange-600 rounded-lg flex items-center gap-1"
+            className="flex h-7 items-center gap-1 rounded-lg bg-orange-600 pr-1 pl-2"
           >
-            <span className="text-white text-xs font-medium capitalize">
-              {slug}
-            </span>
+            <span className="text-xs font-medium text-white capitalize">{slug}</span>
             <button
               onClick={() => toggleCategory(slug)}
-              className="hover:bg-white/20 rounded-full p-0.5"
+              className="rounded-full p-0.5 hover:bg-white/20"
             >
-              <X className="w-3 h-3 text-white" />
+              <X className="h-3 w-3 text-white" />
             </button>
           </div>
         ))}
@@ -144,16 +143,14 @@ export const AppliedFilters = () => {
         {visibleSubCategories.map((slug) => (
           <div
             key={slug}
-            className="h-7 pl-2 pr-1 bg-orange-500 rounded-lg flex items-center gap-1"
+            className="flex h-7 items-center gap-1 rounded-lg bg-orange-500 pr-1 pl-2"
           >
-            <span className="text-white text-xs font-medium capitalize">
-              {slug}
-            </span>
+            <span className="text-xs font-medium text-white capitalize">{slug}</span>
             <button
               onClick={() => toggleSubCategory(slug)}
-              className="hover:bg-white/20 rounded-full p-0.5"
+              className="rounded-full p-0.5 hover:bg-white/20"
             >
-              <X className="w-3 h-3 text-white" />
+              <X className="h-3 w-3 text-white" />
             </button>
           </div>
         ))}
@@ -162,16 +159,14 @@ export const AppliedFilters = () => {
         {visibleGradientTypes.map((type) => (
           <div
             key={type}
-            className="h-7 pl-2 pr-1 bg-purple-600 rounded-lg flex items-center gap-1"
+            className="flex h-7 items-center gap-1 rounded-lg bg-purple-600 pr-1 pl-2"
           >
-            <span className="text-white text-xs font-medium capitalize">
-              {type}
-            </span>
+            <span className="text-xs font-medium text-white capitalize">{type}</span>
             <button
               onClick={() => toggleGradientType(type)}
-              className="hover:bg-white/20 rounded-full p-0.5"
+              className="rounded-full p-0.5 hover:bg-white/20"
             >
-              <X className="w-3 h-3 text-white" />
+              <X className="h-3 w-3 text-white" />
             </button>
           </div>
         ))}
@@ -180,16 +175,16 @@ export const AppliedFilters = () => {
         {visibleTiers.map((tier) => (
           <div
             key={tier}
-            className="h-7 pl-2 pr-1 bg-orange-600 rounded-lg flex items-center gap-1"
+            className="flex h-7 items-center gap-1 rounded-lg bg-orange-600 pr-1 pl-2"
           >
-            <span className="text-white text-xs font-medium capitalize">
+            <span className="text-xs font-medium text-white capitalize">
               {tier.replace('_', ' ')}
             </span>
             <button
               onClick={() => toggleTier(tier)}
-              className="hover:bg-white/20 rounded-full p-0.5"
+              className="rounded-full p-0.5 hover:bg-white/20"
             >
-              <X className="w-3 h-3 text-white" />
+              <X className="h-3 w-3 text-white" />
             </button>
           </div>
         ))}
@@ -198,10 +193,10 @@ export const AppliedFilters = () => {
         {hasMoreFilters && (
           <button
             onClick={handleShowMoreInfo}
-            className="h-7 px-2 bg-gray-200 rounded-lg flex items-center gap-1 hover:bg-gray-300 transition-colors"
+            className="flex h-7 items-center gap-1 rounded-lg bg-gray-200 px-2 transition-colors hover:bg-gray-300"
           >
-            <MoreHorizontal className="w-3 h-3 text-gray-600" />
-            <span className="text-gray-600 text-xs font-medium">
+            <MoreHorizontal className="h-3 w-3 text-gray-600" />
+            <span className="text-xs font-medium text-gray-600">
               +{totalFilters - MAX_VISIBLE_FILTERS}
             </span>
           </button>

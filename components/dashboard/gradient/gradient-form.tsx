@@ -178,6 +178,10 @@ export default function GradientForm({ categories, gradient }: GradientFormProps
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.type !== 'image/png') {
+        toast.error('Only PNG format is allowed');
+        return;
+      }
       if (file.size > 100 * 1024 * 1024) return toast.error('Max 100MB');
       setSelectedFile(file);
       const reader = new FileReader();
@@ -639,7 +643,7 @@ export default function GradientForm({ categories, gradient }: GradientFormProps
                         <input
                           ref={fileInputRef}
                           type="file"
-                          accept="image/*"
+                          accept="image/png"
                           className="hidden"
                           id="thumbnail-upload"
                           onChange={handleImageUpload}
@@ -662,7 +666,7 @@ export default function GradientForm({ categories, gradient }: GradientFormProps
                                     Click to upload thumbnail
                                   </p>
                                   <p className="text-muted-foreground text-sm">
-                                    Recommended: 16:9 aspect ratio
+                                    PNG only, 16:9 aspect ratio
                                   </p>
                                 </div>
                               </div>

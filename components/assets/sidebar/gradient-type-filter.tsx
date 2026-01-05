@@ -12,22 +12,21 @@ export const GradientTypeFilter = () => {
   // Hanya render jika contentType adalah gradients
   if (contentType !== 'gradients') return null;
 
-  const types: { id: GradientType; label: string; icon: React.ElementType }[] =
-    [
-      { id: 'linear', label: 'Linear', icon: BoxSelect },
-      { id: 'radial', label: 'Radial', icon: Circle },
-      { id: 'conic', label: 'Conic', icon: Cone },
-    ];
+  const types: { id: GradientType; label: string; icon: React.ElementType }[] = [
+    { id: 'linear', label: 'Linear', icon: BoxSelect },
+    { id: 'radial', label: 'Radial', icon: Circle },
+    { id: 'conic', label: 'Conic', icon: Cone },
+  ];
 
   return (
-    <div className="w-full pt-1 pb-3 lg:pb-4 bg-white rounded-xl lg:rounded-2xl shadow-card-sm flex flex-col gap-2 overflow-hidden mb-3 lg:mb-4 animate-in zoom-in-95 duration-300">
-      <div className="w-full h-7 lg:h-8 px-3 flex justify-between items-center">
-        <span className="text-[#3D3D3D] text-[11px] lg:text-xs font-medium font-['Inter']">
+    <div className="shadow-card-sm animate-in zoom-in-95 flex w-full flex-col gap-2 overflow-hidden rounded-xl border border-gray-200 bg-white pt-1 pb-3 shadow-sm duration-300 lg:rounded-2xl lg:pb-4">
+      <div className="flex h-7 w-full items-center justify-between px-3 lg:h-8">
+        <span className="font-['Inter'] text-[11px] font-medium text-[#3D3D3D] lg:text-xs">
           Gradient Type
         </span>
       </div>
 
-      <div className="w-full px-3 flex flex-wrap gap-1.5 lg:gap-2">
+      <div className="flex w-full flex-wrap gap-1.5 px-3 lg:gap-2">
         {types.map((t) => {
           const isActive = gradientTypes.includes(t.id);
           const Icon = t.icon;
@@ -36,13 +35,13 @@ export const GradientTypeFilter = () => {
               key={t.id}
               onClick={() => toggleGradientType(t.id)}
               className={cn(
-                'h-8 flex-1 px-2 rounded-lg border flex items-center justify-center gap-2 transition-all',
+                'flex h-8 flex-1 items-center justify-center gap-2 rounded-lg border px-2 transition-all',
                 isActive
-                  ? 'bg-zinc-800 text-white border-zinc-800 shadow-sm'
-                  : 'bg-white text-zinc-600 border-gray-200 hover:bg-gray-50',
+                  ? 'border-zinc-800 bg-zinc-800 text-white shadow-sm'
+                  : 'border-gray-200 bg-white text-zinc-600 hover:bg-gray-50',
               )}
             >
-              <Icon className="w-3 h-3" />
+              <Icon className="h-3 w-3" />
               <span className="text-xs font-medium">{t.label}</span>
             </button>
           );

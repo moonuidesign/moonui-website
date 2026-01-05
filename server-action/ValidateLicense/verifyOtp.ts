@@ -8,10 +8,7 @@ import {
   OtpVerificationSchema,
 } from '@/types/validate';
 import { validateLicenseKey } from './validate';
-import {
-  generateLicenseSignature,
-  verifyLicenseSignature,
-} from '@/libs/signature';
+import { generateLicenseSignature, verifyLicenseSignature } from '@/libs/signature';
 import { ResponseAction } from '@/types/response-action';
 import redis from '@/libs/redis-local';
 import { auth } from '@/libs/auth';
@@ -44,10 +41,7 @@ async function renewLicenseForUser(
         status: 'expired',
         updatedAt: new Date(),
       })
-      .where(and(
-        eq(licenses.userId, userId),
-        eq(licenses.status, 'active')
-      ));
+      .where(and(eq(licenses.userId, userId), eq(licenses.status, 'active')));
 
     // Cek apakah license key ini sudah ada untuk user ini
     const existingLicense = await tx.query.licenses.findFirst({
@@ -65,26 +59,27 @@ async function renewLicenseForUser(
           tier: 'pro' as const,
           planType: dbPlanType,
           activatedAt: new Date(),
-          expiresAt: dbPlanType === 'one_time'
-            ? null
-            : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+          expiresAt:
+            dbPlanType === 'one_time' ? null : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
           updatedAt: new Date(),
         })
         .where(eq(licenses.id, existingLicense.id));
       licenseId = existingLicense.id;
     } else {
       // Insert license baru
-      const [newLicense] = await tx.insert(licenses).values({
-        userId,
-        licenseKey,
-        status: 'active',
-        tier: 'pro' as const,
-        planType: dbPlanType,
-        activatedAt: new Date(),
-        expiresAt: dbPlanType === 'one_time'
-          ? null
-          : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-      }).returning({ id: licenses.id });
+      const [newLicense] = await tx
+        .insert(licenses)
+        .values({
+          userId,
+          licenseKey,
+          status: 'active',
+          tier: 'pro' as const,
+          planType: dbPlanType,
+          activatedAt: new Date(),
+          expiresAt:
+            dbPlanType === 'one_time' ? null : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        })
+        .returning({ id: licenses.id });
       licenseId = newLicense.id;
     }
 
@@ -130,9 +125,8 @@ export async function validateLicenseAction(
         success: false,
         code: result.code || 400,
         message:
-          (Array.isArray(result.message)
-            ? result.message.join(', ')
-            : result.message) || 'License validation failed.',
+          (Array.isArray(result.message) ? result.message.join(', ') : result.message) ||
+          'License validation failed.',
       };
     }
 
@@ -152,7 +146,8 @@ export async function validateLicenseAction(
       return {
         success: false,
         code: 409,
-        message: 'This license key has already been used. Each license key can only be activated for one account.',
+        message:
+          'This license key has already been used. Each license key can only be activated for one account.',
         url: '/signin',
       };
     }
@@ -165,7 +160,8 @@ export async function validateLicenseAction(
       return {
         success: false,
         code: 409,
-        message: 'This license key has already been activated. If you own this account, please sign in.',
+        message:
+          'This license key has already been activated. If you own this account, please sign in.',
         url: '/signin',
       };
     }
@@ -194,7 +190,8 @@ export async function validateLicenseAction(
           return {
             success: false,
             code: 409,
-            message: 'This account already has an active license. Please sign in to access premium features.',
+            message:
+              'This account already has an active license. Please sign in to access premium features.',
             url: '/signin',
           };
         }
@@ -204,7 +201,8 @@ export async function validateLicenseAction(
           return {
             success: false,
             code: 200,
-            message: 'Your license has expired. Please sign in and enter your new license key to renew.',
+            message:
+              'Your license has expired. Please sign in and enter your new license key to renew.',
             url: '/signin',
           };
         }
@@ -215,7 +213,8 @@ export async function validateLicenseAction(
       return {
         success: false,
         code: 200,
-        message: 'An account with this email already exists. Please sign in, then enter your license key to activate.',
+        message:
+          'An account with this email already exists. Please sign in, then enter your license key to activate.',
         url: '/signin',
       };
     }
@@ -233,7 +232,6 @@ export async function validateLicenseAction(
     await redis.set(getOtpKey(licenseKey), otp, 'EX', 600);
 
     // Send OTP via Email
-    await sendVerificationEmail(customer_email, otp);
 
     const signature = await generateLicenseSignature(
       customer_email,
@@ -245,6 +243,11 @@ export async function validateLicenseAction(
       result.data.meta.order_id,
     );
 
+    await sendVerificationEmail(
+      customer_email,
+      otp,
+      `/verify-license/otp?signature=${encodeURIComponent(signature)}?otp=${otp}`,
+    );
     // Use redirect (throws error, so do it last or catch it if needed, but in server action it's fine)
     redirect(`/verify-license/otp?signature=${encodeURIComponent(signature)}`);
   } catch (error) {
@@ -327,7 +330,8 @@ export async function verifyOtpAction(
         return {
           code: 400,
           success: false,
-          message: 'This license key is registered to a different email. Please use the license key that matches your account.',
+          message:
+            'This license key is registered to a different email. Please use the license key that matches your account.',
         };
       }
 
@@ -337,7 +341,8 @@ export async function verifyOtpAction(
       return {
         code: 200,
         success: true,
-        message: 'Congratulations! Your license has been successfully renewed. Please refresh the page to see the changes.',
+        message:
+          'Congratulations! Your license has been successfully renewed. Please refresh the page to see the changes.',
         data: null,
         url: '/',
       };

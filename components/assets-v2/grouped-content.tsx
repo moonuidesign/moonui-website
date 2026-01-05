@@ -55,7 +55,7 @@ export default function GroupedContent({ groupedAssets, onCategorySelect }: Grou
   const sections = Object.entries(groupedAssets).filter(([_, items]) => items && items.length > 0);
 
   return (
-    <div className="flex flex-col gap-12 pb-20">
+    <div className="flex flex-col md:gap-8 lg:gap-12">
       {sections.map(([catKey, items]) => {
         // catKey is the MAIN CATEGORY name (e.g. "Saas") derived from getOverviewData.
         // We use this as the display name to represent the Section.
@@ -68,14 +68,14 @@ export default function GroupedContent({ groupedAssets, onCategorySelect }: Grou
         return (
           <div key={catKey} className="flex flex-col gap-6">
             <div className="relative flex items-center justify-between border-b border-gray-100">
-              <span className="absolute top-1/2 right-[115px] h-[1.5px] w-[70%] -translate-y-1/2 transform bg-[#D3D3D3]">
+              <span className="absolute top-1/2 right-[115px] h-[1.5px] w-[20%] -translate-y-1/2 transform bg-[#D3D3D3] md:w-[40%] lg:w-[70%]">
                 <div className="absolute top-1/2 left-0 h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]"></div>
                 <div className="absolute top-1/2 right-0 h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]"></div>
               </span>
               <h2 className="text-xl font-bold text-gray-800 capitalize">{displayName}</h2>
               <button
                 onClick={() => onCategorySelect(slug)}
-                className="group relative flex items-center gap-1 rounded-full bg-white px-3 py-2 text-sm font-medium transition-colors hover:text-orange-600"
+                className="group relative flex items-center gap-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-medium shadow-sm transition-colors hover:text-orange-600"
               >
                 See more
                 <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

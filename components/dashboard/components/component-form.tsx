@@ -298,7 +298,10 @@ export default function ComponentForm({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) return toast.error('Format must be an image');
+      if (file.type !== 'image/png') {
+        toast.error('Only PNG format is allowed');
+        return;
+      }
       if (file.size > 100 * 1024 * 1024) return toast.error('Max 100MB');
       setSelectedFile(file);
       form.setValue('previewImage', file, { shouldValidate: true });
@@ -927,7 +930,7 @@ export default function ComponentForm({
                         <input
                           ref={fileInputRef}
                           type="file"
-                          accept="image/*"
+                          accept="image/png"
                           className="hidden"
                           id="image-upload"
                           onChange={handleImageUpload}
@@ -950,7 +953,7 @@ export default function ComponentForm({
                                     Click to upload thumbnail
                                   </p>
                                   <p className="text-muted-foreground text-sm">
-                                    PNG, JPG, WEBP up to 5MB
+                                    PNG only, up to 5MB
                                   </p>
                                 </div>
                               </div>

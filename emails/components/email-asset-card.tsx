@@ -121,7 +121,6 @@ export const EmailAssetCard = ({
 // Styles - matching ResourceCard exactly
 const cardStyle: React.CSSProperties = {
   backgroundColor: '#ffffff',
-  border: '1px solid #ffffff',
   borderRadius: '16px',
   overflow: 'hidden',
   boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
@@ -134,7 +133,6 @@ const imageContainerStyle: React.CSSProperties = {
   overflow: 'hidden',
   backgroundColor: '#ffffff',
   borderRadius: '16px',
-  border: '1px solid #ffffff',
 };
 
 const noPreviewStyle: React.CSSProperties = {

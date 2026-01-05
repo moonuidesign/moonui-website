@@ -48,9 +48,9 @@ export async function generateOTPEmailHtml(
   title: string,
   otp: string,
   buttonText: string,
-  buttonUrl: string = '#',
+  url?: string,
 ) {
-  return await render(OTPEmail({ title, otp, buttonText, buttonUrl }));
+  return await render(OTPEmail({ title, otp, buttonText, buttonUrl: url }));
 }
 
 export async function generateFooterHtml() {
@@ -92,9 +92,9 @@ export async function generateAssetReleaseEmailHtml(data: {
 
 // --- EMAIL SENDING FUNCTIONS ---
 
-export async function sendVerificationEmail(email: string, otp: string) {
+export async function sendVerificationEmail(email: string, otp: string, url?: string) {
   try {
-    const html = await generateOTPEmailHtml('MoonUI Verification', otp, 'Verify Email');
+    const html = await generateOTPEmailHtml('MoonUI Verification', otp, 'Verify Email', url);
 
     const data = await resend.emails.send({
       from: SENDER,

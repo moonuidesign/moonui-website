@@ -217,66 +217,6 @@ export default function Navbar() {
                 </MotionLink>
               )}
             </AnimatePresence>
-
-            {/* Mobile Search - Expandable on /assets */}
-            <div className="ml-3 flex items-center md:hidden">
-              {isAssetsPage ? (
-                <motion.div
-                  className="flex items-center overflow-hidden"
-                  initial={false}
-                  animate={{
-                    width: isMobileSearchExpanded ? 'calc(100vw - 120px)' : 36,
-                  }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <div
-                    className={`flex h-9 items-center gap-2 rounded-full border border-gray-200 bg-white/80 transition-all ${
-                      isMobileSearchExpanded ? 'w-full px-3' : 'w-9 justify-center'
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (isMobileSearchExpanded) {
-                          setIsMobileSearchExpanded(false);
-                          setSearchValue('');
-                        } else {
-                          setIsMobileSearchExpanded(true);
-                          setTimeout(() => mobileSearchInputRef.current?.focus(), 100);
-                        }
-                      }}
-                      className="shrink-0 text-gray-500 hover:text-gray-700"
-                    >
-                      {isMobileSearchExpanded ? <X size={18} /> : <Search size={18} />}
-                    </button>
-
-                    <AnimatePresence>
-                      {isMobileSearchExpanded && (
-                        <motion.input
-                          ref={mobileSearchInputRef}
-                          initial={{ opacity: 0, width: 0 }}
-                          animate={{ opacity: 1, width: '100%' }}
-                          exit={{ opacity: 0, width: 0 }}
-                          transition={{ duration: 0.2 }}
-                          type="text"
-                          value={searchValue}
-                          onChange={(e) => setSearchValue(e.target.value)}
-                          placeholder="Search assets..."
-                          className="h-full w-full border-none bg-transparent text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
-                        />
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              ) : (
-                <button
-                  onClick={() => setIsSearchOpen(true)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white/50 text-gray-500 hover:bg-gray-50"
-                >
-                  <Search size={18} />
-                </button>
-              )}
-            </div>
           </div>
 
           {/* 2. CENTER: MENU & SEARCH */}
@@ -459,6 +399,66 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
+
+            {/* Mobile Search - Left of hamburger menu */}
+            <div className="z-10 flex items-center md:hidden">
+              {isAssetsPage ? (
+                <motion.div
+                  className="flex items-center overflow-hidden"
+                  initial={false}
+                  animate={{
+                    width: isMobileSearchExpanded ? 'calc(100vw - 120px)' : 36,
+                  }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <div
+                    className={`flex h-9 items-center gap-2 rounded-full border border-gray-200 bg-white/80 transition-all ${
+                      isMobileSearchExpanded ? 'w-full px-3' : 'w-9 justify-center'
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isMobileSearchExpanded) {
+                          setIsMobileSearchExpanded(false);
+                          setSearchValue('');
+                        } else {
+                          setIsMobileSearchExpanded(true);
+                          setTimeout(() => mobileSearchInputRef.current?.focus(), 100);
+                        }
+                      }}
+                      className="shrink-0 text-gray-500 hover:text-gray-700"
+                    >
+                      {isMobileSearchExpanded ? <X size={18} /> : <Search size={18} />}
+                    </button>
+
+                    <AnimatePresence>
+                      {isMobileSearchExpanded && (
+                        <motion.input
+                          ref={mobileSearchInputRef}
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: '100%' }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.2 }}
+                          type="text"
+                          value={searchValue}
+                          onChange={(e) => setSearchValue(e.target.value)}
+                          placeholder="Search assets..."
+                          className="h-full w-full border-none bg-transparent text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
+                        />
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              ) : (
+                <button
+                  onClick={() => setIsSearchOpen(true)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white/50 text-gray-500 hover:bg-gray-50"
+                >
+                  <Search size={18} />
+                </button>
+              )}
+            </div>
 
             <button
               onClick={() => setIsOpen(true)}

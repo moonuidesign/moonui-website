@@ -201,8 +201,8 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
       const validPreviews: string[] = [];
 
       Array.from(files).forEach((file) => {
-        if (!file.type.startsWith('image/')) {
-          toast.error(`File ${file.name} is not an image`);
+        if (file.type !== 'image/png') {
+          toast.error(`File ${file.name} must be PNG format`);
           return;
         }
         if (file.size > 10 * 1024 * 1024) {
@@ -831,7 +831,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                         <input
                           ref={fileInputRef}
                           type="file"
-                          accept="image/*"
+                          accept="image/png"
                           multiple
                           className="hidden"
                           id="thumbnail-upload"
@@ -855,7 +855,7 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
                                     Click to upload images
                                   </p>
                                   <p className="text-muted-foreground text-sm">
-                                    Recommended: 16:9 aspect ratio
+                                    PNG only, 16:9 aspect ratio
                                   </p>
                                 </div>
                               </div>
