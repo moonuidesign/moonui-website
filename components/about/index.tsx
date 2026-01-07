@@ -16,6 +16,8 @@ import ReflectiveCard from '../reflective-card';
 import { cn } from '@/libs/utils';
 
 import { FloatingCursor } from './floating-cursor';
+import { SocialButton } from '../general/layout/main/footer/social-button';
+import { InstagramIcon, LinkedInIcon, XIcon } from '../general/layout/main/footer/social-icons';
 
 // --- Sub Components ---
 
@@ -170,10 +172,18 @@ const AboutSection = () => {
           <div className="container mx-auto max-w-[1440px] px-4 md:px-4 lg:px-0">
             <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center md:gap-0">
               <div className="relative flex w-full flex-1 flex-row items-center gap-4 border-b py-2 md:flex-col md:items-center md:border-r md:border-b-0 md:py-0 md:last:border-r-0 lg:flex-col">
-                <span className="absolute -top-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
-                <span className="absolute -top-1 right-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
-                <span className="absolute -bottom-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
-                <span className="absolute right-0 -bottom-1 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute -top-1 left-0 flex h-1 w-full items-center justify-center md:hidden">
+                  <span className="relative h-[1.5px] w-full rounded-full bg-[#D3D3D3]">
+                    <span className="absolute top-1/2 left-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                    <span className="absolute top-1/2 right-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                  </span>
+                </span>
+                <span className="absolute -bottom-1 left-0 flex h-1 w-full items-center justify-center md:hidden">
+                  <span className="relative h-[1.5px] w-full rounded-full bg-[#D3D3D3]">
+                    <span className="absolute top-1/2 left-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                    <span className="absolute top-1/2 right-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                  </span>
+                </span>
                 <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
                   <Layer variant="Bold" className="h-6 w-6 text-zinc-700" />
                 </div>
@@ -186,10 +196,19 @@ const AboutSection = () => {
               </div>
               <div className="hidden h-16 w-[1px] bg-[#D3D3D3] md:block" />
               <div className="relative flex w-full flex-1 flex-row items-center gap-4 border-b py-2 md:flex-col md:items-center md:border-r md:border-b-0 md:py-0 md:last:border-r-0 lg:flex-col">
-                <span className="absolute -top-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
-                <span className="absolute -top-1 right-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
-                <span className="absolute -bottom-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
-                <span className="absolute right-0 -bottom-1 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute -top-1 left-0 flex h-1 w-full items-center justify-center md:hidden">
+                  <span className="relative h-[1.5px] w-full rounded-full bg-[#D3D3D3]">
+                    <span className="absolute top-1/2 left-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                    <span className="absolute top-1/2 right-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                  </span>
+                </span>
+                <span className="absolute -bottom-1 left-0 flex h-1 w-full items-center justify-center md:hidden">
+                  <span className="relative h-[1.5px] w-full rounded-full bg-[#D3D3D3]">
+                    <span className="absolute top-1/2 left-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                    <span className="absolute top-1/2 right-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                  </span>
+                </span>
+
                 <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
                   <Component variant="Bold" className="h-6 w-6 text-zinc-700" />
                 </div>
@@ -202,10 +221,18 @@ const AboutSection = () => {
               </div>
               <div className="hidden h-16 w-[1px] bg-[#D3D3D3] md:block" />
               <div className="relative flex w-full flex-1 flex-row items-center gap-4 border-b py-2 md:flex-col md:items-center md:border-r md:border-b-0 md:py-0 md:last:border-r-0 lg:flex-col">
-                <span className="absolute -top-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
-                <span className="absolute -top-1 right-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
-                <span className="absolute -bottom-1 left-0 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
-                <span className="absolute right-0 -bottom-1 block h-1.5 w-1.5 rounded-full bg-[#D3D3D3] md:hidden" />
+                <span className="absolute -top-1 left-0 flex h-1 w-full items-center justify-center md:hidden">
+                  <span className="relative h-[1.5px] w-full rounded-full bg-[#D3D3D3]">
+                    <span className="absolute top-1/2 left-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                    <span className="absolute top-1/2 right-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                  </span>
+                </span>
+                <span className="absolute -bottom-1 left-0 flex h-1 w-full items-center justify-center md:hidden">
+                  <span className="relative h-[1.5px] w-full rounded-full bg-[#D3D3D3]">
+                    <span className="absolute top-1/2 left-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                    <span className="absolute top-1/2 right-0 block h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]" />
+                  </span>
+                </span>
                 <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
                   <Stickynote variant="Bold" className="h-6 w-6 text-zinc-700" />
                 </div>
@@ -345,7 +372,7 @@ const AboutSection = () => {
           <div className="container mx-auto flex flex-col items-start gap-12 md:max-w-xl lg:max-w-5xl">
             <div className="flex w-full flex-col gap-5">
               <div className="relative flex items-center gap-6 md:gap-10">
-                <div className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-100 bg-[#ff4f00] py-1.5 pr-3 pl-2 shadow-sm md:flex">
+                <div className="flex h-8 items-center gap-1.5 rounded-lg bg-[#ff4f00] py-1.5 pr-3 pl-2 shadow-sm md:flex">
                   <People type="Outline" color="white" size={17} />
                   <span className="text-sm font-medium text-white">Our Team</span>
                   <div className="flex items-start rounded-[5px] bg-white/50 px-1.5 py-[3px]">
@@ -379,10 +406,24 @@ const AboutSection = () => {
                 specularConstant={0.5}
                 grayscale={0.8}
                 backContent={
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col items-center justify-center gap-4">
                     <p className="text-sm text-zinc-300">
                       Creative developer with a love for motion graphics and interactive design.
                     </p>
+                    <div className="flex items-center gap-3">
+                      <SocialButton
+                        href="https://www.instagram.com/"
+                        icon={<XIcon className="h-4 w-4" />}
+                      />
+                      <SocialButton
+                        href="https://www.instagram.com/"
+                        icon={<InstagramIcon className="h-4 w-4" />}
+                      />
+                      <SocialButton
+                        href="https://www.instagram.com/"
+                        icon={<LinkedInIcon className="h-4 w-4" />}
+                      />
+                    </div>
                   </div>
                 }
               />
@@ -398,10 +439,24 @@ const AboutSection = () => {
                 specularConstant={0.5}
                 grayscale={0.8}
                 backContent={
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col items-center justify-center gap-4">
                     <p className="text-sm text-zinc-300">
                       Creative developer with a love for motion graphics and interactive design.
                     </p>
+                    <div className="flex items-center gap-3">
+                      <SocialButton
+                        href="https://www.instagram.com/"
+                        icon={<XIcon className="h-4 w-4" />}
+                      />
+                      <SocialButton
+                        href="https://www.instagram.com/"
+                        icon={<InstagramIcon className="h-4 w-4" />}
+                      />
+                      <SocialButton
+                        href="https://www.instagram.com/"
+                        icon={<LinkedInIcon className="h-4 w-4" />}
+                      />
+                    </div>
                   </div>
                 }
               />
@@ -417,10 +472,24 @@ const AboutSection = () => {
                 specularConstant={0.5}
                 grayscale={0.8}
                 backContent={
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col items-center justify-center gap-4">
                     <p className="text-sm text-zinc-300">
                       Creative developer with a love for motion graphics and interactive design.
                     </p>
+                    <div className="flex items-center gap-3">
+                      <SocialButton
+                        href="https://www.instagram.com/"
+                        icon={<XIcon className="h-4 w-4" />}
+                      />
+                      <SocialButton
+                        href="https://www.instagram.com/"
+                        icon={<InstagramIcon className="h-4 w-4" />}
+                      />
+                      <SocialButton
+                        href="https://www.instagram.com/"
+                        icon={<LinkedInIcon className="h-4 w-4" />}
+                      />
+                    </div>
                   </div>
                 }
               />

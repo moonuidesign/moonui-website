@@ -156,12 +156,10 @@ const PricingCard = ({
               {index === 1 ? (isAnnual ? 'annual Plan' : 'monthly Plan') : ''}
             </p>
             {showCouponBadge && (
-              <div className="animate-fade-in-up mb-2 flex items-center gap-2">
+              <div className="animate-fade-in-up mt-2 flex items-center gap-2">
                 <div
-                  className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase ${
-                    plan.isDark
-                      ? 'border-emerald-500/30 bg-emerald-900/30 text-emerald-400'
-                      : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase ${
+                    plan.isDark ? 'bg-[#FF4F00] text-white' : 'bg-white text-zinc-900'
                   }`}
                 >
                   <TicketPercent size={12} />
@@ -311,7 +309,7 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
               }`}
             >
               Annual
-              <span className="absolute flex w-[74%] items-center rounded-md border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] tracking-wide text-orange-700 uppercase md:-top-4 md:-right-12">
+              <span className="absolute -top-2 -right-12 flex w-[74%] items-center rounded-md border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] tracking-wide text-orange-700 uppercase md:-top-2 md:-right-12">
                 Save 15%
               </span>
               {/* <span className="rounded-md border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] tracking-wide text-orange-700 uppercase">
@@ -348,8 +346,13 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
       <div className="w-full max-w-6xl">
         <div className="flex w-full flex-col items-center justify-between gap-6 rounded-[30px] border border-zinc-100 bg-white p-6 shadow-lg md:flex-row md:p-6">
           <div className="flex flex-col items-center gap-6 text-center md:flex-row md:text-left">
-            <div className="flex h-16 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-gray-200 to-stone-300">
-              <div className="h-8 w-8 rounded-full bg-white/30" />
+            <div className="relative flex h-16 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-gray-200 to-stone-300">
+              <Image
+                fill
+                className="object-cover object-center"
+                src="/pricing-contact.png"
+                alt="Contact"
+              />
             </div>
             <div>
               <h4 className="text-lg font-bold text-zinc-800 md:text-xl">
@@ -361,7 +364,7 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
               </p>
             </div>
           </div>
-          <button className="shadow-button group flex h-12 w-full flex-shrink-0 cursor-pointer items-center justify-center gap-3.5 overflow-hidden rounded-xl bg-zinc-800 px-6 text-base font-semibold text-white transition-colors hover:bg-zinc-700 md:h-14 md:w-auto md:px-8">
+          <button className="shadow-button group flex h-12 w-full flex-shrink-0 cursor-pointer items-center justify-center gap-3.5 overflow-hidden rounded-xl bg-[#2E2E2E] px-6 text-base font-semibold text-white transition-colors hover:bg-black md:h-14 md:w-auto md:px-8">
             Let’s Talk
             <div className="relative flex h-full w-5 items-center justify-center">
               <div className="absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 transform flex-col items-center justify-center overflow-hidden text-white">

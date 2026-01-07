@@ -197,6 +197,14 @@ function normalizeContent(
     format: data.format,
     size: data.size,
     number: data.number,
+    copyDataHtml:
+      typeof data.copyComponentTextHTML === 'string'
+        ? data.copyComponentTextHTML
+        : JSON.stringify(data.copyComponentTextHTML || ''),
+    copyDataPlain:
+      typeof data.copyComponentTextPlain === 'string'
+        ? data.copyComponentTextPlain
+        : JSON.stringify(data.copyComponentTextPlain || ''),
     type: type,
     viewCount: data.viewCount || 0,
     downloadCount: data.downloadCount || 0,
@@ -204,7 +212,6 @@ function normalizeContent(
     linkTemplate: data.linkTemplate,
     linkDownload: data.linkDonwload || data.linkDownload,
     codeSnippets: data.codeSnippets || null,
-
     platform: data.platform || 'Web',
     category: catData
       ? {
@@ -333,6 +340,7 @@ async function renderPage(
   const normalizeJoin = (row: any) => {
     if (!row) return null;
     const values = Object.values(row);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     return normalizeContent(values[0], type, values[1]);
   };

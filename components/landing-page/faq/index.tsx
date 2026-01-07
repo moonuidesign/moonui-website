@@ -1,10 +1,7 @@
+'use client';
 import React from 'react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '../../ui/accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../ui/accordion';
+import { usePathname } from 'next/navigation';
 
 interface FAQSectionProps {
   label?: string;
@@ -25,16 +22,21 @@ const FAQSection: React.FC<FAQSectionProps> = ({
   description = 'Get answers to commonly asked questions.',
   categories,
 }) => {
+  const pathname = usePathname();
+  console.log(pathname);
+  const isPricingPage = pathname === '/pricing';
   return (
-    <section className="w-full lg:w-max-7xl mx-auto container py-5 flex justify-center items-center px-1">
+    <section
+      className={`${isPricingPage ? 'lg:max-w-6xl' : 'lg:max-w-7xl'} container mx-auto flex w-full items-center justify-center px-1 py-5`}
+    >
       {/* Container Utama (Dark Card) */}
-      <div className="w-full rounded-4xl bg-zinc-900  lg:rounded-[40px] shadow-xl p-8 md:p-16 flex flex-col lg:flex-row gap-10 lg:gap-20">
+      <div className="flex w-full flex-col gap-10 rounded-4xl bg-zinc-900 p-8 shadow-xl md:p-16 lg:flex-row lg:gap-20 lg:rounded-[40px]">
         {/* Bagian Kiri: Header Text */}
-        <div className="w-full lg:w-96 flex flex-col items-start gap-2 h-fit  top-10">
-          <span className="text-neutral-400 text-[16px] md:text-base font-medium leading-6">
+        <div className="top-10 flex h-fit w-full flex-col items-start gap-2 lg:w-96">
+          <span className="text-[16px] leading-6 font-medium text-neutral-400 md:text-base">
             {label}
           </span>
-          <h2 className="text-white text-[36px] md:text-5xl font-semibold leading-tight mb-2">
+          <h2 className="mb-2 text-[36px] leading-tight font-semibold text-white md:text-5xl">
             {title.split('\n').map((line, i) => (
               <React.Fragment key={i}>
                 {line}
@@ -42,33 +44,27 @@ const FAQSection: React.FC<FAQSectionProps> = ({
               </React.Fragment>
             ))}
           </h2>
-          <p className="text-neutral-400 text-[16px] text-base leading-6">
-            {description}
-          </p>
+          <p className="text-base text-[16px] leading-6 text-neutral-400">{description}</p>
         </div>
-        <div className="flex-1 flex flex-col gap-14">
+        <div className="flex flex-1 flex-col gap-14">
           {categories.map((category, catIndex) => (
             <div key={catIndex} className="flex flex-col gap-5">
               {/* Nama Kategori */}
-              <h3 className="text-neutral-400 text-[16px] md:text-base font-medium leading-6">
+              <h3 className="text-[16px] leading-6 font-medium text-neutral-400 md:text-base">
                 {category.categoryName}
               </h3>
 
-              <Accordion
-                type="single"
-                collapsible
-                className="w-full flex flex-col gap-0"
-              >
+              <Accordion type="single" collapsible className="flex w-full flex-col gap-0">
                 {category.items.map((item, itemIndex) => (
                   <AccordionItem
                     key={itemIndex}
                     value={`${category.categoryName}-${itemIndex}`}
-                    className="border-zinc-800 border-b last:border-b-0"
+                    className="border-b border-zinc-800 last:border-b-0"
                   >
-                    <AccordionTrigger className="text-white text-[16px] text-left md:text-base font-medium py-4 hover:no-underline hover:text-neutral-300 transition-colors [&[data-state=open]>svg]:rotate-180">
+                    <AccordionTrigger className="py-4 text-left text-[16px] font-medium text-white transition-colors hover:text-neutral-300 hover:no-underline md:text-base [&[data-state=open]>svg]:rotate-180">
                       {item.question}
                     </AccordionTrigger>
-                    <AccordionContent className="text-neutral-400 text-[14px] md:text-base leading-7 pb-6">
+                    <AccordionContent className="pb-6 text-[14px] leading-7 text-neutral-400 md:text-base">
                       {item.answer}
                     </AccordionContent>
                   </AccordionItem>

@@ -32,12 +32,9 @@ const noopla = localFont({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: 'MoonUI Design — We Build Your Premium Design Library',
-    template: '%s | MoonUI Design',
-  },
+  title: 'MoonUI Design — We Build Your Premium Design Library',
   icons: {
-    icon: '/logo-v2.svg',
+    icon: '/logo.svg',
   },
   description:
     'MoonUI is a premium design asset library that helps designers and businesses create better, high-quality designs faster without cutting corners.',
@@ -101,7 +98,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: 'your-google-verification-code', // TODO: Add Google Search Console verification
+    google: 'X3Rq1QHLjr0EA9wmoWTpchtM7GlfFFYBjY9HNvIqOJY', // TODO: Add Google Search Console verification
   },
 };
 

@@ -102,7 +102,7 @@ function AssetsPageContent() {
 
   // Restore the Grid Structure: Sidebar | Content
   return (
-    <div className="flex min-h-[85vh] gap-4 lg:gap-8">
+    <div className="flex min-h-fit gap-4 pb-8 md:min-h-[85vh] lg:gap-8 lg:pb-12">
       {/* Sidebar Column */}
       <div className="hidden shrink-0 md:block md:w-52 lg:w-64">
         <div className="sticky top-24 flex flex-col gap-4 lg:gap-8">
