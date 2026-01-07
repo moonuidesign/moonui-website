@@ -10,24 +10,24 @@ export const TierFilter = () => {
   const tiers: TierType[] = ['free', 'pro'];
 
   return (
-    <div className="w-full pt-1 pb-3 lg:pb-4 bg-white rounded-xl lg:rounded-2xl shadow-card-sm flex flex-col gap-2 overflow-hidden mb-3 lg:mb-4">
-      <div className="w-full h-7 lg:h-8 px-3 flex justify-between items-center">
-        <span className="text-[#3D3D3D] text-[11px] lg:text-xs font-medium font-['Inter']">
+    <div className="shadow-card-sm flex w-full flex-col gap-2 overflow-hidden rounded-xl border border-gray-200 bg-white pt-1 pb-3 shadow-sm lg:rounded-2xl lg:pb-4">
+      <div className="flex h-7 w-full items-center justify-between px-3 lg:h-8">
+        <span className="font-['Plus_Jakarta_Sans'] text-xs font-semibold text-gray-800 lg:text-sm">
           License Tier
         </span>
       </div>
 
-      <div className="w-full px-3 flex flex-wrap gap-1.5 lg:gap-2">
+      <div className="flex w-full flex-wrap gap-1.5 px-3 lg:gap-2">
         {/* All Option */}
         <button
           onClick={() => {
             selectedTiers.forEach((t) => toggleTier(t));
           }}
           className={cn(
-            'h-7 lg:h-8 px-3 lg:px-4 rounded-full text-xs font-medium transition-all border',
+            'h-7 rounded-full border px-3 text-xs font-medium transition-all lg:h-8 lg:px-4',
             selectedTiers.length === 0
-              ? 'bg-orange-600 text-white border-orange-600'
-              : 'bg-white text-zinc-600 border-zinc-200 hover:border-orange-400 hover:text-orange-600',
+              ? 'border-orange-600 bg-orange-600 text-white'
+              : 'border-zinc-200 bg-white text-zinc-600 hover:border-orange-400 hover:text-orange-600',
           )}
         >
           All
@@ -40,10 +40,10 @@ export const TierFilter = () => {
               key={tier}
               onClick={() => toggleTier(tier)}
               className={cn(
-                'h-7 lg:h-8 px-3 lg:px-4 rounded-full text-xs font-medium capitalize transition-all border',
+                'h-7 rounded-full border px-3 text-xs font-medium capitalize transition-all lg:h-8 lg:px-4',
                 isActive
-                  ? 'bg-orange-600 text-white border-orange-600'
-                  : 'bg-white text-zinc-600 border-zinc-200 hover:border-orange-400 hover:text-orange-600',
+                  ? 'border-orange-600 bg-orange-600 text-white'
+                  : 'border-zinc-200 bg-white text-zinc-600 hover:border-orange-400 hover:text-orange-600',
               )}
             >
               {tier.replace('_', ' ')}

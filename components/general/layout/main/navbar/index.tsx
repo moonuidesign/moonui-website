@@ -127,7 +127,7 @@ export default function Navbar() {
   }, [isOpen]);
 
   return (
-    <section className="relative z-[1000] h-24">
+    <section className="relative z-[1010] h-24">
       <SearchCommand open={isSearchOpen} setOpen={setIsSearchOpen} />
 
       <div className="pointer-events-none fixed top-10 right-0 left-0 z-[60] container mx-auto flex justify-center pt-6">
@@ -217,66 +217,6 @@ export default function Navbar() {
                 </MotionLink>
               )}
             </AnimatePresence>
-
-            {/* Mobile Search - Expandable on /assets */}
-            <div className="ml-3 flex items-center md:hidden">
-              {isAssetsPage ? (
-                <motion.div
-                  className="flex items-center overflow-hidden"
-                  initial={false}
-                  animate={{
-                    width: isMobileSearchExpanded ? 'calc(100vw - 120px)' : 36,
-                  }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <div
-                    className={`flex h-9 items-center gap-2 rounded-full border border-gray-200 bg-white/80 transition-all ${
-                      isMobileSearchExpanded ? 'w-full px-3' : 'w-9 justify-center'
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (isMobileSearchExpanded) {
-                          setIsMobileSearchExpanded(false);
-                          setSearchValue('');
-                        } else {
-                          setIsMobileSearchExpanded(true);
-                          setTimeout(() => mobileSearchInputRef.current?.focus(), 100);
-                        }
-                      }}
-                      className="shrink-0 text-gray-500 hover:text-gray-700"
-                    >
-                      {isMobileSearchExpanded ? <X size={18} /> : <Search size={18} />}
-                    </button>
-
-                    <AnimatePresence>
-                      {isMobileSearchExpanded && (
-                        <motion.input
-                          ref={mobileSearchInputRef}
-                          initial={{ opacity: 0, width: 0 }}
-                          animate={{ opacity: 1, width: '100%' }}
-                          exit={{ opacity: 0, width: 0 }}
-                          transition={{ duration: 0.2 }}
-                          type="text"
-                          value={searchValue}
-                          onChange={(e) => setSearchValue(e.target.value)}
-                          placeholder="Search assets..."
-                          className="h-full w-full border-none bg-transparent text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
-                        />
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              ) : (
-                <button
-                  onClick={() => setIsSearchOpen(true)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white/50 text-gray-500 hover:bg-gray-50"
-                >
-                  <Search size={18} />
-                </button>
-              )}
-            </div>
           </div>
 
           {/* 2. CENTER: MENU & SEARCH */}
@@ -451,7 +391,7 @@ export default function Navbar() {
                   Sign in
                 </Link>
                 <Link
-                  href="/Get Started"
+                  href="/pricing"
                   className="flex hidden h-9 items-center gap-2 rounded-full bg-[#1B1B1B] px-4 py-2 text-sm font-medium text-neutral-600 text-white shadow-[0_1px_1px_0.5px_rgba(41,41,41,0.04),0_3px_3px_-1.5px_rgba(41,41,41,0.02),0_6px_6px_-3px_rgba(41,41,41,0.04),0_12px_12px_-6px_rgba(41,41,41,0.04),0_24px_24px_-12px_rgba(41,41,41,0.04),0_48px_48px_-24px_rgba(41,41,41,0.04),0_0_0_1px_rgba(41,41,41,0.04),inset_0_-1px_1px_-0.5px_rgba(51,51,51,0.06)] hover:bg-[#FF4F00] md:hidden lg:flex"
                 >
                   <Image src="/ic-diamond-small.svg" width={15} height={15} alt="arrow-right" />
@@ -459,6 +399,66 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
+
+            {/* Mobile Search - Left of hamburger menu */}
+            <div className="z-10 flex items-center md:hidden">
+              {isAssetsPage ? (
+                <motion.div
+                  className="flex items-center overflow-hidden"
+                  initial={false}
+                  animate={{
+                    width: isMobileSearchExpanded ? 'calc(100vw - 120px)' : 36,
+                  }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <div
+                    className={`flex h-9 items-center gap-2 rounded-full border border-gray-200 bg-white/80 transition-all ${
+                      isMobileSearchExpanded ? 'w-full px-3' : 'w-9 justify-center'
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isMobileSearchExpanded) {
+                          setIsMobileSearchExpanded(false);
+                          setSearchValue('');
+                        } else {
+                          setIsMobileSearchExpanded(true);
+                          setTimeout(() => mobileSearchInputRef.current?.focus(), 100);
+                        }
+                      }}
+                      className="shrink-0 text-gray-500 hover:text-gray-700"
+                    >
+                      {isMobileSearchExpanded ? <X size={18} /> : <Search size={18} />}
+                    </button>
+
+                    <AnimatePresence>
+                      {isMobileSearchExpanded && (
+                        <motion.input
+                          ref={mobileSearchInputRef}
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: '100%' }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.2 }}
+                          type="text"
+                          value={searchValue}
+                          onChange={(e) => setSearchValue(e.target.value)}
+                          placeholder="Search assets..."
+                          className="h-full w-full border-none bg-transparent text-sm text-zinc-700 outline-none placeholder:text-zinc-400"
+                        />
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              ) : (
+                <button
+                  onClick={() => setIsSearchOpen(true)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white/50 text-gray-500 hover:bg-gray-50"
+                >
+                  <Search size={18} />
+                </button>
+              )}
+            </div>
 
             <button
               onClick={() => setIsOpen(true)}
@@ -527,13 +527,14 @@ export default function Navbar() {
             <div className="flex-1 overflow-y-auto">
               <motion.div className="flex flex-col px-6" initial="closed" animate="open">
                 {MENU_ITEMS.map((item, i) => (
-                  <div
+                  <Link
+                    href={item.href}
                     key={i}
                     className="flex items-center gap-3 border-b border-dashed border-gray-200 py-5"
                   >
                     <item.icon className="size-6 text-gray-400" />
                     <span className="font-medium text-gray-700">{item.label}</span>
-                  </div>
+                  </Link>
                 ))}
               </motion.div>
 

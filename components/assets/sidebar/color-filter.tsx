@@ -32,14 +32,14 @@ export const ColorFilter = () => {
   };
 
   return (
-    <div className="w-full pt-1 pb-3 lg:pb-4 bg-white rounded-xl lg:rounded-2xl shadow-card-sm flex flex-col gap-2 overflow-hidden mb-3 lg:mb-4 animate-in fade-in zoom-in duration-300">
-      <div className="w-full h-7 lg:h-8 px-3 flex justify-between items-center">
-        <span className="text-[#3D3D3D] text-[11px] lg:text-xs font-medium font-['Inter']">
+    <div className="shadow-card-sm animate-in fade-in zoom-in flex w-full flex-col gap-2 overflow-hidden rounded-xl border border-gray-200 bg-white pt-1 pb-3 shadow-sm duration-300 lg:rounded-2xl lg:pb-4">
+      <div className="flex h-7 w-full items-center justify-between px-3 lg:h-8">
+        <span className="font-['Inter'] text-[11px] font-medium text-[#3D3D3D] lg:text-xs">
           Filter by Color
         </span>
       </div>
 
-      <div className="w-full px-3 flex flex-wrap gap-1.5 lg:gap-2">
+      <div className="flex w-full flex-wrap gap-1.5 px-3 lg:gap-2">
         {/* 1. Render PRESET Colors */}
         {PRESET_COLORS.map((color) => {
           // Cek apakah ID (red) atau Value (#EF4444) ada di selectedColors
@@ -51,9 +51,9 @@ export const ColorFilter = () => {
               key={color.id}
               onClick={() => toggleColor(color.id)}
               className={cn(
-                'w-6 h-6 rounded-full border flex items-center justify-center transition-all shadow-sm relative',
+                'relative flex h-6 w-6 items-center justify-center rounded-full border shadow-sm transition-all',
                 isActive
-                  ? 'ring-2 ring-offset-1 ring-zinc-400 border-transparent'
+                  ? 'border-transparent ring-2 ring-zinc-400 ring-offset-1'
                   : 'border-zinc-200 hover:scale-110',
               )}
               style={{ backgroundColor: color.value }}
@@ -62,10 +62,8 @@ export const ColorFilter = () => {
               {isActive && (
                 <Check
                   className={cn(
-                    'w-3 h-3',
-                    color.id === 'white' || color.id === 'yellow'
-                      ? 'text-black'
-                      : 'text-white',
+                    'h-3 w-3',
+                    color.id === 'white' || color.id === 'yellow' ? 'text-black' : 'text-white',
                   )}
                   strokeWidth={3}
                 />
@@ -75,20 +73,17 @@ export const ColorFilter = () => {
         })}
 
         {/* 2. Render CUSTOM COLOR PICKER (Posisi Terakhir) */}
-        <div className="relative w-6 h-6 group">
+        <div className="group relative h-6 w-6">
           {/* Input invisible yang menutupi tombol */}
           <input
             type="color"
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
             onChange={handleCustomColorChange}
           />
 
           {/* Tampilan Visual Tombol Picker */}
-          <div className="w-full h-full rounded-full bg-conic-gradient border border-zinc-200 flex items-center justify-center group-hover:scale-110 transition-transform bg-[conic-gradient(from_180deg_at_50%_50%,#FF0000_0deg,#00FF00_120deg,#0000FF_240deg,#FF0000_360deg)]">
-            <Plus
-              className="w-3 h-3 text-white drop-shadow-md"
-              strokeWidth={3}
-            />
+          <div className="bg-conic-gradient flex h-full w-full items-center justify-center rounded-full border border-zinc-200 bg-[conic-gradient(from_180deg_at_50%_50%,#FF0000_0deg,#00FF00_120deg,#0000FF_240deg,#FF0000_360deg)] transition-transform group-hover:scale-110">
+            <Plus className="h-3 w-3 text-white drop-shadow-md" strokeWidth={3} />
           </div>
         </div>
       </div>

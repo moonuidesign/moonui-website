@@ -15,7 +15,7 @@ import {
 import { EmailAssetCard } from '../components/email-asset-card';
 import { EmailFooter } from '../components/email-footer';
 
-const LOGO_URL = 'https://moonui.design/logo.png';
+const LOGO_URL = 'https://moonui.design/logo-moonui.png';
 
 interface RelatedAsset {
   id: string;

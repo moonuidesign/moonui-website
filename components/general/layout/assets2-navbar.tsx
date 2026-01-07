@@ -52,15 +52,15 @@ export default function Assets2Navbar() {
           />
         </span>
       </Link>
-      <div className="flex items-center gap-2">
-        <div className="relative w-md md:max-w-md">
+      <div className="flex flex-1 items-center justify-end gap-2 md:flex-none">
+        <div className="relative w-full max-w-[180px] sm:max-w-[220px] md:max-w-sm lg:max-w-md">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
-            placeholder="Search assets..."
+            placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-10 text-sm transition-all outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+            className="w-full rounded-full border border-gray-200 bg-white py-2 pr-4 pl-9 text-sm transition-all outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 md:py-2.5 md:pl-10"
           />
         </div>
         {isSessionLoading ? (
@@ -156,16 +156,16 @@ export default function Assets2Navbar() {
             </AnimatePresence>
           </div>
         ) : (
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="flex items-center gap-2 md:gap-3">
             <Link
               href="/signin"
-              className="flex h-9 items-center rounded-full border border-[#D3D3D3] bg-white px-4 py-2 text-sm font-medium text-neutral-600 shadow-sm transition-colors hover:bg-[#FF4F00] hover:text-white"
+              className="flex h-8 shrink-0 items-center rounded-full border border-[#D3D3D3] bg-white px-3 py-1.5 text-sm font-medium whitespace-nowrap text-neutral-600 shadow-sm transition-colors hover:bg-[#FF4F00] hover:text-white md:h-9 md:px-4 md:py-2 md:text-sm"
             >
               Sign in
             </Link>
             <Link
               href="/signup"
-              className="hidden h-9 items-center gap-2 rounded-full bg-[#1B1B1B] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#FF4F00] md:hidden lg:flex"
+              className="hidden h-9 shrink-0 items-center gap-2 rounded-full bg-[#1B1B1B] px-4 py-2 text-sm font-medium whitespace-nowrap text-white shadow-sm transition-colors hover:bg-[#FF4F00] lg:flex"
             >
               <Image src="/ic-diamond-small.svg" width={15} height={15} alt="arrow-right" />
               Get Started

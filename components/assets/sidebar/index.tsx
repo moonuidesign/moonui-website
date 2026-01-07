@@ -80,18 +80,12 @@ export default function SidebarFilter({
   const handleSubCategoryToggle = onToggleSubCategory || toggleSubCategory;
 
   return (
-    <aside
-      className={cn(
-        'sticky top-24 flex h-full flex-col items-center justify-between gap-10',
-        className,
-      )}
-    >
-      <div className="flex h-full w-full flex-col gap-3 lg:gap-4">
+    <aside className={cn('sticky top-24 flex h-fit flex-col items-center gap-6', className)}>
+      <div className="flex h-full w-full flex-col gap-2 lg:gap-2">
         {(contentType === 'components' || contentType === 'templates') && (
           <PlatformSwitcher currentTool={tool} onChange={setTool} />
         )}
         <AppliedFilters />
-        <TierFilter />
         <ColorFilter />
         <GradientTypeFilter />
         <CategoryFilter
@@ -102,6 +96,7 @@ export default function SidebarFilter({
           onToggle={handleCategoryToggle}
           onToggleSub={handleSubCategoryToggle}
         />
+        <TierFilter />
       </div>
 
       {!session.data?.user && <GoProCard />}

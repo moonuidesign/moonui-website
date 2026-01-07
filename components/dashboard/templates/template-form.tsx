@@ -164,12 +164,18 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
 
-      // Validasi sederhana (opsional)
-      const validFiles = newFiles.filter((file) => file.size <= 10 * 1024 * 1024); // Max 10MB
-
-      if (validFiles.length !== newFiles.length) {
-        toast.warning('Some files skipped because they exceed 10MB');
-      }
+      // Validate PNG only and size
+      const validFiles = newFiles.filter((file) => {
+        if (file.type !== 'image/png') {
+          toast.error(`File ${file.name} must be PNG format`);
+          return false;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          toast.warning(`File ${file.name} skipped: exceeds 10MB`);
+          return false;
+        }
+        return true;
+      });
 
       const mergedFiles = [...selectedFiles, ...validFiles];
       setSelectedFiles(mergedFiles);
@@ -899,7 +905,7 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
                         ref={fileInputRef}
                         type="file"
                         multiple
-                        accept="image/*"
+                        accept="image/png"
                         onChange={handleImageUpload}
                         className="hidden"
                         id="image-upload"
@@ -922,7 +928,7 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
                                   Click to upload preview images
                                 </p>
                                 <p className="text-muted-foreground text-sm">
-                                  PNG, JPG, WEBP up to 10MB each
+                                  PNG only, up to 10MB each
                                 </p>
                               </div>
                             </div>

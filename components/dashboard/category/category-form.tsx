@@ -34,10 +34,7 @@ import {
   TemplateCategorySchema,
   GradientCategorySchema,
 } from '@/server-action/category/category-validator';
-import {
-  createCategory,
-  updateCategory,
-} from '@/server-action/category/category-actions';
+import { createCategory, updateCategory } from '@/server-action/category/category-actions';
 
 interface CategoryEntity {
   id: string;
@@ -72,9 +69,9 @@ const CategoryForm = ({
   );
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadedImagePreview, setUploadedImagePreview] = useState<
-    string | null
-  >(initialData?.imageUrl || null);
+  const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(
+    initialData?.imageUrl || null,
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -113,8 +110,8 @@ const CategoryForm = ({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
-        toast.error('Format harus gambar');
+      if (file.type !== 'image/png') {
+        toast.error('Only PNG format is allowed');
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
@@ -134,8 +131,7 @@ const CategoryForm = ({
       const submissionValues = {
         ...values,
         parentId: values.parentId || '',
-        imageUrl:
-          uploadedImagePreview && !selectedFile ? uploadedImagePreview : '',
+        imageUrl: uploadedImagePreview && !selectedFile ? uploadedImagePreview : '',
       };
 
       formData.append('data', JSON.stringify(submissionValues));
@@ -181,15 +177,13 @@ const CategoryForm = ({
 
   return (
     <>
-      <div className="min-h-screen bg-background">
+      <div className="bg-background min-h-screen">
         <div className="mx-auto max-w-2xl px-6 py-16">
           <div className="mb-16">
-            <h1 className="text-5xl font-bold tracking-tight text-foreground mb-4 text-balance capitalize">
-              {isEditMode
-                ? `Edit ${categoryType} Category`
-                : `Create New ${categoryType} Category`}
+            <h1 className="text-foreground mb-4 text-5xl font-bold tracking-tight text-balance capitalize">
+              {isEditMode ? `Edit ${categoryType} Category` : `Create New ${categoryType} Category`}
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="text-muted-foreground text-lg leading-relaxed">
               {isEditMode
                 ? 'Update your category information and assets below'
                 : 'Complete the form to create a new category for your content'}
@@ -197,17 +191,14 @@ const CategoryForm = ({
           </div>
 
           <Form {...form}>
-            <form
-              onSubmit={(e) => form.handleSubmit(onSubmit)(e)}
-              className="space-y-16"
-            >
+            <form onSubmit={(e) => form.handleSubmit(onSubmit)(e)} className="space-y-16">
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                     Basic Information
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <div className="space-y-8">
@@ -216,13 +207,13 @@ const CategoryForm = ({
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-foreground">
+                        <FormLabel className="text-foreground text-sm font-medium">
                           Category Name
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g. Buttons"
-                            className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors text-base"
+                            className="bg-muted/30 border-border/60 hover:border-border h-14 text-base transition-colors"
                             {...field}
                             disabled={isPending}
                           />
@@ -237,8 +228,8 @@ const CategoryForm = ({
                     name="parentId"
                     render={({ field }) => (
                       <FormItem>
-                        <div className="flex items-center justify-between mb-3">
-                          <FormLabel className="text-sm font-medium text-foreground">
+                        <div className="mb-3 flex items-center justify-between">
+                          <FormLabel className="text-foreground text-sm font-medium">
                             Parent Category (Optional)
                           </FormLabel>
                         </div>
@@ -250,14 +241,12 @@ const CategoryForm = ({
                           }}
                         >
                           <FormControl>
-                            <SelectTrigger className="h-14 bg-muted/30 border-border/60 hover:border-border transition-colors">
+                            <SelectTrigger className="bg-muted/30 border-border/60 hover:border-border h-14 transition-colors">
                               <SelectValue placeholder="Select a parent category" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="root">
-                              No Parent (Root)
-                            </SelectItem>
+                            <SelectItem value="root">No Parent (Root)</SelectItem>
                             {filteredParentCategories.map((parent) => (
                               <SelectItem key={parent.id} value={parent.id}>
                                 {parent.name}
@@ -275,19 +264,19 @@ const CategoryForm = ({
               {/* SECTION 2: IMAGES */}
               <section className="space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border/40" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5" />
+                  <div className="bg-border/40 h-px flex-1" />
+                  <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                    <Sparkles className="h-3.5 w-3.5" />
                     Cover Image
                   </h2>
-                  <div className="h-px flex-1 bg-border/40" />
+                  <div className="bg-border/40 h-px flex-1" />
                 </div>
 
                 <div className="space-y-4">
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/png"
                     className="hidden"
                     id={`image-upload-${categoryType}`}
                     onChange={handleImageUpload}
@@ -296,24 +285,22 @@ const CategoryForm = ({
 
                   {!uploadedImagePreview ? (
                     <label htmlFor={`image-upload-${categoryType}`}>
-                      <div className="group relative cursor-pointer rounded-xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center transition-all hover:border-primary/40 hover:bg-muted/30">
+                      <div className="group border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/30 relative cursor-pointer rounded-xl border-2 border-dashed p-12 text-center transition-all">
                         <div className="flex flex-col items-center justify-center gap-4">
-                          <div className="rounded-full bg-primary/10 p-4 transition-transform group-hover:scale-110">
-                            <ImageIcon className="h-8 w-8 text-primary" />
+                          <div className="bg-primary/10 rounded-full p-4 transition-transform group-hover:scale-110">
+                            <ImageIcon className="text-primary h-8 w-8" />
                           </div>
                           <div className="space-y-2">
-                            <p className="text-base font-medium text-foreground">
+                            <p className="text-foreground text-base font-medium">
                               Click to upload image
                             </p>
-                            <p className="text-sm text-muted-foreground">
-                              PNG, JPG, WEBP up to 5MB
-                            </p>
+                            <p className="text-muted-foreground text-sm">PNG only, up to 5MB</p>
                           </div>
                         </div>
                       </div>
                     </label>
                   ) : (
-                    <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border/60 bg-muted/30">
+                    <div className="border-border/60 bg-muted/30 relative aspect-video w-full overflow-hidden rounded-lg border">
                       <Image
                         src={uploadedImagePreview}
                         alt="Image Preview"
@@ -328,11 +315,10 @@ const CategoryForm = ({
                         onClick={() => {
                           setUploadedImagePreview(null);
                           setSelectedFile(null);
-                          if (fileInputRef.current)
-                            fileInputRef.current.value = '';
+                          if (fileInputRef.current) fileInputRef.current.value = '';
                           form.setValue('imageUrl', '');
                         }}
-                        className="absolute right-2 top-2 h-8 w-8"
+                        className="absolute top-2 right-2 h-8 w-8"
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -342,15 +328,15 @@ const CategoryForm = ({
               </section>
 
               {/* ACTIONS */}
-              <div className="pt-8 flex flex-col gap-4 md:flex-row">
+              <div className="flex flex-col gap-4 pt-8 md:flex-row">
                 <Button
                   type="submit"
                   disabled={isPending || isDeleting}
-                  className="w-full h-14 text-base font-semibold bg-primary hover:bg-primary/90 transition-all"
+                  className="bg-primary hover:bg-primary/90 h-14 w-full text-base font-semibold transition-all"
                 >
                   {isPending ? (
                     <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
                         <circle
                           className="opacity-25"
                           cx="12"
@@ -369,9 +355,7 @@ const CategoryForm = ({
                       {isEditMode ? 'Updating...' : 'Creating...'}
                     </span>
                   ) : (
-                    <span>
-                      {isEditMode ? 'Update Category' : 'Create Category'}
-                    </span>
+                    <span>{isEditMode ? 'Update Category' : 'Create Category'}</span>
                   )}
                 </Button>
               </div>

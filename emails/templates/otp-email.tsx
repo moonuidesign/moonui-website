@@ -13,7 +13,7 @@ import {
 } from '@react-email/components';
 import { EmailFooter } from '../components/email-footer';
 
-const LOGO_URL = 'https://moonui.design/logo.png';
+const LOGO_URL = 'https://moonui.design/logo-moonui.png';
 
 interface OTPEmailProps {
   title: string;

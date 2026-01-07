@@ -6,9 +6,9 @@ import { useFilter, useFilterStore } from '@/contexts';
 import { CardGridSkeleton } from '@/components/skeletons/card-skeleton';
 import { AssetsPageSkeleton } from '@/components/skeletons/assets-page-skeleton';
 import { useSearchParams } from 'next/navigation';
-import FilteredContent from './filtered-content';
-import GroupedContent from './grouped-content';
-import SidebarWrapper from './_components/sidebar-wrapper';
+import FilteredContent from '../../../components/assets-v2/filtered-content';
+import GroupedContent from '../../../components/assets-v2/grouped-content';
+import SidebarWrapper from '../../../components/assets-v2/_components/sidebar-wrapper';
 import { FileBox, LayoutGrid, Palette, PenTool, SlidersHorizontal } from 'lucide-react';
 import {
   Select,
@@ -105,7 +105,7 @@ function AssetsPageContent() {
     <div className="flex min-h-[85vh] gap-4 lg:gap-8">
       {/* Sidebar Column */}
       <div className="hidden shrink-0 md:block md:w-52 lg:w-64">
-        <div className="sticky top-24 flex flex-col gap-4 self-start lg:gap-8">
+        <div className="sticky top-24 flex flex-col gap-4 lg:gap-8">
           <div className="flex flex-col gap-2 lg:gap-4">
             <h1 className="font-['Plus_Jakarta_Sans'] text-lg font-semibold text-[#3D3D3D] lg:text-[24px]">
               What’s new?
@@ -124,7 +124,7 @@ function AssetsPageContent() {
       <div className="flex h-full min-w-0 flex-1 flex-col gap-4 lg:gap-8">
         <div className="hidden flex-col gap-2 md:flex lg:gap-4">
           <h1 className="relative font-['Plus_Jakarta_Sans'] text-lg font-semibold text-[#3D3D3D] capitalize lg:text-[24px]">
-            <span className="absolute top-1/2 left-[250px] h-[1.5px] w-[75%] -translate-y-1/2 transform bg-[#D3D3D3]">
+            <span className="absolute top-1/2 left-[250px] h-[1.5px] -translate-y-1/2 transform bg-[#D3D3D3] md:w-[53%] lg:w-[75%]">
               <div className="absolute top-1/2 left-0 h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]"></div>
               <div className="absolute top-1/2 right-0 h-1.5 w-1.5 -translate-y-1/2 transform rounded-full bg-[#D3D3D3]"></div>
             </span>
@@ -135,13 +135,12 @@ function AssetsPageContent() {
           </p>
         </div>
         <div>
-          <div className="flex items-center justify-between">
-            {' '}
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col items-center justify-between gap-2 md:flex-row">
+            <div className="scrollbar-hide flex w-full flex-row items-center gap-2 overflow-x-auto px-4 pb-2 md:w-auto md:flex-wrap md:overflow-visible md:pb-0 md:pl-0">
               <button
                 onClick={() => setContentType('components')}
                 className={cn(
-                  'flex h-9 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-all',
+                  'flex h-9 items-center gap-2 rounded-full border border-gray-200 px-4 text-sm font-medium shadow-sm transition-all',
                   contentType === 'components' ? activePill : inactivePill,
                 )}
               >
@@ -152,7 +151,7 @@ function AssetsPageContent() {
               <button
                 onClick={() => setContentType('templates')}
                 className={cn(
-                  'flex h-9 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-all',
+                  'flex h-9 items-center gap-2 rounded-full border border-gray-200 px-4 text-sm font-medium shadow-sm transition-all',
                   contentType === 'templates' ? activePill : inactivePill,
                 )}
               >
@@ -163,7 +162,7 @@ function AssetsPageContent() {
               <button
                 onClick={() => setContentType('designs')}
                 className={cn(
-                  'flex h-9 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-all',
+                  'flex h-9 items-center gap-2 rounded-full border border-gray-200 px-4 text-sm font-medium shadow-sm transition-all',
                   contentType === 'designs' ? activePill : inactivePill,
                 )}
               >
@@ -174,7 +173,7 @@ function AssetsPageContent() {
               <button
                 onClick={() => setContentType('gradients')}
                 className={cn(
-                  'flex h-9 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-all',
+                  'flex h-9 items-center gap-2 rounded-full border border-gray-200 px-4 text-sm font-medium shadow-sm transition-all',
                   contentType === 'gradients' ? activePill : inactivePill,
                 )}
               >
@@ -182,11 +181,10 @@ function AssetsPageContent() {
                 Gradients
               </button>
             </div>
-            <div className="flex w-full items-center gap-2 md:w-auto">
-              {/* Mobile Filter Toggle */}
+            <div className="flex w-full items-center justify-between gap-2 px-4 md:w-auto md:px-0">
               <button
                 onClick={() => setFilterOpen(true)}
-                className="flex h-10 flex-1 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 shadow-sm transition-all md:hidden"
+                className="flex h-10 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 shadow-sm transition-all md:hidden"
               >
                 <SlidersHorizontal className="h-4 w-4 text-gray-700" />
                 <span className="text-sm font-medium text-gray-700">Filters</span>
@@ -206,29 +204,30 @@ function AssetsPageContent() {
           </div>
         </div>
         {/* Right Controls */}
-
-        <div className="h-full w-full rounded-2xl bg-[#F7F7F7] p-4 md:p-8">
-          {loading ? (
-            <CardGridSkeleton />
-          ) : isGroupedMode ? (
-            <GroupedContent
-              categories={Object.keys(data.groupedAssets).map((name) => ({
-                id: name,
-                name,
-                slug: name.toLowerCase(),
-                count: 0,
-              }))}
-              groupedAssets={data.groupedAssets || {}}
-              onCategorySelect={(slug) => useFilterStore.getState().setCategory(slug)}
-            />
-          ) : (
-            <FilteredContent
-              key={`${contentType}-${tool}-${query}-${sortBy}-${categorySlugs.join('-')}`}
-              initialItems={data.allItems}
-              initialTotalCount={data.totalCount}
-              sortBy={sortBy}
-            />
-          )}
+        <div className="px-4 md:px-0">
+          <div className="h-fit w-full rounded-2xl bg-[#F7F7F7] p-4 md:h-fit md:p-8">
+            {loading ? (
+              <CardGridSkeleton />
+            ) : isGroupedMode ? (
+              <GroupedContent
+                categories={Object.keys(data.groupedAssets).map((name) => ({
+                  id: name,
+                  name,
+                  slug: name.toLowerCase(),
+                  count: 0,
+                }))}
+                groupedAssets={data.groupedAssets || {}}
+                onCategorySelect={(slug) => useFilterStore.getState().setCategory(slug)}
+              />
+            ) : (
+              <FilteredContent
+                key={`${contentType}-${tool}-${query}-${sortBy}-${categorySlugs.join('-')}`}
+                initialItems={data.allItems}
+                initialTotalCount={data.totalCount}
+                sortBy={sortBy}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

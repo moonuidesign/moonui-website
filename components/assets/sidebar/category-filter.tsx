@@ -32,7 +32,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   const visibleSubCategories = activeParentNodes.flatMap((cat) => cat.children || []);
 
   return (
-    <div className="shadow-card-sm w-full overflow-hidden rounded-xl border border-gray-100 bg-white transition-all lg:rounded-2xl">
+    <div className="shadow-card-sm w-full overflow-hidden rounded-xl border border-gray-100 border-gray-200 bg-white shadow-sm transition-all lg:rounded-2xl">
       {/* Header / Accordion Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}

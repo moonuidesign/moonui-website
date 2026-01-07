@@ -13,7 +13,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const { isFilterOpen, setFilterOpen } = useFilter();
 
   return (
-    <div className="min-h-screen overflow-x-hidden md:overflow-x-visible">
+    <div className="min-h-screen overflow-x-hidden">
       <motion.div
         animate={
           isFilterOpen

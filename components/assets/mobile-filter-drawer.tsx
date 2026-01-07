@@ -43,7 +43,7 @@ export default function MobileFilterDrawer({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-y-0 right-0 z-[101] flex h-full w-[320px] flex-col overflow-hidden rounded-l-[32px] bg-white shadow-2xl lg:hidden"
+            className="fixed inset-y-0 right-0 z-[101] flex h-full w-[320px] flex-col overflow-hidden bg-white shadow-2xl lg:hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-100 p-4">

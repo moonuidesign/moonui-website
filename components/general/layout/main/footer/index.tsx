@@ -85,6 +85,7 @@ const defaultColumns: ExtendedFooterColumn[] = [
       { label: 'Privacy Policy', href: '/privacy-policy' },
       { label: 'Terms of Use', href: '/terms-of-use' },
       { label: 'Contact Us', href: '/contact' },
+      { label: 'FAQ', href: '/faq' },
     ],
   },
 ];
@@ -246,13 +247,9 @@ const Footer: React.FC<FooterProps> = ({
               );
             })}
           </div>
-
-          <a
-            href={`mailto:${email}`}
-            className="mt-5 flex w-fit items-center justify-center text-center font-sans text-[20px] font-semibold text-orange-600 underline transition-colors hover:text-orange-700 md:mt-0 md:text-2xl"
-          >
-            {email}
-          </a>
+          <div className="mt-5 flex w-full items-center justify-center text-center font-sans text-[20px] font-semibold text-orange-600 underline transition-colors hover:text-orange-700 md:mt-0 md:w-fit md:text-2xl">
+            <Link href={`mailto:${email}`}>{email}</Link>
+          </div>
         </div>
         <p className="mt-[20px] text-center font-sans text-[12px] font-medium text-neutral-400 md:mt-[30px] md:text-sm lg:mt-[30px]">
           {copyright}

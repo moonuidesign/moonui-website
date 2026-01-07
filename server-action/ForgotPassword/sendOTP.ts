@@ -36,16 +36,14 @@ export async function sendOTPForgotPassword(
     // Simpan OTP ke Redis selama 10 menit
     await redis.set(redisKey, otp, 'EX', 600);
 
-    const signature = await generateResetPasswordSignature(
+    const signature = await generateResetPasswordSignature(email, otp, expiryTime);
+    const resetUrl = `/forgot-password/otp?signature=${encodeURIComponent(signature)}`;
+
+    await sendPasswordResetEmail(
       email,
       otp,
-      expiryTime,
+      `/forgot-password/otp?signature=${encodeURIComponent(signature)}?otp=${otp}`,
     );
-    const resetUrl = `/forgot-password/otp?signature=${encodeURIComponent(
-      signature,
-    )}`;
-
-    await sendPasswordResetEmail(email, otp, resetUrl);
     console.log(`[DEV ONLY] Password reset OTP for ${email} is: ${otp}`);
 
     return {

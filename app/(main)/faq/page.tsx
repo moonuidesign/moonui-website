@@ -1,36 +1,7 @@
-'use client';
-import dynamic from 'next/dynamic';
-import HeroSection from '@/components/landing-page/hero-sections';
-import { DATA_TABS } from '@/components/landing-page/approach';
+import FAQSection from '@/components/landing-page/faq';
+import NewsletterSection from '@/components/landing-page/newslatter';
 
-// Dynamic imports for below-the-fold components (reduces TBT)
-const InteractiveShowcase = dynamic(
-  () => import('@/components/landing-page/approach/interactive-show-case'),
-  { ssr: true },
-);
-const Feature = dynamic(() => import('@/components/landing-page/feature'), { ssr: true });
-const Benefits = dynamic(() => import('@/components/landing-page/bennefits'), { ssr: true });
-const ComponentShowcase = dynamic(() => import('@/components/landing-page/showcase'), {
-  ssr: true,
-});
-const FAQSection = dynamic(() => import('@/components/landing-page/faq'), { ssr: true });
-const NewsletterSection = dynamic(() => import('@/components/landing-page/newslatter'), {
-  ssr: true,
-});
-
-interface LandingPageProps {
-  showcaseData?: {
-    id: string | number;
-    title: string;
-    blocks: string;
-    image: string;
-  }[];
-}
-
-export default function LandingPage({ showcaseData }: LandingPageProps) {
-  const handleCtaClick = () => {
-    alert('Open Code Editor...');
-  };
+export default function FAQPage() {
   const faqData = [
     {
       categoryName: 'Design',
@@ -80,16 +51,6 @@ export default function LandingPage({ showcaseData }: LandingPageProps) {
   ];
   return (
     <>
-      <HeroSection />
-      <InteractiveShowcase
-        tabs={DATA_TABS}
-        title="Start Building Today"
-        description="Explore our component library and speed up your workflow."
-        onCtaClick={handleCtaClick}
-      />
-      <Feature />
-      <Benefits />
-      <ComponentShowcase data={showcaseData} />
       <FAQSection categories={faqData} />
       <NewsletterSection />
     </>

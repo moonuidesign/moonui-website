@@ -118,9 +118,7 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
       const lower = debouncedSearch.toLowerCase();
       setStaticData(
         STATIC_PAGES.filter(
-          (p) =>
-            p.title.toLowerCase().includes(lower) ||
-            p.keywords.some((k) => k.includes(lower)),
+          (p) => p.title.toLowerCase().includes(lower) || p.keywords.some((k) => k.includes(lower)),
         ),
       );
     } else {
@@ -175,11 +173,7 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
     router.push('/assets');
   };
 
-  const handleViewAll = (
-    type: string,
-    isCategory = false,
-    isSubCategory = false,
-  ) => {
+  const handleViewAll = (type: string, isCategory = false, isSubCategory = false) => {
     setOpen(false);
 
     if (isSubCategory) {
@@ -225,8 +219,7 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
   };
 
   // Check if any results exist
-  const hasResults =
-    Object.values(data).some((arr) => arr.length > 0) || staticData.length > 0;
+  const hasResults = Object.values(data).some((arr) => arr.length > 0) || staticData.length > 0;
 
   return (
     <Command.Dialog
@@ -234,10 +227,10 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
       onOpenChange={setOpen}
       shouldFilter={false}
       label="Global Search"
-      className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-black/60 backdrop-blur-sm transition-all"
+      className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 pt-[15vh] backdrop-blur-sm transition-all"
     >
-      <div className="w-full max-w-[700px] overflow-hidden rounded-xl bg-white shadow-2xl animate-in fade-in zoom-in-95 border border-gray-200 mx-4 font-['Inter']">
-        <div className="flex items-center border-b px-4 py-4 gap-3">
+      <div className="animate-in fade-in zoom-in-95 mx-4 w-full max-w-[700px] overflow-hidden rounded-xl border border-gray-200 bg-white font-['Inter'] shadow-2xl">
+        <div className="flex items-center gap-3 border-b px-4 py-4">
           <Search className="h-5 w-5 text-gray-400" />
           <Command.Input
             value={search}
@@ -250,16 +243,16 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
           />
           <button
             onClick={() => setOpen(false)}
-            className="text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500 font-mono hover:bg-gray-200"
+            className="rounded bg-gray-100 px-2 py-1 font-mono text-[10px] text-gray-500 hover:bg-gray-200"
           >
             ESC
           </button>
         </div>
 
-        <Command.List className="max-h-[65vh] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-200">
+        <Command.List className="scrollbar-thin scrollbar-thumb-gray-200 max-h-[65vh] overflow-y-auto p-2">
           {loading && (
-            <div className="py-12 text-center text-sm text-gray-500 flex items-center justify-center gap-2">
-              <Loader2 className="animate-spin h-4 w-4" /> Loading...
+            <div className="flex items-center justify-center gap-2 py-12 text-center text-sm text-gray-500">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading...
             </div>
           )}
 
@@ -283,9 +276,7 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-gray-50">
                         <File className="h-5 w-5 text-gray-500" />
                       </div>
-                      <span className="font-semibold text-gray-900">
-                        {page.title}
-                      </span>
+                      <span className="font-semibold text-gray-900">{page.title}</span>
                     </Command.Item>
                   ))}
                 </Command.Group>
@@ -354,12 +345,8 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
                       <Search className="h-5 w-5 text-gray-500" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="font-semibold text-gray-900">
-                        Search for "{search}"
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        View all results in Assets
-                      </span>
+                      <span className="font-semibold text-gray-900">Search for "{search}"</span>
+                      <span className="text-xs text-gray-500">View all results in Assets</span>
                     </div>
                   </Command.Item>
                 </Command.Group>
@@ -368,7 +355,7 @@ export function SearchCommand({ open, setOpen }: SearchCommandProps) {
           )}
         </Command.List>
 
-        <div className="bg-gray-50 px-4 py-2 text-xs text-gray-400 border-t flex justify-between">
+        <div className="flex justify-between border-t bg-gray-50 px-4 py-2 text-xs text-gray-400">
           <span>Navigate with arrows</span>
           <span>↵ to select</span>
         </div>
@@ -402,12 +389,7 @@ function SectionGroup({
   onSelectSubCategory,
   onViewAll,
 }: SectionGroupProps) {
-  if (
-    items.length === 0 &&
-    categories.length === 0 &&
-    subCategories.length === 0
-  )
-    return null;
+  if (items.length === 0 && categories.length === 0 && subCategories.length === 0) return null;
 
   const limit = 5;
   const limitedItems = items.slice(0, limit);
@@ -422,17 +404,13 @@ function SectionGroup({
             <span className="text-xs font-medium text-gray-500">{title}</span>
             <button
               onClick={() => onViewAll(type)}
-              className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+              className="flex items-center gap-1 text-xs text-blue-500 transition-colors hover:text-blue-600"
             >
               View all <ChevronRight className="h-3 w-3" />
             </button>
           </div>
           {limitedItems.map((item) => (
-            <ItemRow
-              key={item.id}
-              item={item}
-              onSelect={() => onSelectAsset(item)}
-            />
+            <ItemRow key={item.id} item={item} onSelect={() => onSelectAsset(item)} />
           ))}
         </Command.Group>
       )}
@@ -440,23 +418,17 @@ function SectionGroup({
       {categories.length > 0 && (
         <Command.Group>
           <div className="flex items-center justify-between px-4 py-2">
-            <span className="text-xs font-medium text-gray-500">
-              {title} Categories
-            </span>
+            <span className="text-xs font-medium text-gray-500">{title} Categories</span>
             <button
               onClick={() => onViewAll(type, true)}
-              className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+              className="flex items-center gap-1 text-xs text-blue-500 transition-colors hover:text-blue-600"
             >
               View all <ChevronRight className="h-3 w-3" />
             </button>
           </div>
           <div className="flex flex-wrap gap-2 px-2 pb-2">
             {limitedCategories.map((item) => (
-              <CategoryTag
-                key={item.id}
-                item={item}
-                onSelect={() => onSelectCategory(item)}
-              />
+              <CategoryTag key={item.id} item={item} onSelect={() => onSelectCategory(item)} />
             ))}
           </div>
         </Command.Group>
@@ -466,12 +438,10 @@ function SectionGroup({
       {subCategories.length > 0 && (
         <Command.Group>
           <div className="flex items-center justify-between px-4 py-2">
-            <span className="text-xs font-medium text-gray-500">
-              {title} Sub-Categories
-            </span>
+            <span className="text-xs font-medium text-gray-500">{title} Sub-Categories</span>
             <button
               onClick={() => onViewAll(type, false, true)}
-              className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+              className="flex items-center gap-1 text-xs text-blue-500 transition-colors hover:text-blue-600"
             >
               View all <ChevronRight className="h-3 w-3" />
             </button>
@@ -492,13 +462,7 @@ function SectionGroup({
   );
 }
 
-function ItemRow({
-  item,
-  onSelect,
-}: {
-  item: SearchResultItem;
-  onSelect: () => void;
-}) {
+function ItemRow({ item, onSelect }: { item: SearchResultItem; onSelect: () => void }) {
   let Icon = Monitor;
   if (item.type === 'Template') Icon = LayoutTemplate;
   if (item.type === 'Design' || item.type === 'Gradient') Icon = Palette;
@@ -523,18 +487,14 @@ function ItemRow({
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-gray-50">
         <Icon className="h-5 w-5 text-gray-500" />
       </div>
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-gray-900 truncate">
-            {item.title}
-          </span>
-          <span
-            className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${badgeColor}`}
-          >
+          <span className="truncate font-semibold text-gray-900">{item.title}</span>
+          <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${badgeColor}`}>
             {badgeText}
           </span>
         </div>
-        <div className="flex items-center gap-2 mt-0.5">
+        <div className="mt-0.5 flex items-center gap-2">
           <span className="text-xs text-gray-500 capitalize">{item.type}</span>
           {item.category && <span className="text-xs text-gray-300">•</span>}
           <span className="text-xs text-gray-500">{item.category}</span>
@@ -557,7 +517,7 @@ function CategoryTag({
     <Command.Item
       value={`${item.title} ${item.id}`}
       onSelect={onSelect}
-      className="cursor-pointer inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 aria-selected:bg-gray-100 aria-selected:border-gray-300 transition-colors"
+      className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 aria-selected:border-gray-300 aria-selected:bg-gray-100"
     >
       {isSub ? (
         <Layers className="h-3 w-3 text-gray-400" />
@@ -568,5 +528,3 @@ function CategoryTag({
     </Command.Item>
   );
 }
-
-

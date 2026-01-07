@@ -4,24 +4,26 @@ import Image from 'next/image';
 
 import { ArrowRight2 } from 'iconsax-reactjs';
 import Meteors from '@/components/ui/meteors';
+import Link from 'next/link';
 
 const HeroSection = () => {
   return (
     <div className="relative container mx-auto mb-10 flex h-fit w-7xl flex-col items-center justify-start gap-3 px-[24px] md:mt-[48px] md:max-w-3xl md:items-center md:justify-start md:px-0 md:pt-0 lg:h-[969px] lg:max-w-7xl">
-      <div className="absolute -top-[200px] left-1/2 -z-10 hidden h-full w-full -translate-x-1/2 overflow-visible md:block">
-        <Meteors minDuration={2.8} maxDuration={4.8} maxDelay={5.8} minDelay={2.5} number={5} />
+      <div className="absolute -top-[250px] left-1/2 -z-10 hidden h-[3800px] w-full -translate-x-1/2 overflow-visible md:block">
+        <Meteors minDuration={2.8} maxDuration={4.8} maxDelay={5.8} minDelay={2.5} number={3} />
       </div>
       <Image
         src="/moonNotFound.png"
-        className="md:w-max-[846px] md:h-max-[839px] lg:w-max-[1318.4px] h-max-[1142px] pointer-events-none absolute left-[49%] z-100 hidden -translate-x-1/2 scale-[1.25] -rotate-65 select-none md:top-[40%] md:block md:h-[648px] md:w-[681px] lg:top-[21%] lg:h-[1069px] lg:w-[1103px]"
+        className="md:w-max-[846px] md20-max-[839px] lg:w-max-[1318.4fullpx] h-max-[1142px] pointer-events-none absolute left-[49%] z-100 hidden -translate-x-1/2 scale-[1.25] -rotate-65 select-none md:top-[40%] md:block md:h-[648px] md:w-[681px] lg:top-[21%] lg:h-[1069px] lg:w-[1103px]"
         alt="Not Found"
         draggable={false}
         style={{
           opacity: 0.1,
           zIndex: 0,
         }}
-        width={1400}
-        height={1200}
+        priority
+        width={1103}
+        height={1069}
       />
 
       <div className="relative z-10 inline-flex w-full flex-col rounded-full bg-[#E7E7E7] md:w-lg md:max-w-2xl md:flex-row md:items-center md:justify-start md:gap-3 md:px-2 md:py-1.5 md:shadow-[0px_0px_0px_1px_rgba(211,211,211,1.00)] lg:w-[26rem] lg:max-w-xl">
@@ -49,11 +51,9 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-      <div className="relative z-10 flex flex-col items-start justify-start lg:px-4 lg:pt-6">
-        <div className="flex flex-col items-center justify-start">
-          <div className="justify-center text-left font-['Inter'] text-base font-normal text-neutral-600 lg:max-w-2xl lg:text-center lg:leading-7">
-            ⁠Flexible assets, consistent UI, quick MVP launch, easy integration
-          </div>
+      <div className="relative z-10 flex w-full flex-col items-start justify-start md:items-center md:justify-center lg:px-4 lg:pt-6">
+        <div className="flex max-w-[315px] justify-start text-left font-['Inter'] text-base font-normal break-all text-neutral-600 md:max-w-none md:items-center md:justify-center lg:max-w-2xl lg:text-center lg:leading-7">
+          ⁠Flexible assets, consistent UI, quick MVP launch, easy integration
         </div>
       </div>
       <div className="relative z-10 flex w-full flex-col items-start justify-start lg:items-center lg:justify-center lg:pt-[24px]">
@@ -62,7 +62,6 @@ const HeroSection = () => {
             Built for
           </span>
 
-          {/* Figma */}
           <div className="flex items-center justify-start gap-1 px-1">
             <Image
               alt="Logo Figma"
@@ -94,7 +93,10 @@ const HeroSection = () => {
         </div>
       </div>
       <div className="relative z-10 mt-5 flex w-full flex-col items-start justify-start md:items-center md:justify-center lg:pt-8">
-        <button className="group relative z-[110] flex h-11 cursor-pointer items-center gap-3 rounded-[13px] bg-[#2E2E2E] px-5 text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-colors hover:bg-black">
+        <Link
+          href="/pricing"
+          className="group relative z-[110] flex h-11 cursor-pointer items-center gap-3 rounded-[13px] bg-[#2E2E2E] px-5 text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-colors hover:bg-black"
+        >
           <div className="flex items-center justify-start gap-1">
             <span className="font-['Inter'] text-sm leading-5 font-medium text-white">
               Get Started
@@ -111,7 +113,7 @@ const HeroSection = () => {
               </div>
             </div>
           </div>
-        </button>
+        </Link>
       </div>
     </div>
   );
