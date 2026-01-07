@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/libs/utils';
 
@@ -15,30 +16,33 @@ export function ImageWithSkeleton({
   className,
   wrapperClassName,
   skeletonClassName,
-  ...props
 }: ImageWithSkeletonProps) {
   const [loaded, setLoaded] = useState(false);
 
+  // Don't render if src is empty/undefined
+  if (!src) {
+    return (
+      <div className={cn('relative h-full w-full overflow-hidden', wrapperClassName)}>
+        <Skeleton className={cn('absolute inset-0 h-full w-full', skeletonClassName)} />
+      </div>
+    );
+  }
+
   return (
-    <div className={cn('relative w-full h-full overflow-hidden', wrapperClassName)}>
-      {!loaded && (
-        <Skeleton
-          className={cn(
-            'absolute inset-0 w-full h-full',
-            skeletonClassName
-          )}
-        />
-      )}
-      <img
+    <div className={cn('relative h-full w-full overflow-hidden', wrapperClassName)}>
+      {!loaded && <Skeleton className={cn('absolute inset-0 h-full w-full', skeletonClassName)} />}
+      <Image
         src={src}
-        alt={alt}
+        alt={alt || ''}
+        fill
+        sizes="(max-width: 768px) 100vw, 50vw"
         className={cn(
-          'transition-opacity duration-300',
+          'object-cover transition-opacity duration-300',
           loaded ? 'opacity-100' : 'opacity-0',
-          className
+          className,
         )}
         onLoad={() => setLoaded(true)}
-        {...props}
+        unoptimized
       />
     </div>
   );

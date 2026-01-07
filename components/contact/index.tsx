@@ -31,7 +31,7 @@ export default function ContactSection() {
     <div className="container mx-auto px-4">
       <div className="flex flex-col items-start pt-11 font-sans md:items-center md:pt-16 md:text-center">
         {/* Branding Icon Badge */}
-        <div className="hidden size-10 items-center justify-center rounded-[13px] bg-[#3d3d3d] shadow-[0_0_0_1px_rgba(41,41,41,0.08)] md:flex">
+        <div className="hidden size-10 items-center justify-center rounded-[13px] bg-[#1B1B1B] shadow-[0_0_0_1px_rgba(41,41,41,0.08)] md:flex">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -101,7 +101,7 @@ export default function ContactSection() {
             <div className="flex flex-col gap-3">
               {/* Full Name */}
               <div className="flex w-full flex-col gap-1">
-                <label htmlFor="fullname" className="text-[12px] font-semibold text-[#3d3d3d]">
+                <label htmlFor="fullname" className="text-[12px] font-semibold text-[#1B1B1B]">
                   Full Name
                 </label>
                 <div className="group relative">
@@ -131,7 +131,7 @@ export default function ContactSection() {
 
               {/* Email */}
               <div className="flex w-full flex-col gap-1">
-                <label htmlFor="email" className="text-[12px] font-semibold text-[#3d3d3d]">
+                <label htmlFor="email" className="text-[12px] font-semibold text-[#1B1B1B]">
                   Email
                 </label>
                 <div className="group relative">
@@ -163,7 +163,7 @@ export default function ContactSection() {
 
               {/* Subject */}
               <div className="flex w-full flex-col gap-1">
-                <label className="text-[12px] font-semibold text-[#3d3d3d]">Subject</label>
+                <label className="text-[12px] font-semibold text-[#1B1B1B]">Subject</label>
                 <div className="group relative">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -198,7 +198,7 @@ export default function ContactSection() {
 
               {/* Message */}
               <div className="flex w-full flex-col gap-1">
-                <label htmlFor="message" className="text-[12px] font-semibold text-[#3d3d3d]">
+                <label htmlFor="message" className="text-[12px] font-semibold text-[#1B1B1B]">
                   Message
                 </label>
                 <div className="group/textarea relative flex w-full flex-col rounded-[11px] bg-white pb-3 shadow-[0_3px_6px_-1.5px_rgba(51,51,51,.06)] ring-1 ring-[#eeeeee] transition duration-200 focus-within:ring-[#ff4f00]">
@@ -224,7 +224,7 @@ export default function ContactSection() {
 
               {/* Product Name */}
               <div className="flex w-full flex-col gap-1">
-                <label htmlFor="product" className="text-[12px] font-semibold text-[#3d3d3d]">
+                <label htmlFor="product" className="text-[12px] font-semibold text-[#1B1B1B]">
                   Product Name
                 </label>
                 <input
@@ -238,7 +238,7 @@ export default function ContactSection() {
 
               {/* Submit Button */}
               <button
-                className="mt-3 flex h-10 items-center justify-center rounded-[11px] bg-[rgb(46,46,46)] px-3.5 text-[13px] font-bold text-white shadow-md transition duration-200 hover:bg-[#3d3d3d]"
+                className="mt-3 flex h-10 items-center justify-center rounded-[11px] bg-[rgb(46,46,46)] px-3.5 text-[13px] font-bold text-white shadow-md transition duration-200 hover:bg-[#1B1B1B]"
                 type="submit"
               >
                 Submit Message

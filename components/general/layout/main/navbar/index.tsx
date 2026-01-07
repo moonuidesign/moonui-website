@@ -127,7 +127,7 @@ export default function Navbar() {
   }, [isOpen]);
 
   return (
-    <section className="relative z-[1000] h-24">
+    <section className="relative z-[1010] h-24">
       <SearchCommand open={isSearchOpen} setOpen={setIsSearchOpen} />
 
       <div className="pointer-events-none fixed top-10 right-0 left-0 z-[60] container mx-auto flex justify-center pt-6">
@@ -527,13 +527,14 @@ export default function Navbar() {
             <div className="flex-1 overflow-y-auto">
               <motion.div className="flex flex-col px-6" initial="closed" animate="open">
                 {MENU_ITEMS.map((item, i) => (
-                  <div
+                  <Link
+                    href={item.href}
                     key={i}
                     className="flex items-center gap-3 border-b border-dashed border-gray-200 py-5"
                   >
                     <item.icon className="size-6 text-gray-400" />
                     <span className="font-medium text-gray-700">{item.label}</span>
-                  </div>
+                  </Link>
                 ))}
               </motion.div>
 
