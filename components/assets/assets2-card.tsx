@@ -124,7 +124,7 @@ export const Assets2Card: React.FC<Assets2CardProps> = ({
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="max-w-[130px] truncate text-center font-['Inter'] text-sm leading-6 font-medium text-[#3D3D3D]">
+                <div className="max-w-[130px] truncate text-center font-['Inter'] text-sm leading-6 font-medium text-[#3D3D3D] md:max-w-[180px]">
                   {title}
                 </div>
               </TooltipTrigger>
