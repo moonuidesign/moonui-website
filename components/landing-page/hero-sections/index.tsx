@@ -4,6 +4,7 @@ import Image from 'next/image';
 
 import { ArrowRight2 } from 'iconsax-reactjs';
 import Meteors from '@/components/ui/meteors';
+import Link from 'next/link';
 
 const HeroSection = () => {
   return (
@@ -92,7 +93,10 @@ const HeroSection = () => {
         </div>
       </div>
       <div className="relative z-10 mt-5 flex w-full flex-col items-start justify-start md:items-center md:justify-center lg:pt-8">
-        <button className="group relative z-[110] flex h-11 cursor-pointer items-center gap-3 rounded-[13px] bg-[#2E2E2E] px-5 text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-colors hover:bg-black">
+        <Link
+          href="/pricing"
+          className="group relative z-[110] flex h-11 cursor-pointer items-center gap-3 rounded-[13px] bg-[#2E2E2E] px-5 text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-colors hover:bg-black"
+        >
           <div className="flex items-center justify-start gap-1">
             <span className="font-['Inter'] text-sm leading-5 font-medium text-white">
               Get Started
@@ -109,7 +113,7 @@ const HeroSection = () => {
               </div>
             </div>
           </div>
-        </button>
+        </Link>
       </div>
     </div>
   );

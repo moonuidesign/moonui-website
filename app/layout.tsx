@@ -36,6 +36,9 @@ export const metadata: Metadata = {
     default: 'MoonUI Design — We Build Your Premium Design Library',
     template: '%s | MoonUI Design',
   },
+  icons: {
+    icon: '/logo-v2.svg',
+  },
   description:
     'MoonUI is a premium design asset library that helps designers and businesses create better, high-quality designs faster without cutting corners.',
   keywords: [
@@ -71,7 +74,7 @@ export const metadata: Metadata = {
       'MoonUI is a premium design asset library that helps designers and businesses create better, high-quality designs faster without cutting corners.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/logo-moonui.png',
         width: 1200,
         height: 630,
         alt: 'MoonUI Design — Premium UI Components & Templates',
@@ -83,7 +86,7 @@ export const metadata: Metadata = {
     title: 'MoonUI Design — We Build Your Premium Design Library',
     description:
       'MoonUI is a premium design asset library that helps designers and businesses create better, high-quality designs faster without cutting corners.',
-    images: ['/og-image.png'],
+    images: ['/logo-moonui.png'],
     creator: '@moonuidesign',
   },
   robots: {

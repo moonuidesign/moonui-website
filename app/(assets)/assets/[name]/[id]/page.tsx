@@ -122,7 +122,7 @@ export async function generateMetadata({
       ].filter(Boolean),
       openGraph: {
         title: `${title} | MoonUI ${config.label}`,
-        description: description.slice(0, 160),
+        description: cleanDescription.slice(0, 160),
         url: `${baseUrl}/assets/${name}/${id}`,
         siteName: 'MoonUI',
         images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: title }] : undefined,
@@ -131,7 +131,7 @@ export async function generateMetadata({
       twitter: {
         card: 'summary_large_image',
         title: `${title} | MoonUI`,
-        description: description.slice(0, 160),
+        description: cleanDescription.slice(0, 160),
         images: imageUrl ? [imageUrl] : undefined,
       },
       alternates: {

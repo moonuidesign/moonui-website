@@ -5,7 +5,10 @@ import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/libs/utils';
 
-interface ImageWithSkeletonProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface ImageWithSkeletonProps {
+  src?: string;
+  alt?: string;
+  className?: string;
   wrapperClassName?: string;
   skeletonClassName?: string;
 }

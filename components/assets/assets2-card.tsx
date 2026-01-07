@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useFilter } from '@/contexts';
+import { Copy, DocumentDownload } from 'iconsax-reactjs';
 
 interface Assets2CardProps {
   id: string;
@@ -93,9 +94,7 @@ export const Assets2Card: React.FC<Assets2CardProps> = ({
               }}
               className="flex cursor-pointer items-center gap-2 rounded-full bg-white px-4 py-1 shadow-sm transition-all hover:scale-105"
             >
-              <div className="flex h-3 w-3 items-center justify-center">
-                <div className="h-3 w-2.5 rounded-[2px] bg-zinc-800" />
-              </div>
+              <Copy />
               <span className="font-['Inter'] text-xs leading-6 font-semibold text-[#3D3D3D]">
                 Copy
               </span>
@@ -110,6 +109,7 @@ export const Assets2Card: React.FC<Assets2CardProps> = ({
               }}
               className="flex cursor-pointer items-center gap-2 rounded-full bg-white px-4 py-1 shadow-sm transition-all hover:scale-105"
             >
+              <DocumentDownload />
               <span className="font-['Inter'] text-xs leading-6 font-semibold text-[#3D3D3D]">
                 Download
               </span>
@@ -124,7 +124,7 @@ export const Assets2Card: React.FC<Assets2CardProps> = ({
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="max-w-[100px] truncate text-center font-['Inter'] text-sm leading-6 font-medium text-[#3D3D3D]">
+                <div className="max-w-[130px] truncate text-center font-['Inter'] text-sm leading-6 font-medium text-[#3D3D3D]">
                   {title}
                 </div>
               </TooltipTrigger>
