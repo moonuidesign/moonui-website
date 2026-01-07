@@ -129,7 +129,7 @@ const PricingCard = ({
       }`}
     >
       <div
-        className={`h-40 w-full rounded-2xl bg-gradient-to-br ${plan.gradient} relative flex flex-col justify-between`}
+        className={`h-40 w-full rounded-2xl bg-gradient-to-br md:h-44 lg:h-40 ${plan.gradient} relative flex flex-col justify-between`}
       >
         <div className="relative z-10 flex h-full flex-col justify-between p-4">
           <div className="flex items-center justify-between">
@@ -159,7 +159,7 @@ const PricingCard = ({
               <div className="animate-fade-in-up mt-2 flex items-center gap-2">
                 <div
                   className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase ${
-                    plan.isDark ? 'bg-[#FF4F00] text-white' : 'bg-white text-zinc-900'
+                    !plan.isDark ? 'bg-[#FF4F00] text-white' : 'bg-white text-zinc-900'
                   }`}
                 >
                   <TicketPercent size={12} />
