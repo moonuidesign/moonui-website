@@ -8,8 +8,9 @@ export interface UnifiedContent {
   description: string | null;
   slug: any;
   imageUrl: string | null;
-
-  // --- ADD THIS PROPERTY ---
+  copyDataHtml?: string;
+  copyDataPlain?: string;
+  downloadUrl?: string;
   images?: { url: string }[];
   // ------------------------
 

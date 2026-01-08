@@ -102,8 +102,8 @@ export default withSentryConfig(nextConfig, {
 
   // Suppresses source map uploading logs during build
   silent: true,
-  org: 'moonui',
-  project: 'moonui-website',
+  org: 'pt-pengangguran-sejati',
+  project: 'moonui-design',
 
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/

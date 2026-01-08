@@ -29,13 +29,12 @@ import {
 } from 'lucide-react';
 import { UnifiedContent } from '@/types/assets';
 import { incrementAssetStats } from '@/server-action/incrementAssetStats';
-import { UseCopyToClipboard } from '@/hooks/use-clipboard';
 import { useFingerprint } from '@/hooks/use-fingerprint';
 import { checkDownloadLimit } from '@/server-action/limit';
 import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 // Import komponen CodeGroup (Tabs) yang sudah dibuat
-import { CodeGroup, type CodeFile } from '../ui/shadcn-io/tabs';
 
 // --- HELPER: SAFE URL PARSER ---
 const getSafeImageUrl = (src: string | { url: string } | null | undefined): string | null => {
@@ -207,18 +206,17 @@ export default function ContentDetailClient({
 
   // --- HOOKS ---
   const { visitorId, isLoading: isFpLoading } = useFingerprint();
-  const { copy } = UseCopyToClipboard();
 
   // --- LOGIC ---
   // Lock: content tier is 'pro' and user is 'free'
   const isLocked = content.tier === 'pro' && userTier === 'free';
   const canDownload = !isLocked;
+  const router = useRouter();
+  // // Cek apakah ada snippets. Type 'component' wajib punya snippets.
+  // const showCodeSnippet = content.type === 'component' && content.codeSnippets;
 
-  // Cek apakah ada snippets. Type 'component' wajib punya snippets.
-  const showCodeSnippet = content.type === 'component' && content.codeSnippets;
-
-  // Can view code: user is 'pro' OR content is 'free'
-  const canViewCode = userTier === 'pro' || content.tier === 'free';
+  // // Can view code: user is 'pro' OR content is 'free'
+  // const canViewCode = userTier === 'pro' || content.tier === 'free';
 
   // --- IMAGE LOGIC ---
   const validImages = useMemo(() => {
@@ -236,106 +234,106 @@ export default function ContentDetailClient({
   const hasMultipleImages = validImages.length > 1;
 
   // --- CODE FILES LOGIC (PERBAIKAN UTAMA DI SINI) ---
-  const codeFiles: CodeFile[] = useMemo(() => {
-    if (!content.codeSnippets) return [];
+  // const codeFiles: CodeFile[] = useMemo(() => {
+  //   if (!content.codeSnippets) return [];
 
-    // Prioritas urutan tab
-    const priorityOrder = ['react', 'vue', 'angular', 'html', 'css', 'js', 'ts'];
+  //   // Prioritas urutan tab
+  //   const priorityOrder = ['react', 'vue', 'angular', 'html', 'css', 'js', 'ts'];
 
-    // Ambil keys yang ada di snippet
-    const keys = Object.keys(content.codeSnippets);
+  //   // Ambil keys yang ada di snippet
+  //   const keys = Object.keys(content.codeSnippets);
 
-    // Sort keys berdasarkan prioritas
-    keys.sort((a, b) => {
-      const idxA = priorityOrder.indexOf(a);
-      const idxB = priorityOrder.indexOf(b);
-      // Jika key tidak ada di priorityOrder, taruh di belakang
-      return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
-    });
+  //   // Sort keys berdasarkan prioritas
+  //   keys.sort((a, b) => {
+  //     const idxA = priorityOrder.indexOf(a);
+  //     const idxB = priorityOrder.indexOf(b);
+  //     // Jika key tidak ada di priorityOrder, taruh di belakang
+  //     return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
+  //   });
 
-    return keys.map((key) => {
-      const code = content.codeSnippets![key];
-      let fileName = '';
-      let lang = '';
+  //   return keys.map((key) => {
+  //     const code = content.codeSnippets![key];
+  //     let fileName = '';
+  //     let lang = '';
 
-      // Mapping cerdas berdasarkan Key JSON
-      switch (key.toLowerCase()) {
-        case 'react':
-          fileName = 'Component.tsx';
-          lang = 'tsx';
-          break;
-        case 'vue':
-          fileName = 'App.vue';
-          lang = 'vue';
-          break;
-        case 'angular':
-          fileName = 'app.component.ts';
-          lang = 'typescript'; // Shiki biasanya pakai 'ts' atau 'typescript'
-          break;
-        case 'html':
-          fileName = 'index.html';
-          lang = 'html';
-          break;
-        case 'css':
-          fileName = 'styles.css';
-          lang = 'css';
-          break;
-        case 'js':
-        case 'javascript':
-          fileName = 'script.js';
-          lang = 'javascript';
-          break;
-        case 'ts':
-        case 'typescript':
-          fileName = 'utils.ts';
-          lang = 'typescript';
-          break;
-        default:
-          fileName = `${key}.txt`;
-          lang = 'text';
-      }
+  //     // Mapping cerdas berdasarkan Key JSON
+  //     switch (key.toLowerCase()) {
+  //       case 'react':
+  //         fileName = 'Component.tsx';
+  //         lang = 'tsx';
+  //         break;
+  //       case 'vue':
+  //         fileName = 'App.vue';
+  //         lang = 'vue';
+  //         break;
+  //       case 'angular':
+  //         fileName = 'app.component.ts';
+  //         lang = 'typescript'; // Shiki biasanya pakai 'ts' atau 'typescript'
+  //         break;
+  //       case 'html':
+  //         fileName = 'index.html';
+  //         lang = 'html';
+  //         break;
+  //       case 'css':
+  //         fileName = 'styles.css';
+  //         lang = 'css';
+  //         break;
+  //       case 'js':
+  //       case 'javascript':
+  //         fileName = 'script.js';
+  //         lang = 'javascript';
+  //         break;
+  //       case 'ts':
+  //       case 'typescript':
+  //         fileName = 'utils.ts';
+  //         lang = 'typescript';
+  //         break;
+  //       default:
+  //         fileName = `${key}.txt`;
+  //         lang = 'text';
+  //     }
 
-      return {
-        fileName,
-        code,
-        lang,
-      };
-    });
-  }, [content.codeSnippets]);
+  //     return {
+  //       fileName,
+  //       code,
+  //       lang,
+  //     };
+  //   });
+  // }, [content.codeSnippets]);
 
   // --- HANDLERS ---
   // --- HANDLERS ---
-  const handleCopyCode = async () => {
-    if (isFpLoading) {
-      toast.info('Initializing security check...');
-      return;
-    }
-    setIsProcessing(true);
-    try {
-      const limitCheck = await checkDownloadLimit('copy', assetId, type, visitorId);
-      if (!limitCheck.success) {
-        toast.error(limitCheck.message);
-        return;
-      }
+  // const handleCopyCode = async () => {
+  //   if (isFpLoading) {
+  //     toast.info('Initializing security check...');
+  //     return;
+  //   }
+  //   setIsProcessing(true);
+  //   try {
+  //     const limitCheck = await checkDownloadLimit('copy', assetId, type, visitorId);
+  //     if (!limitCheck.success) {
+  //       toast.error(limitCheck.message);
+  //       return;
+  //     }
 
-      // Copy code dari tab pertama (biasanya React)
-      const codeToCopy = codeFiles[0]?.code;
+  //     // Copy code dari tab pertama (biasanya React)
+  //     const codeToCopy = codeFiles[0]?.code;
 
-      if (!codeToCopy) {
-        toast.error('No code available to copy');
-        return;
-      }
-      await incrementAssetStats(content.id, content.type, 'copy');
-      copy(codeToCopy, 'Code copied to clipboard!');
-      if (limitCheck.remaining !== undefined) {
-        toast.success(`Remaining free copies: ${limitCheck.remaining}`);
-      }
-    } catch (error) {
-      toast.error('Something went wrong.');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  //     if (!codeToCopy) {
+  //       toast.error('No code available to copy');
+  //       return;
+  //     }
+  //     await incrementAssetStats(content.id, content.type, 'copy');
+  //     copy(codeToCopy, 'Code copied to clipboard!');
+  //     if (limitCheck.remaining !== undefined) {
+  //       toast.success(`Remaining free copies: ${limitCheck.remaining}`);
+  //     }
+  //   } catch (error) {
+  //     toast.error('Something went wrong.');
+  //   } finally {
+  //     setIsProcessing(false);
+  //   }
+  // };
 
   const handleDownloadFile = async () => {
     if (isFpLoading) {
@@ -370,8 +368,62 @@ export default function ContentDetailClient({
     setIsImageModalOpen(true);
   };
 
-  const slugString =
-    typeof content.slug === 'string' ? content.slug : content.slug?.current || 'N/A';
+  const handleCopy = async () => {
+    if (isFpLoading) {
+      toast.info('Initializing security check...');
+      return;
+    }
+
+    const htmlContent = content.copyDataHtml;
+    const plainContent = content.copyDataPlain;
+
+    if (!htmlContent && !plainContent) {
+      toast.error('No content to copy');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const limitCheck = await checkDownloadLimit('copy', assetId, type, visitorId);
+      if (!limitCheck.success) {
+        if (limitCheck.requiresLogin) router.push('/signin');
+        else if (limitCheck.requiresUpgrade) router.push('/pricing');
+        else toast.error(limitCheck.message);
+        return;
+      }
+
+      // Use Clipboard API to write both HTML and plain text
+      if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+        const clipboardItems: Record<string, Blob> = {};
+
+        if (htmlContent) {
+          clipboardItems['text/html'] = new Blob([htmlContent], { type: 'text/html' });
+        }
+        if (plainContent) {
+          clipboardItems['text/plain'] = new Blob([plainContent], { type: 'text/plain' });
+        }
+
+        await navigator.clipboard.write([new ClipboardItem(clipboardItems)]);
+      } else {
+        // Fallback for browsers that don't support ClipboardItem
+        await navigator.clipboard.writeText(plainContent || htmlContent || '');
+      }
+
+      await incrementAssetStats(content.id, content.type, 'copy');
+      toast.success('Component copied to clipboard!');
+
+      if (limitCheck.remaining !== undefined) {
+        toast.info(`Remaining free copies: ${limitCheck.remaining}`);
+      }
+    } catch (error) {
+      console.error('Copy failed:', error);
+      toast.error('Failed to copy. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  // const slugString =
+  //   typeof content.slug === 'string' ? content.slug : content.slug?.current || 'N/A';
 
   return (
     <div className="relative mx-auto min-h-screen w-full max-w-[1280px] p-4 font-sans md:p-8">
@@ -508,7 +560,7 @@ export default function ContentDetailClient({
             )}
 
             {/* --- CODE SNIPPET SECTION (TABS) --- */}
-            {showCodeSnippet && (
+            {/* {showCodeSnippet && (
               <div className="mt-6 w-full lg:mt-0">
                 {canViewCode ? (
                   <CodeGroup
@@ -561,7 +613,7 @@ export default function ContentDetailClient({
                   </div>
                 )}
               </div>
-            )}
+            )} */}
           </div>
         </div>
 
@@ -610,7 +662,7 @@ export default function ContentDetailClient({
                   </Link>
 
                   <button
-                    onClick={content.type === 'component' ? handleCopyCode : handleDownloadFile}
+                    onClick={content.type === 'component' ? handleCopy : handleDownloadFile}
                     disabled={isProcessing || isFpLoading}
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 py-3.5 font-bold text-white shadow-lg shadow-neutral-400/20 transition hover:bg-black disabled:bg-neutral-500"
                   >
