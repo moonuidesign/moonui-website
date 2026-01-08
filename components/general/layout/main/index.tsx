@@ -116,7 +116,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           >
             <Navbar />
           </Suspense>
-          {children}
+          <main id="main-content">{children}</main>
           <Footer
             socials={{
               x: 'https://x.com/moonuidesign',

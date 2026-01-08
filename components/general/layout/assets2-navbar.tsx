@@ -49,6 +49,8 @@ export default function Assets2Navbar() {
             width={80}
             height={24}
             className="h-6 w-auto object-contain select-none"
+            priority
+            fetchPriority="high"
           />
         </span>
       </Link>

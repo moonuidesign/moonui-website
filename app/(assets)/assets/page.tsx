@@ -1,14 +1,12 @@
 'use client';
 
 import React, { Suspense, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { getInfiniteData, getOverviewData } from '@/server-action/getAssets2Data';
 import { useFilter, useFilterStore } from '@/contexts';
 import { CardGridSkeleton } from '@/components/skeletons/card-skeleton';
 import { AssetsPageSkeleton } from '@/components/skeletons/assets-page-skeleton';
 import { useSearchParams } from 'next/navigation';
-import FilteredContent from '../../../components/assets-v2/filtered-content';
-import GroupedContent from '../../../components/assets-v2/grouped-content';
-import SidebarWrapper from '../../../components/assets-v2/_components/sidebar-wrapper';
 import { FileBox, LayoutGrid, Palette, PenTool, SlidersHorizontal } from 'lucide-react';
 import {
   Select,
@@ -18,6 +16,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/libs/utils';
+
+// Dynamic imports for code splitting - reduces initial bundle size
+const FilteredContent = dynamic(() => import('../../../components/assets-v2/filtered-content'), {
+  loading: () => <CardGridSkeleton />,
+});
+const GroupedContent = dynamic(() => import('../../../components/assets-v2/grouped-content'), {
+  loading: () => <CardGridSkeleton />,
+});
+const SidebarWrapper = dynamic(
+  () => import('../../../components/assets-v2/_components/sidebar-wrapper'),
+  { loading: () => <div className="h-64 animate-pulse rounded-xl bg-gray-100" /> },
+);
 
 function AssetsPageContent() {
   const [loading, setLoading] = useState(true);
@@ -115,9 +125,7 @@ function AssetsPageContent() {
             </p>
           </div>
           {/* Sidebar Filter Wrapper */}
-          <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-gray-100" />}>
-            <SidebarWrapper />
-          </Suspense>
+          <SidebarWrapper />
         </div>
       </div>
 
@@ -192,7 +200,10 @@ function AssetsPageContent() {
 
               {/* Sort Dropdown */}
               <Select value={sortBy} onValueChange={(v: 'recent' | 'popular') => setSortBy(v)}>
-                <SelectTrigger className="h-10 w-[140px] rounded-full border-gray-200 bg-white shadow-sm">
+                <SelectTrigger
+                  className="h-10 w-[140px] rounded-full border-gray-200 bg-white shadow-sm"
+                  aria-label="Sort assets"
+                >
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">

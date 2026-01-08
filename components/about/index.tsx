@@ -368,7 +368,7 @@ const AboutSection = () => {
         </div>
 
         {/* --- BLOCK 4: TEAM SECTION --- */}
-        <div className="mx-auto w-full bg-zinc-900 px-4 py-10 md:px-0">
+        <div className="mx-auto w-full max-w-7xl rounded-4xl bg-zinc-900 px-4 py-10 shadow-xl md:px-0 lg:rounded-[40px]">
           <div className="container mx-auto flex flex-col items-start gap-12 md:max-w-xl lg:max-w-5xl">
             <div className="flex w-full flex-col gap-5">
               <div className="relative flex items-center gap-6 md:gap-10">
@@ -384,11 +384,13 @@ const AboutSection = () => {
               </div>
 
               <div className="flex flex-col gap-4">
-                <MainHeading className="text-white">Meet the heart of MoonUI</MainHeading>
-                <p className="text-base md:text-lg">
-                  <span className="font-medium text-zinc-600">Our team</span>
-                  <span className="text-zinc-400"> creates </span>
-                  <span className="font-medium text-zinc-600">beautiful design system.</span>
+                <MainHeading className="font-jakarta text-white">
+                  Meet the heart of MoonUI
+                </MainHeading>
+                <p className="font-sans text-base md:text-lg">
+                  <span className="font-medium text-zinc-400">Our team</span>
+                  <span className="text-white"> creates </span>
+                  <span className="font-medium text-zinc-400">beautiful design system.</span>
                 </p>
               </div>
             </div>
@@ -414,14 +416,20 @@ const AboutSection = () => {
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<XIcon className="h-4 w-4" />}
+                        label="Follow Achmad on X"
+                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
                       />
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<InstagramIcon className="h-4 w-4" />}
+                        label="Follow Achmad on Instagram"
+                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
                       />
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<LinkedInIcon className="h-4 w-4" />}
+                        label="Follow Achmad on LinkedIn"
+                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
                       />
                     </div>
                   </div>
@@ -447,14 +455,17 @@ const AboutSection = () => {
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<XIcon className="h-4 w-4" />}
+                        label="Follow Dera on X"
                       />
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<InstagramIcon className="h-4 w-4" />}
+                        label="Follow Dera on Instagram"
                       />
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<LinkedInIcon className="h-4 w-4" />}
+                        label="Follow Dera on LinkedIn"
                       />
                     </div>
                   </div>
@@ -480,14 +491,17 @@ const AboutSection = () => {
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<XIcon className="h-4 w-4" />}
+                        label="Follow Fajar on X"
                       />
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<InstagramIcon className="h-4 w-4" />}
+                        label="Follow Fajar on Instagram"
                       />
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<LinkedInIcon className="h-4 w-4" />}
+                        label="Follow Fajar on LinkedIn"
                       />
                     </div>
                   </div>
@@ -496,9 +510,9 @@ const AboutSection = () => {
             </div>
 
             <div className="w-full px-0 text-left">
-              <p className="text-sm text-zinc-500">
-                We make <span className="text-[#3D3D3D]">design & code work easier</span> and{' '}
-                <span className="text-[#3D3D3D]">better</span>.
+              <p className="text-sm text-white">
+                We make <span className="text-zinc-400">design & code work easier</span> and{' '}
+                <span className="text-white">better</span>.
               </p>
             </div>
           </div>

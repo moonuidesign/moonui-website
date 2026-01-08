@@ -452,7 +452,7 @@ export default function ContentDetailClient({
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1, duration: 0.4 }}
+                transition={{ duration: 0.3 }}
                 className="group relative w-full overflow-hidden rounded-3xl border border-[#D3D3D3] bg-white shadow-xl shadow-neutral-100"
               >
                 <div
@@ -466,6 +466,8 @@ export default function ContentDetailClient({
                     fill
                     className="object-cover transition-transform duration-700"
                     priority
+                    fetchPriority="high"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 65vw, 832px"
                   />
                 </div>
                 <AssetTypeBadge type={content.type} />
@@ -657,6 +659,7 @@ export default function ContentDetailClient({
                         : 'pointer-events-none cursor-not-allowed text-neutral-300 opacity-50'
                     }`}
                     aria-disabled={!prevItem}
+                    aria-label="Previous asset"
                   >
                     <ChevronLeft size={18} />
                   </Link>
@@ -688,6 +691,7 @@ export default function ContentDetailClient({
                         : 'pointer-events-none cursor-not-allowed text-neutral-300 opacity-50'
                     }`}
                     aria-disabled={!nextItem}
+                    aria-label="Next asset"
                   >
                     <ChevronRight size={18} />
                   </Link>
@@ -702,6 +706,7 @@ export default function ContentDetailClient({
                         : 'pointer-events-none cursor-not-allowed text-neutral-300 opacity-50'
                     }`}
                     aria-disabled={!prevItem}
+                    aria-label="Previous asset"
                   >
                     <ChevronLeft size={18} />
                   </Link>
@@ -719,6 +724,7 @@ export default function ContentDetailClient({
                         : 'pointer-events-none cursor-not-allowed text-neutral-300 opacity-50'
                     }`}
                     aria-disabled={!nextItem}
+                    aria-label="Next asset"
                   >
                     <ChevronRight size={18} />
                   </Link>
@@ -790,7 +796,7 @@ export default function ContentDetailClient({
             </div>
             <div className="overflow-hidden rounded-2xl border border-[#D3D3D3] bg-white">
               <div className="border-b border-[#D3D3D3] bg-neutral-50/50 px-5 py-3">
-                <h3 className="text-sm font-bold text-neutral-800">Specifications</h3>
+                <p className="text-sm font-bold text-neutral-800">Specifications</p>
               </div>
               {/* Responsive Table */}
               <div className="divide-y divide-neutral-100">
@@ -1059,9 +1065,9 @@ function CardItem({
       </div>
       <div className="flex items-start justify-between px-1">
         <div className="space-y-1 overflow-hidden">
-          <h4 className="truncate text-sm leading-tight font-bold text-neutral-900 transition group-hover:text-blue-600">
+          <p className="truncate text-sm leading-tight font-bold text-neutral-900 transition group-hover:text-blue-600">
             {item.title}
-          </h4>
+          </p>
           <div className="flex items-center gap-2">
             <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500">
               #{item.number}

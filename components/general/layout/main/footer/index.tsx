@@ -156,9 +156,21 @@ const Footer: React.FC<FooterProps> = ({
 
           {/* Social Icons */}
           <div className="flex items-center gap-3">
-            <SocialButton href={socials?.x} icon={<XIcon className="h-4 w-4" />} />
-            <SocialButton href={socials?.instagram} icon={<InstagramIcon className="h-4 w-4" />} />
-            <SocialButton href={socials?.linkedin} icon={<LinkedInIcon className="h-4 w-4" />} />
+            <SocialButton
+              href={socials?.x}
+              icon={<XIcon className="h-4 w-4" />}
+              label="Follow us on X"
+            />
+            <SocialButton
+              href={socials?.instagram}
+              icon={<InstagramIcon className="h-4 w-4" />}
+              label="Follow us on Instagram"
+            />
+            <SocialButton
+              href={socials?.linkedin}
+              icon={<LinkedInIcon className="h-4 w-4" />}
+              label="Follow us on LinkedIn"
+            />
           </div>
         </div>
 
@@ -247,7 +259,7 @@ const Footer: React.FC<FooterProps> = ({
               );
             })}
           </div>
-          <div className="mt-5 flex w-full items-center justify-center text-center font-sans text-[20px] font-semibold text-orange-600 underline transition-colors hover:text-orange-700 md:mt-0 md:w-fit md:text-2xl">
+          <div className="mt-5 flex w-full items-center justify-center text-center font-sans text-[20px] font-semibold text-orange-600 underline transition-colors hover:text-orange-700 md:mt-0 md:w-full md:text-2xl">
             <Link href={`mailto:${email}`}>{email}</Link>
           </div>
         </div>
