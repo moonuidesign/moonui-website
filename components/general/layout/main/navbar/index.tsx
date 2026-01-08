@@ -36,8 +36,10 @@ const MENU_ITEMS = [
 export function SkeletonNavbar({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return <div className={cn('animate-pulse rounded-md bg-zinc-200/80', className)} {...props} />;
 }
+// Create MotionLink outside component to prevent recreation during render
+const MotionLink = motion.create(Link);
+
 export default function Navbar() {
-  const MotionLink = motion.create(Link);
   const { data: session, status } = useSession();
   const isSessionLoading = status === 'loading';
   const [isOpen, setIsOpen] = useState(false);
@@ -45,11 +47,21 @@ export default function Navbar() {
   const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
   const mobileSearchInputRef = useRef<HTMLInputElement>(null);
 
+  // --- FIX: Prevent hydration mismatch by waiting for mount ---
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // --- 2. MEDIA QUERIES ---
-  const isDesktop = useMediaQuery({ query: '(min-width: 992px)' });
-  const isTablet = useMediaQuery({
+  const isDesktopQuery = useMediaQuery({ query: '(min-width: 992px)' });
+  const isTabletQuery = useMediaQuery({
     query: '(min-width: 768px) and (max-width: 991px)',
   });
+
+  // Only use media query values after mount to prevent hydration mismatch
+  const isDesktop = isMounted && isDesktopQuery;
+  const isTablet = isMounted && isTabletQuery;
 
   // --- 3. PROFILE POPOVER STATE ---
   const [isProfileOpen, setIsProfileOpen] = useState(false);

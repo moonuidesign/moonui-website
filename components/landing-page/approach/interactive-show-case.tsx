@@ -134,6 +134,7 @@ const MockBrowserWindow = ({ imageSrc }: { imageSrc: string }) => {
             src={imageSrc}
             alt="Browser Content"
             className="object-cover object-top"
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1070px"
             priority
           />
         </motion.div>

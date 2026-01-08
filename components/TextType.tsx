@@ -9,7 +9,6 @@ import {
   useMemo,
   useCallback,
 } from 'react';
-import { gsap } from 'gsap';
 import './TextType.css';
 
 interface TextTypeProps {
@@ -46,7 +45,6 @@ const TextType = ({
   hideCursorWhileTyping = false,
   cursorCharacter = '|',
   cursorClassName = '',
-  cursorBlinkDuration = 0.5,
   textColors = [],
   variableSpeed,
   onSentenceComplete,
@@ -62,10 +60,7 @@ const TextType = ({
   const cursorRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLElement>(null);
 
-  const textArray = useMemo(
-    () => (Array.isArray(text) ? text : [text]),
-    [text],
-  );
+  const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text]);
 
   const getRandomSpeed = useCallback(() => {
     if (!variableSpeed) return typingSpeed;
@@ -96,18 +91,7 @@ const TextType = ({
     return () => observer.disconnect();
   }, [startOnVisible]);
 
-  useEffect(() => {
-    if (showCursor && cursorRef.current) {
-      gsap.set(cursorRef.current, { opacity: 1 });
-      gsap.to(cursorRef.current, {
-        opacity: 0,
-        duration: cursorBlinkDuration,
-        repeat: -1,
-        yoyo: true,
-        ease: 'power2.inOut',
-      });
-    }
-  }, [showCursor, cursorBlinkDuration]);
+  // Cursor blink is now handled by CSS animation - no GSAP needed
 
   useEffect(() => {
     if (!isVisible) return;
@@ -115,9 +99,7 @@ const TextType = ({
     let timeout: NodeJS.Timeout;
 
     const currentText = textArray[currentTextIndex];
-    const processedText = reverseMode
-      ? currentText.split('').reverse().join('')
-      : currentText;
+    const processedText = reverseMode ? currentText.split('').reverse().join('') : currentText;
 
     const executeTypingAnimation = () => {
       if (isDeleting) {
@@ -143,9 +125,7 @@ const TextType = ({
         if (currentCharIndex < processedText.length) {
           timeout = setTimeout(
             () => {
-              setDisplayedText(
-                (prev) => prev + processedText[currentCharIndex],
-              );
+              setDisplayedText((prev) => prev + processedText[currentCharIndex]);
               setCurrentCharIndex((prev) => prev + 1);
             },
             variableSpeed ? getRandomSpeed() : typingSpeed,
@@ -184,8 +164,7 @@ const TextType = ({
   ]);
 
   const shouldHideCursor =
-    hideCursorWhileTyping &&
-    (currentCharIndex < textArray[currentTextIndex].length || isDeleting);
+    hideCursorWhileTyping && (currentCharIndex < textArray[currentTextIndex].length || isDeleting);
 
   return createElement(
     Component,
@@ -194,10 +173,7 @@ const TextType = ({
       className: `text-type ${className}`,
       ...props,
     },
-    <span
-      className="text-type__content"
-      style={{ color: getCurrentTextColor() || 'inherit' }}
-    >
+    <span className="text-type__content" style={{ color: getCurrentTextColor() || 'inherit' }}>
       {displayedText}
     </span>,
     showCursor && (

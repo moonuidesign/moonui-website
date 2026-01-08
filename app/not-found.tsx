@@ -137,9 +137,17 @@ export default function NotFound() {
           </div>
         </div>
         <div className="mt-2 flex items-center gap-3">
-          <SocialButton href={socials?.x} icon={<XIcon className="h-4 w-4" />} />
-          <SocialButton href={socials?.instagram} icon={<InstagramIcon className="h-4 w-4" />} />
-          <SocialButton href={socials?.linkedin} icon={<LinkedInIcon className="h-4 w-4" />} />
+          <SocialButton label="X" href={socials?.x} icon={<XIcon className="h-4 w-4" />} />
+          <SocialButton
+            label="Instagram"
+            href={socials?.instagram}
+            icon={<InstagramIcon className="h-4 w-4" />}
+          />
+          <SocialButton
+            label="LinkedIn"
+            href={socials?.linkedin}
+            icon={<LinkedInIcon className="h-4 w-4" />}
+          />
         </div>
       </div>
     </RootLayout>

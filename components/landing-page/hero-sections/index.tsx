@@ -14,16 +14,18 @@ const HeroSection = () => {
       </div>
       <Image
         src="/moonNotFound.png"
-        className="md:w-max-[846px] md20-max-[839px] lg:w-max-[1318.4fullpx] h-max-[1142px] pointer-events-none absolute left-[49%] z-100 hidden -translate-x-1/2 scale-[1.25] -rotate-65 select-none md:top-[40%] md:block md:h-[648px] md:w-[681px] lg:top-[21%] lg:h-[1069px] lg:w-[1103px]"
-        alt="Not Found"
+        className="pointer-events-none absolute left-[49%] z-100 hidden -translate-x-1/2 scale-[1.25] -rotate-65 select-none md:top-[40%] md:block md:h-[655px] md:w-[681px] lg:top-[21%] lg:h-[1062px] lg:w-[1103px]"
+        alt="Moon decorative background"
         draggable={false}
         style={{
           opacity: 0.1,
           zIndex: 0,
         }}
         priority
+        fetchPriority="high"
+        sizes="(max-width: 768px) 0px, (max-width: 1024px) 681px, 1103px"
         width={1103}
-        height={1069}
+        height={1062}
       />
 
       <div className="relative z-10 inline-flex w-full flex-col rounded-full bg-[#E7E7E7] md:w-lg md:max-w-2xl md:flex-row md:items-center md:justify-start md:gap-3 md:px-2 md:py-1.5 md:shadow-[0px_0px_0px_1px_rgba(211,211,211,1.00)] lg:w-[26rem] lg:max-w-xl">
@@ -65,10 +67,11 @@ const HeroSection = () => {
           <div className="flex items-center justify-start gap-1 px-1">
             <Image
               alt="Logo Figma"
-              width={100}
-              height={100}
+              width={20}
+              height={20}
               src="/ic-figma.svg"
               className="h-[20px] w-[20px]"
+              loading="lazy"
             />
             <span className="font-['Inter'] text-base leading-6 font-medium text-neutral-700">
               Figma
@@ -81,10 +84,11 @@ const HeroSection = () => {
           <div className="flex items-center justify-start gap-1 px-1">
             <Image
               alt="Logo Framer"
-              width={100}
-              height={100}
+              width={20}
+              height={20}
               src="/ic-framer.svg"
               className="h-[20px] w-[20px]"
+              loading="lazy"
             />
             <span className="font-['Inter'] text-base leading-6 font-medium text-neutral-700">
               Framer

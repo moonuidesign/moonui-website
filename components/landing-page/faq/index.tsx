@@ -23,7 +23,6 @@ const FAQSection: React.FC<FAQSectionProps> = ({
   categories,
 }) => {
   const pathname = usePathname();
-  console.log(pathname);
   const isPricingPage = pathname === '/pricing';
   return (
     <section
@@ -57,8 +56,8 @@ const FAQSection: React.FC<FAQSectionProps> = ({
               <Accordion type="single" collapsible className="flex w-full flex-col gap-0">
                 {category.items.map((item, itemIndex) => (
                   <AccordionItem
-                    key={itemIndex}
-                    value={`${category.categoryName}-${itemIndex}`}
+                    key={`cat-${catIndex}-item-${itemIndex}`}
+                    value={`item-${catIndex}-${itemIndex}`}
                     className="border-b border-zinc-800 last:border-b-0"
                   >
                     <AccordionTrigger className="py-4 text-left text-[16px] font-medium text-white transition-colors hover:text-neutral-300 hover:no-underline md:text-base [&[data-state=open]>svg]:rotate-180">

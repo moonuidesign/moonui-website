@@ -13,7 +13,7 @@ const Benefits = dynamic(() => import('@/components/landing-page/bennefits'), { 
 const ComponentShowcase = dynamic(() => import('@/components/landing-page/showcase'), {
   ssr: true,
 });
-const FAQSection = dynamic(() => import('@/components/landing-page/faq'), { ssr: true });
+const FAQSection = dynamic(() => import('@/components/landing-page/faq'), { ssr: false });
 const NewsletterSection = dynamic(() => import('@/components/landing-page/newslatter'), {
   ssr: true,
 });
