@@ -35,7 +35,7 @@ const FAQSection: React.FC<FAQSectionProps> = ({
           <span className="text-[16px] leading-6 font-medium text-neutral-400 md:text-base">
             {label}
           </span>
-          <h2 className="mb-2 text-[36px] leading-tight font-semibold text-white md:text-5xl">
+          <h2 className="font-jakarta mb-2 text-[36px] leading-tight font-semibold text-white md:text-5xl">
             {title.split('\n').map((line, i) => (
               <React.Fragment key={i}>
                 {line}

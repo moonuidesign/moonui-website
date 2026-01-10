@@ -18,6 +18,7 @@ import { cn } from '@/libs/utils';
 import { FloatingCursor } from './floating-cursor';
 import { SocialButton } from '../general/layout/main/footer/social-button';
 import { InstagramIcon, LinkedInIcon, XIcon } from '../general/layout/main/footer/social-icons';
+import Image from 'next/image';
 
 // --- Sub Components ---
 
@@ -147,8 +148,8 @@ const AboutSection = () => {
             </div>
 
             <div className="flex flex-col items-start gap-3 pt-8">
-              <div className="flex h-14 w-24 items-center justify-center rounded-sm border border-zinc-400 text-[10px] tracking-widest text-zinc-400 md:h-16 md:w-28 md:text-xs">
-                LOGO
+              <div className="flex h-14 w-24 items-center justify-center rounded-sm text-[10px] tracking-widest text-zinc-400 md:h-16 md:w-28 md:text-xs">
+                <Image src="/ttd-black.png" alt="Logo" width={100} height={100} />
               </div>
               <div>
                 <div className="text-sm leading-5 font-medium text-zinc-500">
@@ -410,23 +411,23 @@ const AboutSection = () => {
                 backContent={
                   <div className="flex flex-col items-center justify-center gap-4">
                     <p className="text-sm text-zinc-300">
-                      Creative developer with a love for motion graphics and interactive design.
+                      Design is not just what it looks like and feels like. Design is how it works.
                     </p>
                     <div className="flex items-center gap-3">
                       <SocialButton
-                        href="https://www.instagram.com/"
+                        href=" https://x.com/achmaduiux"
                         icon={<XIcon className="h-4 w-4" />}
                         label="Follow Achmad on X"
                         className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
                       />
                       <SocialButton
-                        href="https://www.instagram.com/"
+                        href="https://www.instagram.com/achmad.uiux"
                         icon={<InstagramIcon className="h-4 w-4" />}
                         label="Follow Achmad on Instagram"
                         className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
                       />
                       <SocialButton
-                        href="https://www.instagram.com/"
+                        href="https://www.linkedin.com/in/achmad-qomarudin"
                         icon={<LinkedInIcon className="h-4 w-4" />}
                         label="Follow Achmad on LinkedIn"
                         className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
@@ -453,19 +454,22 @@ const AboutSection = () => {
                     </p>
                     <div className="flex items-center gap-3">
                       <SocialButton
-                        href="https://www.instagram.com/"
+                        href="https://x.com/DeraAnanta7"
                         icon={<XIcon className="h-4 w-4" />}
                         label="Follow Dera on X"
+                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
                       />
                       <SocialButton
-                        href="https://www.instagram.com/"
+                        href="https://www.instagram.com/deraananta/"
                         icon={<InstagramIcon className="h-4 w-4" />}
                         label="Follow Dera on Instagram"
+                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
                       />
                       <SocialButton
-                        href="https://www.instagram.com/"
+                        href="https://www.linkedin.com/in/dera-ananta"
                         icon={<LinkedInIcon className="h-4 w-4" />}
                         label="Follow Dera on LinkedIn"
+                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
                       />
                     </div>
                   </div>
@@ -474,8 +478,8 @@ const AboutSection = () => {
               <ReflectiveCard
                 name="Fajar Fernandi"
                 role="FULLSTACK DEVELOPER"
-                email="jane@baggy.co"
-                imageSrc="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop"
+                email="fajarfernandi.id@gmail.com"
+                imageSrc="/fajar.png"
                 blurStrength={0.5}
                 metalness={0.7}
                 roughness={0.7}
@@ -484,24 +488,25 @@ const AboutSection = () => {
                 grayscale={0.8}
                 backContent={
                   <div className="flex flex-col items-center justify-center gap-4">
-                    <p className="text-sm text-zinc-300">
-                      Creative developer with a love for motion graphics and interactive design.
-                    </p>
+                    <p className="text-sm text-zinc-300">Talk is cheap. Show me the code.</p>
                     <div className="flex items-center gap-3">
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<XIcon className="h-4 w-4" />}
                         label="Follow Fajar on X"
+                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
                       />
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<InstagramIcon className="h-4 w-4" />}
                         label="Follow Fajar on Instagram"
+                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
                       />
                       <SocialButton
                         href="https://www.instagram.com/"
                         icon={<LinkedInIcon className="h-4 w-4" />}
                         label="Follow Fajar on LinkedIn"
+                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
                       />
                     </div>
                   </div>
@@ -522,7 +527,7 @@ const AboutSection = () => {
         <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-12 rounded-t-4xl border-x border-t border-[#D3D3D3] pt-10 md:mt-10 md:mb-[60px] md:gap-16 md:pt-10">
           <span className="absolute bottom-0 -left-[3px] size-1.5 rounded-full bg-[#D3D3D3]" />
           <span className="absolute -right-[3.5px] bottom-0 size-1.5 rounded-full bg-[#D3D3D3]" />
-          <div className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-orange-600 py-1.5 pr-3 pl-2 shadow-[0px_0px_0px_1px_rgba(41,41,41,0.08)] shadow-[0px_1px_2px_0px_rgba(41,41,41,0.04)] shadow-[0px_2px_4px_0px_rgba(41,41,41,0.04)] shadow-[0px_4px_8px_0px_rgba(41,41,41,0.06)] shadow-[inset_0px_-0.5px_0.5px_0px_rgba(41,41,41,0.08)]">
+          <div className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-orange-600 py-1.5 pr-3 pl-2 shadow-sm">
             <Crown1 variant="Outline" color="white" size={16} />
             <span className="font-sans text-sm leading-5 font-medium text-white">Values</span>
           </div>

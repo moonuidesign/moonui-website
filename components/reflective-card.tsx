@@ -96,7 +96,7 @@ const ReflectiveCard: React.FC<ReflectiveCardProps> = ({
           ref={cardRef}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="absolute inset-0 h-full w-full overflow-hidden rounded-[20px] bg-white shadow-2xl [backface-visibility:hidden]"
+          className="absolute inset-0 h-full w-full overflow-hidden rounded-[20px] shadow-2xl [backface-visibility:hidden]"
         >
           {/* --- DEFINISI SVG FILTER --- */}
           <svg className="pointer-events-none absolute h-0 w-0 opacity-0" aria-hidden="true">

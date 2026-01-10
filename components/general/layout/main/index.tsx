@@ -48,7 +48,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </p>
           </div>
         </div>
-        <div className="relative z-[800] -mt-[69px] h-fit overflow-hidden rounded-t-[39px] bg-[#E7E7E7] md:z-0 md:-mt-[48px] md:overflow-visible md:rounded-none md:bg-none">
+        <div className="relative z-[800] -mt-[69px] h-fit overflow-hidden rounded-t-[39px] bg-[#E7E7E7] md:z-[200] md:-mt-[48px] md:overflow-visible md:rounded-none md:bg-none">
           <Suspense
             fallback={
               <section className="relative z-[1000] h-24">

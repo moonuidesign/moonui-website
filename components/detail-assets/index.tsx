@@ -61,10 +61,10 @@ const getAssetPath = (type: string | undefined, id: string) => {
 };
 
 // --- HELPER: DYNAMIC DURATION ---
-const calculateDuration = (code: string) => {
-  const length = code.length;
-  return Math.min(Math.max(length / 100, 2), 5);
-};
+// const calculateDuration = (code: string) => {
+//   const length = code.length;
+//   return Math.min(Math.max(length / 100, 2), 5);
+// };
 
 // --- SKELETON COMPONENT ---
 export function ContentDetailSkeleton() {
@@ -851,7 +851,7 @@ export default function ContentDetailClient({
                 {/* Desktop: Grid */}
                 <div className="hidden gap-8 sm:grid sm:grid-cols-2 md:grid-cols-3">
                   {relevantContent.map((item) => (
-                    <CardItem key={item.id} item={item} />
+                    <CardItem key={item.id} item={item} type={type} />
                   ))}
                 </div>
               </div>
@@ -866,15 +866,15 @@ export default function ContentDetailClient({
                 {/* Mobile: Horizontal Scroll Carousel */}
                 <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:hidden">
                   {popularContent.map((item) => (
-                    <div key={item.id} className="s<nap-start w-[280px] flex-shrink-0">
-                      <CardItem type="" item={item} isPopular />
+                    <div key={item.id} className="w-[280px] flex-shrink-0 snap-start">
+                      <CardItem type={type} item={item} isPopular />
                     </div>
                   ))}
                 </div>
                 {/* Desktop: Grid */}
                 <div className="hidden gap-8 sm:grid sm:grid-cols-2 md:grid-cols-3">
                   {popularContent.map((item) => (
-                    <CardItem type="" key={item.id} item={item} isPopular />
+                    <CardItem type={type} key={item.id} item={item} isPopular />
                   ))}
                 </div>
               </div>
@@ -971,35 +971,35 @@ function StatItem({
   );
 }
 
-function SpecItem({
-  icon,
-  label,
-  value,
-  monospace,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value?: string | null;
-  monospace?: boolean;
-}) {
-  return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-2 text-xs font-medium tracking-wider text-neutral-400 uppercase">
-        {icon} {label}
-      </div>
-      <p
-        className={`text-sm ${
-          monospace
-            ? 'truncate font-mono text-neutral-600'
-            : 'font-semibold text-neutral-800 capitalize'
-        }`}
-        title={value || ''}
-      >
-        {value || 'N/A'}
-      </p>
-    </div>
-  );
-}
+// function SpecItem({
+//   icon,
+//   label,
+//   value,
+//   monospace,
+// }: {
+//   icon: React.ReactNode;
+//   label: string;
+//   value?: string | null;
+//   monospace?: boolean;
+// }) {
+//   return (
+//     <div className="space-y-1">
+//       <div className="flex items-center gap-2 text-xs font-medium tracking-wider text-neutral-400 uppercase">
+//         {icon} {label}
+//       </div>
+//       <p
+//         className={`text-sm ${
+//           monospace
+//             ? 'truncate font-mono text-neutral-600'
+//             : 'font-semibold text-neutral-800 capitalize'
+//         }`}
+//         title={value || ''}
+//       >
+//         {value || 'N/A'}
+//       </p>
+//     </div>
+//   );
+// }
 
 // --- Responsive Table Row Component ---
 function SpecRow({ label, value }: { label: string; value?: string | null }) {
@@ -1038,46 +1038,76 @@ function CardItem({
   type?: string;
 }) {
   const safeImg = getSafeImageUrl(item.imageUrl);
+  const tierLabel = item.tier === 'pro_plus' ? 'Pro Plus' : item.tier === 'pro' ? 'Pro' : 'Free';
+
   return (
-    <Link href={getAssetPath(item.type, item.id)} className="group flex flex-col gap-4">
+    <Link
+      href={getAssetPath(item.type, item.id)}
+      className="group inline-flex w-full cursor-pointer flex-col items-start justify-start gap-3"
+    >
+      {/* Image Container */}
       <div
-        className={`relative w-full overflow-hidden rounded-2xl border bg-white ${
-          type === 'templates' ? 'aspect-2/3' : 'aspect-4/3'
-        } border-[#D3D3D3] shadow-sm transition duration-500 ease-out group-hover:-translate-y-1 group-hover:shadow-xl`}
+        className={`shadow-card-sm group relative self-stretch overflow-hidden rounded-2xl border border-white bg-white transition-all duration-300 hover:-translate-y-1 ${
+          type === 'templates' ? 'aspect-[360/480]' : 'aspect-[360/260]'
+        }`}
       >
         {safeImg ? (
           <Image
             src={safeImg}
             alt={item.title}
             fill
-            className="object-cover transition duration-700"
+            className={`rounded-lg object-cover ${
+              type === 'templates' ? 'object-top' : 'object-center'
+            }`}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center gap-2 bg-neutral-50 text-sm text-neutral-400">
-            <ImageIcon size={20} /> Preview
+          <div className="flex h-full w-full items-center justify-center gap-2 bg-gray-100 text-sm text-gray-400">
+            <ImageIcon size={20} /> No Preview
           </div>
         )}
+
+        {/* Popular Badge */}
         {isPopular && (
           <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-md bg-amber-400 px-2 py-1 text-[10px] font-bold text-black shadow-sm">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-black"></span> HOT
           </div>
         )}
+
+        {/* Overlay Hover */}
+        <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-zinc-300/80 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:opacity-100">
+          <span className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#3D3D3D] shadow-sm">
+            View Details
+          </span>
+        </div>
       </div>
-      <div className="flex items-start justify-between px-1">
-        <div className="space-y-1 overflow-hidden">
-          <p className="truncate text-sm leading-tight font-bold text-neutral-900 transition group-hover:text-blue-600">
-            {item.title}
-          </p>
+
+      {/* Meta Info */}
+      <div className="inline-flex items-center justify-between self-stretch px-2">
+        <div className="flex flex-col items-start justify-start gap-0.5">
           <div className="flex items-center gap-2">
-            <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500">
-              #{item.number}
-            </span>
-            <p className="truncate text-[10px] text-neutral-400">
-              {item.category?.name || 'Uncategorized'}
-            </p>
+            <div className="max-w-[130px] truncate text-center font-['Inter'] text-sm leading-6 font-medium text-[#3D3D3D] md:max-w-[180px]">
+              {item.title}
+            </div>
+          </div>
+          <div className="font-['Inter'] text-xs font-normal text-zinc-500">
+            {item.category?.name || 'Uncategorized'}
           </div>
         </div>
-        <TierBadge tier={item.tier} />
+
+        <div className="flex items-center justify-center gap-1">
+          {item.tier !== 'free' && (
+            <Image
+              alt="Pro"
+              width={14}
+              height={14}
+              src="/ic-diamond-small.svg"
+              className="h-[14px] w-[14px]"
+            />
+          )}
+          <div className="justify-center text-right font-['Inter'] text-sm leading-6 font-semibold text-[#3D3D3D]">
+            {tierLabel}
+          </div>
+        </div>
       </div>
     </Link>
   );

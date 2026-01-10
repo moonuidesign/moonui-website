@@ -350,7 +350,7 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
               <Image
                 fill
                 className="object-cover object-center"
-                src="/pricing-contact.png"
+                src="/ic-pricing.jpg"
                 alt="Contact"
               />
             </div>
