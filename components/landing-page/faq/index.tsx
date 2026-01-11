@@ -63,7 +63,7 @@ const FAQSection: React.FC<FAQSectionProps> = ({
                     <AccordionTrigger className="py-4 text-left text-[16px] font-medium text-white transition-colors hover:text-neutral-300 hover:no-underline md:text-base [&[data-state=open]>svg]:rotate-180">
                       {item.question}
                     </AccordionTrigger>
-                    <AccordionContent className="pb-6 text-[14px] leading-7 text-neutral-400 md:text-base">
+                    <AccordionContent className="pb-6 text-[14px] leading-5 text-neutral-400 md:text-base">
                       {item.answer}
                     </AccordionContent>
                   </AccordionItem>

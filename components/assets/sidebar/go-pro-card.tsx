@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export const GoProCard = () => {
   return (
-    <div className="flex w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[20px] border border-gray-200 bg-zinc-900 px-2 pt-6 pb-3 shadow-[0px_0px_0px_1px_rgba(51,51,51,0.10)] shadow-[0px_1px_1px_0.5px_rgba(51,51,51,0.04)] shadow-[0px_3px_3px_-1.5px_rgba(51,51,51,0.02)] shadow-[0px_6px_6px_-3px_rgba(51,51,51,0.04)] shadow-[0px_12px_12px_-6px_rgba(51,51,51,0.04)] shadow-[0px_24px_24px_-12px_rgba(51,51,51,0.04)] shadow-[0px_48px_48px_-24px_rgba(51,51,51,0.04)] shadow-[inset_0px_-1px_1px_-0.5px_rgba(51,51,51,0.06)] shadow-sm md:h-[33%] lg:h-[40%]">
+    <div className="flex w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[20px] border border-gray-200 bg-zinc-900 px-2 pt-6 pb-2 shadow-[0px_0px_0px_1px_rgba(51,51,51,0.10)] shadow-[0px_1px_1px_0.5px_rgba(51,51,51,0.04)] shadow-[0px_3px_3px_-1.5px_rgba(51,51,51,0.02)] shadow-[0px_6px_6px_-3px_rgba(51,51,51,0.04)] shadow-[0px_12px_12px_-6px_rgba(51,51,51,0.04)] shadow-[0px_24px_24px_-12px_rgba(51,51,51,0.04)] shadow-[0px_48px_48px_-24px_rgba(51,51,51,0.04)] shadow-[inset_0px_-1px_1px_-0.5px_rgba(51,51,51,0.06)] shadow-sm md:h-[33%] lg:h-[40%]">
       <Image
         src="/ic-diamond-small.svg"
         alt="Go Pro"
@@ -31,7 +31,7 @@ export const GoProCard = () => {
       </div>
 
       {/* Button Action */}
-      <button className="flex flex-col items-center justify-start gap-2 self-stretch overflow-hidden rounded-2xl bg-white py-1 shadow-[0px_0px_0px_1px_rgba(51,51,51,0.10)] shadow-[0px_1px_1px_0.5px_rgba(51,51,51,0.04)] shadow-[0px_3px_3px_-1.5px_rgba(51,51,51,0.02)] shadow-[0px_6px_6px_-3px_rgba(51,51,51,0.04)] shadow-[0px_12px_12px_-6px_rgba(51,51,51,0.04)] shadow-[0px_24px_24px_-12px_rgba(51,51,51,0.04)] shadow-[0px_48px_48px_-24px_rgba(51,51,51,0.04)] shadow-[inset_0px_-1px_1px_-0.5px_rgba(51,51,51,0.06)] transition-colors hover:bg-neutral-50">
+      <button className="flex flex-col items-center justify-start gap-2 self-stretch overflow-hidden rounded-2xl bg-white py-1 shadow-[0px_0px_0px_1px_rgba(51,51,51,0.10)] shadow-[0px_1px_1px_0.5px_rgba(51,51,51,0.04)] shadow-[0px_3px_3px_-1.5px_rgba(51,51,51,0.02)] shadow-[0px_6px_6px_-3px_rgba(51,51,51,0.04)] shadow-[0px_12px_12px_-6px_rgba(51,51,51,0.04)] shadow-[0px_24px_24px_-12px_rgba(51,51,51,0.04)] shadow-[0px_48px_48px_-24px_rgba(51,51,51,0.04)] shadow-[inset_0px_-1px_1px_-0.5px_rgba(51,51,51,0.06)] transition-colors hover:bg-[#FF4F00] hover:bg-neutral-50">
         <div className="inline-flex h-fit w-full items-center justify-between self-stretch rounded-[10px] px-3">
           <div className="inline-flex h-fit w-full flex-col items-center justify-start pr-1">
             <div className="text-centerh-fit h-fit justify-center font-['Inter'] text-xs leading-6 font-medium text-neutral-800">
