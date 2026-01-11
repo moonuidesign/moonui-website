@@ -76,7 +76,7 @@ const NewsletterSection: React.FC<NewsletterProps> = ({
           <Badge text={badgeText} />
 
           <div className="flex flex-col gap-2">
-            <h2 className="font-sans text-[28px] leading-tight font-semibold text-[#3D3D3D] md:text-4xl md:text-[30px]">
+            <h2 className="font-jakarta text-[28px] leading-tight font-semibold text-[#3D3D3D] md:text-4xl md:text-[30px]">
               {title}
             </h2>
             <div className="mx-auto max-w-lg text-base leading-7">

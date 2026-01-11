@@ -1,5 +1,21 @@
 import FAQSection from '@/components/landing-page/faq';
 import NewsletterSection from '@/components/landing-page/newslatter';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'FAQ — Frequently Asked Questions',
+  description:
+    'Find answers to common questions about MoonUI Design. Learn about our premium UI components, templates, licensing, and technical specifications.',
+  keywords: ['MoonUI FAQ', 'UI components questions', 'design templates help'],
+  openGraph: {
+    title: 'FAQ — MoonUI Design',
+    description: 'Answers to common questions about MoonUI Design products and services.',
+    url: 'https://moonui.design/faq',
+  },
+  alternates: {
+    canonical: 'https://moonui.design/faq',
+  },
+};
 
 export default function FAQPage() {
   const faqData = [

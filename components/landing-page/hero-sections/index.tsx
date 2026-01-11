@@ -9,8 +9,15 @@ import Link from 'next/link';
 const HeroSection = () => {
   return (
     <div className="relative container mx-auto mb-10 flex h-fit w-7xl flex-col items-center justify-start gap-3 px-[24px] md:mt-[48px] md:max-w-3xl md:items-center md:justify-start md:px-0 md:pt-0 lg:h-[969px] lg:max-w-7xl">
-      <div className="absolute -top-[250px] left-1/2 -z-10 hidden h-[3800px] w-full -translate-x-1/2 overflow-visible md:block">
-        <Meteors minDuration={2.8} maxDuration={4.8} maxDelay={5.8} minDelay={2.5} number={3} />
+      <div className="absolute -top-[250px] left-1/2 z-0 hidden h-[3800px] w-full -translate-x-1/2 overflow-visible md:block">
+        <Meteors
+          className="z-0"
+          minDuration={2.8}
+          maxDuration={4.8}
+          maxDelay={5.8}
+          minDelay={2.5}
+          number={3}
+        />
       </div>
       <Image
         src="/moonNotFound.png"

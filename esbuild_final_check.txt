@@ -1,0 +1,21 @@
+﻿Legend: production dependency, optional only, dev only
+
+ssr@0.1.0 C:\Project\moonui-website\ssr (PRIVATE)
+
+dependencies:
+@sentry/nextjs 10.32.1
+ΓööΓöÇΓö¼ @sentry/webpack-plugin 4.6.1
+  ΓööΓöÇΓö¼ webpack 5.104.1 peer
+    ΓööΓöÇΓö¼ terser-webpack-plugin 5.3.16
+      ΓööΓöÇΓöÇ esbuild 0.25.12 peer
+
+devDependencies:
+drizzle-kit 0.31.8
+Γö£ΓöÇΓö¼ @esbuild-kit/esm-loader 2.6.5
+Γöé ΓööΓöÇΓö¼ @esbuild-kit/core-utils 3.3.2
+Γöé   ΓööΓöÇΓöÇ esbuild 0.25.12
+Γö£ΓöÇΓöÇ esbuild 0.25.12
+ΓööΓöÇΓö¼ esbuild-register 3.6.0
+  ΓööΓöÇΓöÇ esbuild 0.25.12 peer
+tsx 4.21.0
+ΓööΓöÇΓöÇ esbuild 0.25.12
