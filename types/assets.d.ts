@@ -12,8 +12,9 @@ export interface UnifiedContent {
   copyDataPlain?: string;
   downloadUrl?: string;
   images?: { url: string }[];
+  createdAt: Date | string | null;
   // ------------------------
-
+  author?: string;
   tier: 'free' | 'pro' | 'pro_plus';
   number: number;
   type: ContentType;

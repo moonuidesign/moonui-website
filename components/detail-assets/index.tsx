@@ -26,8 +26,10 @@ import {
   Image as LucideImage,
   Loader2,
   Eye,
+  Flame,
 } from 'lucide-react';
 import { UnifiedContent } from '@/types/assets';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { incrementAssetStats } from '@/server-action/incrementAssetStats';
 import { useFingerprint } from '@/hooks/use-fingerprint';
 import { checkDownloadLimit } from '@/server-action/limit';
@@ -622,7 +624,7 @@ export default function ContentDetailClient({
         {/* --- RIGHT COLUMN: INFO --- */}
         <div className="relative w-full lg:w-[35%]">
           <div
-            className={`sticky top-24 flex w-full flex-col gap-8 self-start lg:max-h-[calc(100vh-120px)] lg:w-[calc(1280px*0.35-3rem)] lg:overflow-y-auto`}
+            className={`sticky top-24 flex w-full flex-col gap-8 self-start lg:w-[calc(1280px*0.35-3rem)] lg:overflow-y-auto`}
           >
             <div className="space-y-4">
               <div className="mb-2 flex items-center gap-2">
@@ -801,9 +803,13 @@ export default function ContentDetailClient({
               {/* Responsive Table */}
               <div className="divide-y divide-neutral-100">
                 <SpecRow label="Category" value={content.category?.name} />
-                <SpecRow label="Author" value="MoonUI Design" />
-                <SpecRow label="Size" value={content.size} />
-                <SpecRow label="Format" value={content.format} />
+                <SpecRow label="Author" value={content.author || 'MoonUI Design'} />
+                {['designs', 'templates'].includes(type) && (
+                  <>
+                    <SpecRow label="Size" value={content.size} />
+                    <SpecRow label="Format" value={content.format} />
+                  </>
+                )}
               </div>
               {/* Tags Section */}
               {Array.isArray(content.slug) && content.slug.length > 0 && (
@@ -1040,6 +1046,11 @@ function CardItem({
   const safeImg = getSafeImageUrl(item.imageUrl);
   const tierLabel = item.tier === 'pro_plus' ? 'Pro Plus' : item.tier === 'pro' ? 'Pro' : 'Free';
 
+  // Check if created within last 30 days
+  const isNew = item.createdAt
+    ? (new Date().getTime() - new Date(item.createdAt).getTime()) / (1000 * 3600 * 24) < 30
+    : false;
+
   return (
     <Link
       href={getAssetPath(item.type, item.id)}
@@ -1068,8 +1079,8 @@ function CardItem({
 
         {/* Popular Badge */}
         {isPopular && (
-          <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-md bg-amber-400 px-2 py-1 text-[10px] font-bold text-black shadow-sm">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-black"></span> HOT
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-md bg-[#FF4F00] px-2 py-1 text-[10px] font-bold text-white shadow-sm">
+            <Flame size={12} /> HOT
           </div>
         )}
 
@@ -1085,9 +1096,23 @@ function CardItem({
       <div className="inline-flex items-center justify-between self-stretch px-2">
         <div className="flex flex-col items-start justify-start gap-0.5">
           <div className="flex items-center gap-2">
-            <div className="max-w-[130px] truncate text-center font-['Inter'] text-sm leading-6 font-medium text-[#3D3D3D] md:max-w-[180px]">
-              {item.title}
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="max-w-[130px] truncate text-center font-['Inter'] text-sm leading-6 font-medium text-[#3D3D3D] md:max-w-[180px]">
+                  {item.title}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{item.title}</p>
+              </TooltipContent>
+            </Tooltip>
+            {isNew && (
+              <div className="flex flex-col items-start justify-start rounded-md bg-orange-600 px-1.5 py-1 shadow-sm">
+                <div className="font-['Inter'] text-[10px] leading-[10px] font-semibold text-white">
+                  New
+                </div>
+              </div>
+            )}
           </div>
           <div className="font-['Inter'] text-xs font-normal text-zinc-500">
             {item.category?.name || 'Uncategorized'}

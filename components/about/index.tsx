@@ -152,9 +152,7 @@ const AboutSection = () => {
                 <Image src="/ttd-black.png" alt="Logo" width={100} height={100} />
               </div>
               <div>
-                <div className="text-sm leading-5 font-medium text-zinc-500">
-                  MoonUI Design System
-                </div>
+                <div className="text-sm leading-5 font-medium text-zinc-500">MoonUI Design</div>
                 <div className="font-mono text-xs leading-5 text-zinc-400 md:text-sm">
                   Design & development perfectly aligned.
                 </div>
@@ -401,7 +399,7 @@ const AboutSection = () => {
                 name="Achmad Qomarudin"
                 role="Product Designer"
                 email="jane@baggy.co"
-                imageSrc="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop"
+                imageSrc="/Achmad - Profile.png"
                 blurStrength={0.5}
                 metalness={0.7}
                 roughness={0.7}
@@ -440,7 +438,7 @@ const AboutSection = () => {
                 name="Dera Ananta"
                 role="Graphic Designer"
                 email="jane@baggy.co"
-                imageSrc="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop"
+                imageSrc="/Dera - Profile.jpeg"
                 blurStrength={0.5}
                 metalness={0.7}
                 roughness={0.7}
@@ -479,7 +477,7 @@ const AboutSection = () => {
                 name="Fajar Fernandi"
                 role="FULLSTACK DEVELOPER"
                 email="fajarfernandi.id@gmail.com"
-                imageSrc="/fajar.png"
+                imageSrc="/Fajar - Profile.png"
                 blurStrength={0.5}
                 metalness={0.7}
                 roughness={0.7}

@@ -210,6 +210,16 @@ export default function DesignForm({ categories, design }: DesignFormProps) {
           return;
         }
         validFiles.push(file);
+      });
+
+      // Check total limit (existing + previously selected + new)
+      const currentTotal = existingImages.length + selectedFiles.length;
+      if (currentTotal + validFiles.length > 8) {
+        toast.error('You can only upload a maximum of 8 images per design.');
+        return;
+      }
+
+      validFiles.forEach((file) => {
         validPreviews.push(URL.createObjectURL(file));
       });
 

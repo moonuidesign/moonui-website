@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { TicketPercent } from 'lucide-react';
 import { ArrowRight2 } from 'iconsax-reactjs';
 import Image from 'next/image';
@@ -207,7 +208,20 @@ const PricingCard = ({
         {/* --- HARGA & LABEL --- */}
         <div className="mt-4">
           <div className="flex gap-2">
-            <span className="text-4xl leading-none font-bold">${finalPrice}</span>
+            <div className="relative flex h-10 items-end overflow-hidden">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={finalPrice}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="block text-4xl leading-none font-bold"
+                >
+                  ${finalPrice}
+                </motion.span>
+              </AnimatePresence>
+            </div>
 
             {/* HARGA CORET (VISUAL DISKON) */}
             {showDiscountStrikethrough && (
@@ -296,25 +310,36 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
           <div className="relative flex items-center rounded-xl border border-zinc-200 bg-white p-1 shadow-sm">
             <button
               onClick={() => setIsAnnual(false)}
-              className={`relative z-10 cursor-pointer rounded-lg px-6 py-2.5 text-sm font-bold transition-all duration-300 ${
-                !isAnnual ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-900'
+              className={`relative z-10 w-32 px-6 py-2.5 text-sm font-bold transition-colors duration-300 ${
+                !isAnnual ? 'text-white' : 'text-zinc-500 hover:text-zinc-900'
               }`}
             >
+              {!isAnnual && (
+                <motion.div
+                  layoutId="pricing-toggle"
+                  className="absolute inset-0 z-[-1] rounded-lg bg-zinc-900 shadow-md"
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
               Monthly
             </button>
             <button
               onClick={() => setIsAnnual(true)}
-              className={`relative z-10 flex cursor-pointer items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold transition-all duration-300 ${
-                isAnnual ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-900'
+              className={`relative z-10 flex w-32 items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold transition-colors duration-300 ${
+                isAnnual ? 'text-white' : 'text-zinc-500 hover:text-zinc-900'
               }`}
             >
+              {isAnnual && (
+                <motion.div
+                  layoutId="pricing-toggle"
+                  className="absolute inset-0 z-[-1] rounded-lg bg-zinc-900 shadow-md"
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
               Annual
-              <span className="absolute -top-2 -right-12 flex w-[74%] items-center rounded-md border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] tracking-wide text-orange-700 uppercase md:-top-2 md:-right-12">
+              <span className="absolute -top-3 -right-8 flex items-center rounded-md border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] tracking-wide text-orange-700 uppercase shadow-sm md:-top-3 md:-right-10">
                 Save 15%
               </span>
-              {/* <span className="rounded-md border border-orange-200 bg-orange-100 px-2 py-0.5 text-[10px] tracking-wide text-orange-700 uppercase">
-                Save ~15%
-              </span> */}
             </button>
           </div>
         </div>

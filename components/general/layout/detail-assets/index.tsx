@@ -11,7 +11,7 @@ export default function DetailAssetsLayout({ children }: { children: React.React
   const { isFilterOpen, setFilterOpen } = useFilter();
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    <div className="min-h-screen">
       <motion.div
         animate={
           isFilterOpen

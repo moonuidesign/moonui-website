@@ -177,6 +177,13 @@ export default function TemplateForm({ categories, template }: TemplateFormProps
         return true;
       });
 
+      // Check total limit (existing + previously selected + new)
+      const currentTotal = existingImages.length + selectedFiles.length;
+      if (currentTotal + validFiles.length > 8) {
+        toast.error('You can only upload a maximum of 8 images per template.');
+        return;
+      }
+
       const mergedFiles = [...selectedFiles, ...validFiles];
       setSelectedFiles(mergedFiles);
       form.setValue('newImages', mergedFiles, { shouldValidate: true });

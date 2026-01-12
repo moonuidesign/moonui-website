@@ -8,25 +8,9 @@ import * as z from 'zod';
 import { toast } from 'react-toastify';
 import { Loader2, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from '@/components/ui/input-otp';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { verifyEmail } from '@/server-action/VerifyEmail/verifyEmail';
@@ -44,11 +28,7 @@ const getInitialCooldownState = () => {
 
   const savedData = localStorage.getItem('resendVerifyEmail');
   if (savedData) {
-    const {
-      resendCount: savedResendCount,
-      cooldownStart,
-      cooldownTime,
-    } = JSON.parse(savedData);
+    const { resendCount: savedResendCount, cooldownStart, cooldownTime } = JSON.parse(savedData);
     const now = Date.now();
     const elapsed = Math.floor((now - cooldownStart) / 1000);
 
@@ -160,9 +140,8 @@ export default function VerifyEmailOTPForm() {
       const result = await sendOTPEmail({ email });
       if (!result.success) {
         toast.error(
-          (Array.isArray(result.message)
-            ? result.message.join(', ')
-            : result.message) || 'Failed to resend OTP.',
+          (Array.isArray(result.message) ? result.message.join(', ') : result.message) ||
+            'Failed to resend OTP.',
         );
       } else {
         toast.success('A new OTP has been sent.');
@@ -192,9 +171,7 @@ export default function VerifyEmailOTPForm() {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs
-      .toString()
-      .padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   if (!email) {
@@ -216,30 +193,28 @@ export default function VerifyEmailOTPForm() {
 
   if (isVerified) {
     return (
-      <Card className="w-full max-w-[480px] gap-8 px-5 py-12 rounded-[40px]">
-        <CardContent className="flex justify-center items-center flex-col">
-          <CheckCircle2 className="mx-auto text-green-500 w-16 h-16" />
+      <Card className="w-full max-w-[480px] gap-8 rounded-[40px] px-5 py-12">
+        <CardContent className="flex flex-col items-center justify-center">
+          <CheckCircle2 className="mx-auto h-16 w-16 text-green-500" />
           <h3 className="text-xl font-semibold">Email Verified!</h3>
-          <p className="text-sm text-muted-foreground">
-            Redirecting you to the dashboard...
-          </p>
+          <p className="text-muted-foreground text-sm">Redirecting you to the dashboard...</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="w-full max-w-[480px] gap-8 px-2 py-12 rounded-[40px]">
-      <CardHeader className="flex justify-center items-center flex-col">
-        <CardTitle className="font-jakarta flex justify-center items-center text-[32px] font-extrabold">
+    <Card className="w-full max-w-[480px] gap-8 rounded-[40px] px-2 py-12">
+      <CardHeader className="flex flex-col items-center justify-center">
+        <CardTitle className="font-jakarta flex items-center justify-center text-[32px] font-extrabold">
           Check Your Email
         </CardTitle>
-        <CardDescription className="font-sans text-center text-[16px] flex-col flex justify-center items-center">
+        <CardDescription className="flex flex-col items-center justify-center text-center font-sans text-[16px]">
           <p>Please enter the six digit verification code we sent to</p>
           <span className="text-[20px] font-bold text-[#FD4F13]">{email}</span>
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex justify-center items-center w-full">
+      <CardContent className="flex w-full items-center justify-center">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -248,16 +223,12 @@ export default function VerifyEmailOTPForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <InputOTP
-                      maxLength={6}
-                      {...field}
-                      className="flex justify-center items-center"
-                    >
-                      <InputOTPGroup className="gap-2 flex justify-center items-center flex-row">
+                    <InputOTP maxLength={6} {...field} className="flex items-center justify-center">
+                      <InputOTPGroup className="flex flex-row items-center justify-center gap-2">
                         {[...Array(6)].map((_, index) => (
                           <InputOTPSlot
                             key={index}
-                            className="rounded-[14px] shadow-none border bg-[#F7F7F7] data-[active=true]:ring-1 data-[active=true]:ring-[#FD4F13] h-[50px] w-[50px]"
+                            className="h-[50px] w-[50px] rounded-[14px] border bg-[#F7F7F7] shadow-none data-[active=true]:ring-1 data-[active=true]:ring-[#FD4F13]"
                             index={index}
                           />
                         ))}
@@ -280,23 +251,19 @@ export default function VerifyEmailOTPForm() {
             <div className="flex flex-col gap-2">
               <Button
                 type="submit"
-                className="w-full bg-[#2E2E2E] h-[50px] text-white font-light rounded-[13px] font-sans text-[16px]"
+                className="h-[50px] w-full rounded-[13px] bg-[#2E2E2E] font-sans text-[16px] font-light text-white hover:bg-black"
                 disabled={isVerifying || isResending}
               >
-                {isVerifying && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {isVerifying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Verify Email
               </Button>
 
-              <div className="flex flex-row gap-2 text-[16px] justify-center items-center">
-                <span className="font-normal text-[#707070]">
-                  Didn&apos;t receive the code?
-                </span>
+              <div className="flex flex-row items-center justify-center gap-2 text-[16px]">
+                <span className="font-normal text-[#707070]">Didn&apos;t receive the code?</span>
                 <Button
                   type="button"
                   variant="link"
-                  className="font-medium hover:underline p-0 h-auto"
+                  className="h-auto p-0 font-medium hover:underline"
                   onClick={handleResend}
                   disabled={isVerifying || isResending || isInCooldown}
                 >
@@ -306,8 +273,8 @@ export default function VerifyEmailOTPForm() {
                       Sending...
                     </>
                   ) : isInCooldown ? (
-                    <span className="flex items-center text-muted-foreground">
-                      <Clock className="h-4 w-4 mr-1" />
+                    <span className="text-muted-foreground flex items-center">
+                      <Clock className="mr-1 h-4 w-4" />
                       Resend in {formatTime(remainingTime)}
                     </span>
                   ) : (
