@@ -3,6 +3,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
   experimental: {
@@ -11,8 +12,9 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '150mb',
     },
     scrollRestoration: true,
-    optimizeCss: false,
+    optimizeCss: true,
   },
+
   images: {
     remotePatterns: [
       {
@@ -61,6 +63,15 @@ const nextConfig: NextConfig = {
         hostname: '**', // Allow all for now if dynamic, but ideally specific
       },
     ],
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Mengatasi masalah 'node:inspector' yang bikin error copyfile di Windows
+      config.externals.push({
+        'node:inspector': 'commonjs inspector',
+      });
+    }
+    return config;
   },
   async headers() {
     return [

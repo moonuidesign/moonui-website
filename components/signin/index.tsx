@@ -13,13 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { signInWithGoogle } from '@/server-action/Auth/signInWithGoogle';
 
 // UI Components (Shadcn/UI)
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -112,12 +106,12 @@ export function SignInForm() {
   };
 
   return (
-    <Card className="w-full max-w-[480px] gap-8 px-5 py-12 rounded-[40px]">
-      <CardHeader className="flex justify-center items-center flex-col">
-        <CardTitle className="font-['Plus_Jakarta_Sans'] flex justify-center items-center text-[32px] font-extrabold">
+    <Card className="w-full max-w-[480px] gap-8 rounded-[40px] px-5 py-12">
+      <CardHeader className="flex flex-col items-center justify-center">
+        <CardTitle className="flex items-center justify-center font-['Plus_Jakarta_Sans'] text-[32px] font-extrabold">
           Sign In
         </CardTitle>
-        <CardDescription className="font-sans text-center text-[16px] flex justify-center items-center">
+        <CardDescription className="flex items-center justify-center text-center font-sans text-[16px]">
           Welcome back! Please enter your details.
         </CardDescription>
       </CardHeader>
@@ -134,6 +128,7 @@ export function SignInForm() {
                   <FormLabel className="font-bold">Email</FormLabel>
                   <FormControl>
                     <Input
+                      className="h-[50px]"
                       {...field}
                       type="email"
                       placeholder="you@example.com"
@@ -155,6 +150,7 @@ export function SignInForm() {
                   <FormControl>
                     <Input
                       {...field}
+                      className="h-[50px]"
                       type="password"
                       placeholder="******"
                       disabled={loading}
@@ -166,12 +162,12 @@ export function SignInForm() {
             />
 
             {/* Remember Me & Forgot Password */}
-            <div className="flex flex-row justify-between items-center">
+            <div className="flex flex-row items-center justify-between">
               <FormField
                 control={control}
                 name="rememberMe"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                  <FormItem className="flex flex-row items-center space-y-0 space-x-2">
                     <FormControl>
                       <Checkbox
                         checked={field.value}
@@ -179,22 +175,24 @@ export function SignInForm() {
                         disabled={loading}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal cursor-pointer">
-                      Remember me
-                    </FormLabel>
+                    <FormLabel className="cursor-pointer font-normal">Remember me</FormLabel>
                   </FormItem>
                 )}
               />
               <Link
                 href="/forgot-password"
-                className="text-sm font-medium text-primary hover:underline"
+                className="text-primary text-sm font-medium hover:underline"
               >
                 Forgot password?
               </Link>
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="h-[50px] w-full rounded-[13px] bg-[#2E2E2E] font-sans text-[16px] font-light text-white hover:bg-black"
+              disabled={loading}
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
@@ -207,7 +205,7 @@ export function SignInForm() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground font-semibold">
+            <span className="bg-background text-muted-foreground px-2 font-semibold">
               Or sign in with
             </span>
           </div>
@@ -217,26 +215,17 @@ export function SignInForm() {
         <div className="flex flex-col gap-3">
           <Button
             variant="outline"
-            className="w-full flex items-center justify-center gap-2 h-10"
+            className="flex h-[50px] w-full items-center justify-center gap-2"
             onClick={handleGoogleSignIn}
             disabled={loading || isPending}
           >
-            {isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Google size={20} />
-            )}
-            <span className="font-semibold">
-              {isPending ? 'Memproses...' : 'Google'}
-            </span>
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Google size={20} />}
+            <span className="font-semibold">{isPending ? 'Memproses...' : 'Google'}</span>
           </Button>
 
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
-            <Link
-              href="/verify-license"
-              className="font-semibold text-primary hover:underline"
-            >
+            <Link href="/verify-license" className="text-primary font-semibold hover:underline">
               Sign Up
             </Link>
           </div>

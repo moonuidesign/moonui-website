@@ -26,7 +26,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           isFilterOpen ? 'pointer-events-none cursor-pointer' : ''
         }`}
       >
-        <div className="relative z-[100] h-fit w-full md:p-2">
+        <div className="relative z-[1000] h-fit w-full md:p-2">
           <div className="flex w-full items-center justify-center gap-2 bg-black px-4 pt-4 pb-20 text-[#B8B8B8] md:mb-10 md:rounded-lg md:py-3">
             {/* Icon tetap sebagai flex item pertama */}
             <Image
@@ -48,7 +48,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </p>
           </div>
         </div>
-        <div className="relative z-[800] -mt-[69px] h-fit overflow-hidden rounded-t-[39px] bg-[#E7E7E7] md:z-[200] md:-mt-[48px] md:overflow-visible md:rounded-none md:bg-none">
+        <div className="relative -mt-[69px] h-fit overflow-hidden rounded-t-[39px] bg-[#E7E7E7] md:-mt-[48px] md:overflow-visible md:rounded-none md:bg-none">
           <Suspense
             fallback={
               <section className="relative z-[1000] h-24">

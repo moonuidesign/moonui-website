@@ -26,7 +26,7 @@ const FAQSection: React.FC<FAQSectionProps> = ({
   const isPricingPage = pathname === '/pricing';
   return (
     <section
-      className={`${isPricingPage ? 'lg:max-w-6xl' : 'lg:max-w-7xl'} container mx-auto flex w-full items-center justify-center px-1 py-5`}
+      className={`${isPricingPage ? 'lg:max-w-7xl' : 'lg:max-w-7xl'} container mx-auto flex w-full items-center justify-center px-1 py-5`}
     >
       {/* Container Utama (Dark Card) */}
       <div className="flex w-full flex-col gap-10 rounded-4xl bg-zinc-900 p-8 shadow-xl md:p-16 lg:flex-row lg:gap-20 lg:rounded-[40px]">
@@ -63,7 +63,7 @@ const FAQSection: React.FC<FAQSectionProps> = ({
                     <AccordionTrigger className="py-4 text-left text-[16px] font-medium text-white transition-colors hover:text-neutral-300 hover:no-underline md:text-base [&[data-state=open]>svg]:rotate-180">
                       {item.question}
                     </AccordionTrigger>
-                    <AccordionContent className="pb-6 text-[14px] leading-7 text-neutral-400 md:text-base">
+                    <AccordionContent className="pb-6 text-[14px] leading-5 text-neutral-400 md:text-base">
                       {item.answer}
                     </AccordionContent>
                   </AccordionItem>

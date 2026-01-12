@@ -1,8 +1,7 @@
 'use client';
 
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { getInfiniteData, getOverviewData } from '@/server-action/getAssets2Data';
 import { useFilter, useFilterStore } from '@/contexts';
 import { CardGridSkeleton } from '@/components/skeletons/card-skeleton';
 import { AssetsPageSkeleton } from '@/components/skeletons/assets-page-skeleton';
@@ -16,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/libs/utils';
+import { motion } from 'framer-motion';
 
 // Dynamic imports for code splitting - reduces initial bundle size
 const FilteredContent = dynamic(() => import('../../../components/assets-v2/filtered-content'), {
@@ -30,7 +30,6 @@ const SidebarWrapper = dynamic(
 );
 
 function AssetsPageContent() {
-  const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const query = useFilterStore((state) => state.searchQuery);
   const {
@@ -44,13 +43,10 @@ function AssetsPageContent() {
     setFilterOpen,
     setContentType,
     sortBy,
+    data,
+    isLoading,
+    refetchAssets,
   } = useFilter();
-
-  const [data, setData] = useState<any>({
-    allItems: [],
-    totalCount: 0,
-    groupedAssets: {},
-  });
 
   const urlQ = searchParams.get('q');
   useEffect(() => {
@@ -64,72 +60,40 @@ function AssetsPageContent() {
 
   const isGroupedMode = (categorySlugs.length === 0 || categorySlugs.includes('all')) && !query;
 
+  // Trigger refetch when filters change
   useEffect(() => {
-    if (!_hasHydrated) return;
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        let fetchedGroupedAssets = {};
-        let fetchedAllItems = [];
-        let fetchedTotalCount = 0;
-        const currentQuery = useFilterStore.getState().searchQuery;
-
-        if (isGroupedMode) {
-          fetchedGroupedAssets = await getOverviewData(contentType, selectedTiers, tool);
-        } else {
-          const categorySlug = categorySlugs[0] || 'all';
-          const res = await getInfiniteData(
-            categorySlug,
-            12,
-            0,
-            contentType,
-            selectedTiers,
-            tool,
-            sortBy,
-            currentQuery,
-          );
-          fetchedAllItems = res.items;
-          fetchedTotalCount = res.totalCount;
-        }
-        setData({
-          groupedAssets: fetchedGroupedAssets,
-          allItems: fetchedAllItems,
-          totalCount: fetchedTotalCount,
-        });
-      } catch (error) {
-        console.error('Failed to fetch assets content:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [tool, contentType, _hasHydrated, query, sortBy, categorySlugs, isGroupedMode, selectedTiers]);
+    if (_hasHydrated) {
+      refetchAssets();
+    }
+  }, [tool, contentType, _hasHydrated, query, sortBy, categorySlugs, selectedTiers]);
 
   if (!_hasHydrated) {
     return <AssetsPageSkeleton />;
   }
 
   // Restore the Grid Structure: Sidebar | Content
+
   return (
     <div className="flex min-h-fit gap-4 pb-8 md:min-h-[85vh] lg:gap-8 lg:pb-12">
       {/* Sidebar Column */}
-      <div className="hidden shrink-0 md:block md:w-52 lg:w-64">
-        <div className="sticky top-24 flex flex-col gap-4 lg:gap-8">
-          <div className="flex flex-col gap-2 lg:gap-4">
-            <h1 className="font-['Plus_Jakarta_Sans'] text-lg font-semibold text-[#3D3D3D] lg:text-[24px]">
-              What’s new?
-            </h1>
-            <p className="font-['Inter'] text-sm font-medium text-[#3D3D3D]">
-              Filter your asset below
-            </p>
-          </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="hidden shrink-0 md:block md:w-52 lg:w-64"
+      >
+        <div className="sticky top-5 flex flex-col gap-4 lg:gap-8">
           {/* Sidebar Filter Wrapper */}
           <SidebarWrapper />
         </div>
-      </div>
+      </motion.div>
 
-      <div className="flex h-full min-w-0 flex-1 flex-col gap-4 lg:gap-8">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="flex h-full min-w-0 flex-1 flex-col gap-4 lg:gap-8"
+      >
         <div className="hidden flex-col gap-2 md:flex lg:gap-4">
           <h1 className="relative font-['Plus_Jakarta_Sans'] text-lg font-semibold text-[#3D3D3D] capitalize lg:text-[24px]">
             <span className="absolute top-1/2 left-[250px] h-[1.5px] -translate-y-1/2 transform bg-[#D3D3D3] md:w-[53%] lg:w-[75%]">
@@ -217,7 +181,7 @@ function AssetsPageContent() {
         {/* Right Controls */}
         <div className="px-4 md:px-0">
           <div className="h-fit w-full rounded-2xl bg-[#F7F7F7] p-4 md:h-fit md:p-8">
-            {loading ? (
+            {isLoading ? (
               <CardGridSkeleton />
             ) : isGroupedMode ? (
               <GroupedContent
@@ -240,7 +204,7 @@ function AssetsPageContent() {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

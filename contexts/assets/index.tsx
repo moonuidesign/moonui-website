@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import { ReactNode } from 'react';
+import { getInfiniteData, getOverviewData } from '@/server-action/getAssets2Data';
 
 export type ToolType = 'figma' | 'framer';
 export type ContentType = 'components' | 'templates' | 'gradients' | 'designs';
@@ -22,6 +23,16 @@ interface FilterState {
   sortBy: 'recent' | 'popular';
   isFilterOpen: boolean;
   _hasHydrated: boolean;
+
+  // Data State
+  data: {
+    groupedAssets: any;
+    allItems: any[];
+    totalCount: number;
+  };
+  isLoading: boolean;
+  error: any;
+  fetchId: number; // For race condition handling
 }
 
 interface FilterActions {
@@ -53,6 +64,9 @@ interface FilterActions {
   }) => void;
 
   clearAllFilters: () => void;
+
+  // Data Action
+  refetchAssets: () => Promise<void>;
 }
 
 const storage: StateStorage = {
@@ -72,7 +86,7 @@ const storage: StateStorage = {
 
 export const useFilterStore = create<FilterState & FilterActions>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       tool: 'figma',
 
       contentType: 'components',
@@ -85,6 +99,16 @@ export const useFilterStore = create<FilterState & FilterActions>()(
       sortBy: 'recent',
       isFilterOpen: false,
       _hasHydrated: false,
+
+      // Initial Data State
+      data: {
+        groupedAssets: {},
+        allItems: [],
+        totalCount: 0,
+      },
+      isLoading: false,
+      error: null,
+      fetchId: 0,
 
       setTool: (tool) => set({ tool }),
       setFilterOpen: (isFilterOpen) => set({ isFilterOpen }),
@@ -108,7 +132,7 @@ export const useFilterStore = create<FilterState & FilterActions>()(
               ? state.categorySlugs.filter((s) => s !== slug)
               : [...state.categorySlugs, slug],
             // Reset subcategories when toggling categories to prevent invalid states
-            subCategorySlugs: []
+            subCategorySlugs: [],
           };
         }),
 
@@ -182,9 +206,7 @@ export const useFilterStore = create<FilterState & FilterActions>()(
           if (categorySlug !== undefined)
             newState.categorySlugs = categorySlug ? [categorySlug] : [];
           if (subCategorySlug !== undefined)
-            newState.subCategorySlugs = subCategorySlug
-              ? [subCategorySlug]
-              : [];
+            newState.subCategorySlugs = subCategorySlug ? [subCategorySlug] : [];
           if (searchQuery !== undefined) newState.searchQuery = searchQuery;
 
           return newState;
@@ -202,6 +224,58 @@ export const useFilterStore = create<FilterState & FilterActions>()(
           sortBy: 'recent',
         });
       },
+
+      refetchAssets: async () => {
+        const state = get();
+        // Increment fetchId to invalidate previous requests
+        const currentFetchId = state.fetchId + 1;
+        set({ isLoading: true, fetchId: currentFetchId, error: null });
+
+        try {
+          const { contentType, categorySlugs, searchQuery, selectedTiers, tool, sortBy } = state;
+          const isGroupedMode =
+            (categorySlugs.length === 0 || categorySlugs.includes('all')) && !searchQuery;
+
+          let fetchedGroupedAssets = {};
+          let fetchedAllItems = [];
+          let fetchedTotalCount = 0;
+
+          if (isGroupedMode) {
+            fetchedGroupedAssets = await getOverviewData(contentType, selectedTiers, tool);
+          } else {
+            const categorySlug = categorySlugs[0] || 'all';
+            const res = await getInfiniteData(
+              categorySlug,
+              12,
+              0,
+              contentType,
+              selectedTiers,
+              tool,
+              sortBy,
+              searchQuery,
+            );
+            fetchedAllItems = res.items;
+            fetchedTotalCount = res.totalCount;
+          }
+
+          // Check if this is still the latest request
+          if (get().fetchId === currentFetchId) {
+            set({
+              data: {
+                groupedAssets: fetchedGroupedAssets,
+                allItems: fetchedAllItems,
+                totalCount: fetchedTotalCount,
+              },
+              isLoading: false,
+            });
+          }
+        } catch (error) {
+          if (get().fetchId === currentFetchId) {
+            console.error('Failed to fetch assets:', error);
+            set({ error, isLoading: false });
+          }
+        }
+      },
     }),
     {
       name: 'assets-filter-storage',
@@ -209,14 +283,21 @@ export const useFilterStore = create<FilterState & FilterActions>()(
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },
-      // BAGIAN PENTING: Tambahkan 'searchQuery' ke dalam filter blacklist
+      // BAGIAN PENTING: Tambahkan 'searchQuery', 'data', 'isLoading', 'error', 'fetchId' ke dalam filter blacklist
       partialize: (state) =>
         Object.fromEntries(
           Object.entries(state).filter(
             ([key]) =>
-              // Jangan simpan 'searchQuery' di localStorage!
-              // Biarkan URL yang mengaturnya.
-              !['isFilterOpen', '_hasHydrated', 'searchQuery'].includes(key),
+              // Jangan simpan state data fetching dan transient items di localStorage
+              ![
+                'isFilterOpen',
+                '_hasHydrated',
+                'searchQuery',
+                'data',
+                'isLoading',
+                'error',
+                'fetchId',
+              ].includes(key),
           ),
         ),
     },

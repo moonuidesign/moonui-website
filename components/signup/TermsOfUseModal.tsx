@@ -167,39 +167,37 @@ export function TermsOfUseModal({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="sm:max-w-[600px] max-h-[90vh] flex flex-col"
+        className="flex max-h-[90vh] flex-col sm:max-w-[600px]"
         showCloseButton={!isPending}
       >
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Terms of Use & Privacy Policy
-          </DialogTitle>
+          <DialogTitle className="text-xl font-bold">Terms of Use & Privacy Policy</DialogTitle>
           <DialogDescription>
-            Please read and agree to the following terms and conditions before
-            continuing with registration.
+            Please read and agree to the following terms and conditions before continuing with
+            registration.
           </DialogDescription>
         </DialogHeader>
 
         {/* Scrollable Terms Content with dangerouslySetInnerHTML */}
-        <div className="relative flex-1 min-h-0">
+        <div className="relative min-h-0 flex-1">
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="terms-content h-[300px] overflow-y-auto border rounded-lg p-4 bg-gray-50 dark:bg-gray-900 text-sm leading-relaxed"
+            className="terms-content h-[300px] overflow-y-auto rounded-lg border bg-gray-50 p-4 text-sm leading-relaxed dark:bg-gray-900"
             dangerouslySetInnerHTML={{ __html: termsContent }}
           />
 
           {/* Scroll indicator - show if not scrolled to bottom */}
           {!hasScrolledToBottom && (
-            <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-2 pointer-events-none">
+            <div className="pointer-events-none absolute right-0 bottom-0 left-0 flex justify-center pb-2">
               <Button
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="pointer-events-auto shadow-lg animate-bounce"
+                className="pointer-events-auto animate-bounce shadow-lg"
                 onClick={scrollToBottom}
               >
-                <ChevronDown className="h-4 w-4 mr-1" />
+                <ChevronDown className="mr-1 h-4 w-4" />
                 Scroll to read
               </Button>
             </div>
@@ -216,13 +214,11 @@ export function TermsOfUseModal({
           />
           <label
             htmlFor="terms-agree"
-            className={`text-sm leading-tight cursor-pointer ${!hasScrolledToBottom
-              ? 'text-muted-foreground'
-              : 'text-foreground'
-              }`}
+            className={`cursor-pointer text-sm leading-tight ${
+              !hasScrolledToBottom ? 'text-muted-foreground' : 'text-foreground'
+            }`}
           >
-            I have read, understood, and agree to the{' '}
-            <strong>Terms and Conditions</strong> and{' '}
+            I have read, understood, and agree to the <strong>Terms and Conditions</strong> and{' '}
             <strong>Privacy Policy</strong> of MoonUI Design.
           </label>
         </div>
@@ -247,12 +243,10 @@ export function TermsOfUseModal({
             type="button"
             onClick={onAgree}
             disabled={!canAgree || isPending}
-            className="bg-[#2E2E2E] text-white"
+            className="bg-[#2E2E2E] text-white hover:bg-black"
           >
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {submitType === 'google'
-              ? 'Agree & Continue with Google'
-              : 'Agree & Sign Up'}
+            {submitType === 'google' ? 'Agree & Continue with Google' : 'Agree & Sign Up'}
           </Button>
         </DialogFooter>
       </DialogContent>

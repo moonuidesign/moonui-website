@@ -220,6 +220,7 @@ function normalizeContent(
           parentId: catData.parentId,
         }
       : null,
+    createdAt: data.createdAt || null,
   };
 }
 

@@ -399,7 +399,7 @@ export default function Bennefits() {
           </AnimatePresence>
         </div>
 
-        <button className="group relative bottom-16 z-[110] mt-4 flex h-11 items-center gap-3 rounded-[13px] bg-[#2E2E2E] px-5 text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-colors hover:bg-black">
+        <button className="group relative bottom-16 z-[110] mt-4 flex h-11 cursor-pointer items-center gap-3 rounded-[13px] bg-[#2E2E2E] px-5 text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-colors hover:bg-black">
           <div className="flex items-center gap-1.5 text-sm">
             <span className="font-medium">Explore Template</span>
             <span className="opacity-30">-</span>

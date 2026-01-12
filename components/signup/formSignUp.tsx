@@ -6,29 +6,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useTransition, useRef } from 'react';
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock1, Sms, User } from 'iconsax-reactjs';
 import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { RegisterSchema, RegisterSchemaType } from '@/types/register';
-import {
-  registerWithCredentials,
-  registerWithGoogle,
-} from '@/server-action/Auth/signUp';
+import { registerWithCredentials, registerWithGoogle } from '@/server-action/Auth/signUp';
 import { Input } from '../ui/input';
 import { toast } from 'react-toastify';
 import { TermsOfUseModal } from './TermsOfUseModal';
@@ -43,9 +28,7 @@ interface RegisterFormProps {
 export function RegisterForm({ signature, email, termsContent }: RegisterFormProps) {
   const [isPending, startTransition] = useTransition();
   const [showTermsModal, setShowTermsModal] = useState(false);
-  const [submitType, setSubmitType] = useState<'credentials' | 'google'>(
-    'credentials',
-  );
+  const [submitType, setSubmitType] = useState<'credentials' | 'google'>('credentials');
 
   // Ref untuk form values saat submit credentials
   const pendingCredentialsRef = useRef<RegisterSchemaType | null>(null);
@@ -100,9 +83,7 @@ export function RegisterForm({ signature, email, termsContent }: RegisterFormPro
             toast.success('Sukses mendaftar');
             window.location.href = '/dashboard';
           } else {
-            toast.error(
-              signInResult?.error || 'Login failed after registration.',
-            );
+            toast.error(signInResult?.error || 'Login failed after registration.');
             setShowTermsModal(false);
           }
         }
@@ -128,25 +109,21 @@ export function RegisterForm({ signature, email, termsContent }: RegisterFormPro
 
   return (
     <>
-      <Card className="w-full max-w-[480px] gap-8 px-5 py-12 rounded-[40px]">
-        <CardHeader className="flex justify-center items-center flex-col">
-          <CardTitle className="font-['Plus_Jakarta_Sans'] flex justify-center items-center text-[32px] font-extrabold">
+      <Card className="w-full max-w-[480px] gap-8 rounded-[40px] px-5 py-12">
+        <CardHeader className="flex flex-col items-center justify-center">
+          <CardTitle className="flex items-center justify-center font-['Plus_Jakarta_Sans'] text-[32px] font-extrabold">
             Create Your Account
           </CardTitle>
-          <CardDescription className="font-sans text-center text-[16px] flex justify-center items-center">
-            Complete your registration to activate your license. Your email is
-            pre-filled.
+          <CardDescription className="flex items-center justify-center text-center font-sans text-[16px]">
+            Complete your registration to activate your license. Your email is pre-filled.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {/* Formulir untuk Kredensial */}
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleCredentialsSubmit)}
-              className="space-y-4"
-            >
+            <form onSubmit={form.handleSubmit(handleCredentialsSubmit)} className="space-y-4">
               <input
-                className="pl-10 rounded-[13px] bg-[#F7F7F7] border-[#E0E0E0] focus-visible:ring-[1px] focus-visible:ring-[#FD4F13] border-2"
+                className="rounded-[13px] border-2 border-[#E0E0E0] bg-[#F7F7F7] pl-10 focus-visible:ring-[1px] focus-visible:ring-[#FD4F13]"
                 type="hidden"
                 {...form.register('signature')}
               />
@@ -154,10 +131,10 @@ export function RegisterForm({ signature, email, termsContent }: RegisterFormPro
                 control={form.control}
                 name="email"
                 render={({ field }) => (
-                  <FormItem className=" flex-col w-full h-12 relative flex justify-center items-start">
-                    <FormControl className="w-full h-full">
+                  <FormItem className="relative flex h-12 w-full flex-col items-start justify-center">
+                    <FormControl className="h-full w-full">
                       <Input
-                        className="pl-10 rounded-[13px] bg-[#F7F7F7] border-[#E0E0E0] focus-visible:ring-[1px] focus-visible:ring-[#FD4F13] border-2"
+                        className="rounded-[13px] border-2 border-[#E0E0E0] bg-[#F7F7F7] pl-10 focus-visible:ring-[1px] focus-visible:ring-[#FD4F13]"
                         {...field}
                         disabled
                       />
@@ -171,10 +148,10 @@ export function RegisterForm({ signature, email, termsContent }: RegisterFormPro
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItem className=" flex-col w-full h-12 relative flex justify-center items-start">
-                    <FormControl className="w-full h-full">
+                  <FormItem className="relative flex h-12 w-full flex-col items-start justify-center">
+                    <FormControl className="h-full w-full">
                       <Input
-                        className="pl-10 rounded-[13px] bg-[#F7F7F7] border-[#E0E0E0] focus-visible:ring-[1px] focus-visible:ring-[#FD4F13] border-2"
+                        className="rounded-[13px] border-2 border-[#E0E0E0] bg-[#F7F7F7] pl-10 focus-visible:ring-[1px] focus-visible:ring-[#FD4F13]"
                         {...field}
                         placeholder="John Doe"
                         disabled={isPending}
@@ -190,10 +167,10 @@ export function RegisterForm({ signature, email, termsContent }: RegisterFormPro
                 control={form.control}
                 name="password"
                 render={({ field }) => (
-                  <FormItem className=" flex-col w-full h-12 relative flex justify-center items-start">
-                    <FormControl className="w-full h-full">
+                  <FormItem className="relative flex h-12 w-full flex-col items-start justify-center">
+                    <FormControl className="h-full w-full">
                       <Input
-                        className="pl-10 w-full rounded-[13px] bg-[#F7F7F7] border-[#E0E0E0] focus-visible:ring-[1px] focus-visible:ring-[#FD4F13] border-2"
+                        className="w-full rounded-[13px] border-2 border-[#E0E0E0] bg-[#F7F7F7] pl-10 focus-visible:ring-[1px] focus-visible:ring-[#FD4F13]"
                         {...field}
                         placeholder="Password"
                         type="password"
@@ -209,10 +186,10 @@ export function RegisterForm({ signature, email, termsContent }: RegisterFormPro
                 control={form.control}
                 name="confirmPassword"
                 render={({ field }) => (
-                  <FormItem className=" flex-col w-full h-12 relative flex justify-center items-start">
-                    <FormControl className="w-full h-full">
+                  <FormItem className="relative flex h-12 w-full flex-col items-start justify-center">
+                    <FormControl className="h-full w-full">
                       <Input
-                        className="pl-10 rounded-[13px] bg-[#F7F7F7] border-[#E0E0E0] focus-visible:ring-[1px] focus-visible:ring-[#FD4F13] border-2"
+                        className="rounded-[13px] border-2 border-[#E0E0E0] bg-[#F7F7F7] pl-10 focus-visible:ring-[1px] focus-visible:ring-[#FD4F13]"
                         {...field}
                         placeholder="Confirm Password"
                         type="password"
@@ -227,7 +204,7 @@ export function RegisterForm({ signature, email, termsContent }: RegisterFormPro
 
               <Button
                 type="submit"
-                className="w-full bg-[#2E2E2E] h-[50px] text-white font-light rounded-[13px] font-sans text-[16px]"
+                className="h-[50px] w-full rounded-[13px] bg-[#2E2E2E] font-sans text-[16px] font-light text-white hover:bg-black"
                 disabled={isPending}
               >
                 {isPending && submitType === 'credentials' && (
@@ -243,26 +220,19 @@ export function RegisterForm({ signature, email, termsContent }: RegisterFormPro
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
+              <span className="bg-background text-muted-foreground px-2">Or continue with</span>
             </div>
           </div>
 
           {/* Formulir untuk Google */}
           <form onSubmit={handleGoogleClick}>
             <input
-              className="pl-10 rounded-[13px] bg-[#F7F7F7] border-[#E0E0E0] focus-visible:ring-[1px] focus-visible:ring-[#FD4F13] border-2"
+              className="rounded-[13px] border-2 border-[#E0E0E0] bg-[#F7F7F7] pl-10 focus-visible:ring-[1px] focus-visible:ring-[#FD4F13]"
               type="hidden"
               name="signature"
               value={signature}
             />
-            <Button
-              variant="outline"
-              type="submit"
-              className="w-full"
-              disabled={isPending}
-            >
+            <Button variant="outline" type="submit" className="w-full" disabled={isPending}>
               {isPending && submitType === 'google' ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
