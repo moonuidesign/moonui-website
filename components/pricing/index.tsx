@@ -318,7 +318,7 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
                 <motion.div
                   layoutId="pricing-toggle"
                   className="absolute inset-0 z-[-1] rounded-lg bg-zinc-900 shadow-md"
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
               Monthly
@@ -333,7 +333,7 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
                 <motion.div
                   layoutId="pricing-toggle"
                   className="absolute inset-0 z-[-1] rounded-lg bg-zinc-900 shadow-md"
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
               Annual

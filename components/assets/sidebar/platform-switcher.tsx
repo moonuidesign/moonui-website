@@ -20,7 +20,7 @@ export const PlatformSwitcher: React.FC<PlatformSwitcherProps> = ({ currentTool,
         <button
           onClick={() => onChange('figma')}
           className={cn(
-            'relative flex h-7 w-1/2 items-center justify-center gap-1 px-2 transition-all duration-200 lg:h-8 lg:gap-1.5 lg:px-3',
+            'relative flex h-7 w-1/2 items-center justify-center gap-1 px-2 transition-all duration-200 lg:h-9 lg:gap-1.5 lg:px-3',
             currentTool === 'figma' ? 'text-white' : 'text-[#3D3D3D] hover:bg-gray-50',
           )}
         >
@@ -37,9 +37,16 @@ export const PlatformSwitcher: React.FC<PlatformSwitcherProps> = ({ currentTool,
               width={100}
               height={100}
               src="/ic-figma.svg"
-              className="h-4 w-4 lg:h-[20px] lg:w-[20px]"
+              className="h-4 w-4 lg:h-[18px] lg:w-[18px]"
             />
-            <span className="font-['Inter'] text-[11px] font-medium lg:text-xs">Figma</span>
+            <span
+              className={cn(
+                'font-jakarta text-xs font-semibold lg:text-sm',
+                currentTool === 'figma' ? 'text-white' : 'text-gray-800',
+              )}
+            >
+              Figma
+            </span>
           </div>
         </button>
 
@@ -47,7 +54,7 @@ export const PlatformSwitcher: React.FC<PlatformSwitcherProps> = ({ currentTool,
         <button
           onClick={() => onChange('framer')}
           className={cn(
-            'relative flex h-7 w-1/2 items-center justify-center gap-1 px-2 transition-all duration-200 lg:h-8 lg:gap-1.5 lg:px-3',
+            'relative flex h-7 w-1/2 items-center justify-center gap-1 px-2 transition-all duration-200 lg:h-9 lg:gap-1.5 lg:px-3',
             currentTool === 'framer' ? 'text-white' : 'text-[#3D3D3D] hover:bg-gray-50',
           )}
         >
@@ -64,9 +71,16 @@ export const PlatformSwitcher: React.FC<PlatformSwitcherProps> = ({ currentTool,
               width={100}
               height={100}
               src="/ic-framer.svg"
-              className="h-4 w-4 lg:h-[20px] lg:w-[20px]"
+              className="h-4 w-4 lg:h-[18px] lg:w-[18px]"
             />
-            <span className="font-['Inter'] text-[11px] font-medium lg:text-xs">Framer</span>
+            <span
+              className={cn(
+                'font-jakarta text-xs font-semibold lg:text-sm',
+                currentTool === 'framer' ? 'text-white' : 'text-gray-800',
+              )}
+            >
+              Framer
+            </span>
           </div>
         </button>
       </div>

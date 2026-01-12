@@ -64,6 +64,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Mengatasi masalah 'node:inspector' yang bikin error copyfile di Windows
+      config.externals.push({
+        'node:inspector': 'commonjs inspector',
+      });
+    }
+    return config;
+  },
   async headers() {
     return [
       {

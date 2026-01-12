@@ -26,7 +26,7 @@ const FAQSection: React.FC<FAQSectionProps> = ({
   const isPricingPage = pathname === '/pricing';
   return (
     <section
-      className={`${isPricingPage ? 'lg:max-w-6xl' : 'lg:max-w-7xl'} container mx-auto flex w-full items-center justify-center px-1 py-5`}
+      className={`${isPricingPage ? 'lg:max-w-7xl' : 'lg:max-w-7xl'} container mx-auto flex w-full items-center justify-center px-1 py-5`}
     >
       {/* Container Utama (Dark Card) */}
       <div className="flex w-full flex-col gap-10 rounded-4xl bg-zinc-900 p-8 shadow-xl md:p-16 lg:flex-row lg:gap-20 lg:rounded-[40px]">

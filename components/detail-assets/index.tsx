@@ -791,9 +791,6 @@ export default function ContentDetailClient({
                   </a>
                 )}
               </div>
-              <p className="pt-2 text-center text-[10px] text-neutral-400">
-                Secure payment processed by LemonSqueezy. 30-day refund policy.
-              </p>
             </div>
             <div className="overflow-hidden rounded-2xl border border-[#D3D3D3] bg-white">
               <div className="border-b border-[#D3D3D3] bg-neutral-50/50 px-5 py-3">
@@ -810,6 +807,10 @@ export default function ContentDetailClient({
                   </>
                 )}
               </div>
+              <p className="pt-2 text-center text-[10px] text-neutral-400">
+                Secure payment processed by LemonSqueezy.
+                {/* 30-day refund policy. */}
+              </p>
               {/* Tags Section */}
               {Array.isArray(content.slug) && content.slug.length > 0 && (
                 <div className="border-t border-neutral-100 px-5 py-4">
@@ -899,7 +900,7 @@ export default function ContentDetailClient({
             }
           `}</style>
           <div
-            className="fixed inset-0 z-[100] flex touch-none items-center justify-center overscroll-none bg-black/95 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-[1020] flex touch-none items-center justify-center overscroll-none bg-black/95 p-4 backdrop-blur-sm"
             onClick={() => setIsImageModalOpen(false)}
           >
             {/* Close Button - More prominent on mobile */}
