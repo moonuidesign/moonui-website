@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { TicketPercent } from 'lucide-react';
 import { ArrowRight2 } from 'iconsax-reactjs';
 import Image from 'next/image';
