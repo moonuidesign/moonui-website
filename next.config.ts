@@ -3,6 +3,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
   experimental: {
@@ -11,8 +12,9 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '150mb',
     },
     scrollRestoration: true,
-    optimizeCss: false,
+    optimizeCss: true,
   },
+
   images: {
     remotePatterns: [
       {

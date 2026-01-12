@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
-  Check,
   Download,
   Copy,
   ChevronLeft,
@@ -1023,15 +1022,17 @@ function TierBadge({ tier }: { tier?: string | null }) {
   if (tier === 'pro') {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-1 text-xs font-bold text-white shadow-md shadow-indigo-200">
-        <Check size={12} strokeWidth={3} /> Pro
+        <Image
+          alt="Pro"
+          width={14}
+          height={14}
+          src="/ic-diamond-small.svg"
+          className="h-[14px] w-[14px]"
+        />
+        Pro
       </span>
     );
   }
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-      Free License
-    </span>
-  );
 }
 
 function CardItem({
