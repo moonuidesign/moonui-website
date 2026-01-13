@@ -186,8 +186,6 @@ const relatedSectionStyle: React.CSSProperties = {
 };
 
 const hrStyle: React.CSSProperties = {
-  borderColor: '#e5e7eb',
-  borderTop: '1px solid #e5e7eb',
   margin: '0 0 20px 0',
 };
 

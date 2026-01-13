@@ -160,7 +160,6 @@ export const renderOTPEmail = (
               <span style={{ color: '#111827', fontSize: '14px', fontWeight: 600 }}>
                 MoonUI Studio
               </span>
-              <div style={{ color: '#6b7280', fontSize: '12px' }}>Login with magic link</div>
             </td>
           </tr>
         </tbody>

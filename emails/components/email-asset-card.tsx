@@ -74,11 +74,12 @@ export const EmailAssetCard = ({
         {/* Left side: Title + Badge + Author */}
         <Column style={{ verticalAlign: 'top' }}>
           {/* Title and Badge row */}
+          {/* Title and Badge row */}
           <table cellPadding="0" cellSpacing="0" style={{ border: 0 }}>
             <tr>
               <td style={{ verticalAlign: 'middle' }}>
-                <Link href={url} style={titleStyle}>
-                  {title.length > 18 ? `${title.substring(0, 18)}...` : title}
+                <Link href={url} style={titleStyle} title={title}>
+                  {title.length > 22 ? `${title.substring(0, 22)}...` : title}
                 </Link>
               </td>
               {showBadge && (
@@ -88,8 +89,8 @@ export const EmailAssetCard = ({
               )}
             </tr>
           </table>
-          {/* Author */}
-          {author && <Text style={authorStyle}>by {author}</Text>}
+          {/* Author - always render to keep height consistent */}
+          <Text style={authorStyle}>{author ? `by ${author}` : '\u00A0'}</Text>
         </Column>
 
         {/* Right side: Tier indicator */}
@@ -120,10 +121,7 @@ export const EmailAssetCard = ({
 
 // Styles - matching ResourceCard exactly
 const cardStyle: React.CSSProperties = {
-  backgroundColor: '#ffffff',
-  borderRadius: '16px',
   overflow: 'hidden',
-  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
   width: '100%',
   fontFamily: "'Inter', 'Arial', sans-serif",
 };
@@ -148,6 +146,7 @@ const noPreviewStyle: React.CSSProperties = {
 
 const metaRowStyle: React.CSSProperties = {
   padding: '12px 8px 8px 8px',
+  minHeight: '60px',
 };
 
 const titleStyle: React.CSSProperties = {

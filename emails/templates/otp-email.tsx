@@ -14,6 +14,7 @@ import {
 import { EmailFooter } from '../components/email-footer';
 
 const LOGO_URL = 'https://moonui.design/logo-moonui.png';
+const CODE = 'https://moonui.design/code_2.png';
 
 interface OTPEmailProps {
   title: string;
@@ -44,40 +45,43 @@ export const OTPEmail = ({
       </Head>
       <Body style={bodyStyle}>
         <Container style={containerStyle}>
-          {/* Header */}
           <Row style={headerStyle}>
-            <Column>
+            <Column width="50%" align="left">
               <Img src={LOGO_URL} alt="MoonUI Logo" width={120} height="auto" />
             </Column>
-            <Column style={{ textAlign: 'right', verticalAlign: 'middle' }}>
-              <Text style={headerTitleStyle}>MoonUI Studio</Text>
-              <Text style={headerSubtitleStyle}>Login with magic link</Text>
+            <Column width="50%" align="right" style={{ verticalAlign: 'middle' }}>
+              <Text style={headerTitleStyle}>MoonUI Design</Text>
             </Column>
           </Row>
-
-          {/* Main Card */}
           <Section style={cardStyle}>
-            {/* Icon */}
-            <div style={iconContainerStyle}>
-              <span style={{ fontSize: '24px' }}>✉️</span>
-            </div>
+            <Row>
+              <Column
+                style={{
+                  display: 'flex',
+                  alignItems: 'start',
+                  justifyContent: 'start',
+                }}
+              >
+                <Img src={CODE} alt="MoonUI Logo" width={120} height="auto" />
+              </Column>
+              <Column>
+                <Text style={cardTitleStyle}>{title}</Text>
 
-            {/* Title */}
-            <Text style={cardTitleStyle}>{title}</Text>
+                <Text style={cardDescStyle}>
+                  Click the button below to {buttonText.toLowerCase()}.
+                </Text>
+                <Button href={buttonUrl} style={buttonStyle}>
+                  Click to {buttonText.toLowerCase()}
+                </Button>
 
-            <Text style={cardDescStyle}>Click the button below to {buttonText.toLowerCase()}.</Text>
+                <Text style={cardDescStyle}>Or copy and paste the following code:</Text>
 
-            {/* Button */}
-            <Button href={buttonUrl} style={buttonStyle}>
-              Click to {buttonText.toLowerCase()}
-            </Button>
-
-            <Text style={cardDescStyle}>Or copy and paste the following code:</Text>
-
-            {/* OTP Code */}
-            <Section style={otpContainerStyle}>
-              <Text style={otpStyle}>{otp}</Text>
-            </Section>
+                {/* OTP Code */}
+                <Section style={otpContainerStyle}>
+                  <Text style={otpStyle}>{otp}</Text>
+                </Section>
+              </Column>
+            </Row>
 
             <Text style={hintStyle}>
               If you didn&apos;t try to {buttonText.toLowerCase()}, ignore this email.
@@ -130,18 +134,6 @@ const cardStyle: React.CSSProperties = {
   border: '1px solid #e5e7eb',
 };
 
-const iconContainerStyle: React.CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '48px',
-  height: '48px',
-  borderRadius: '12px',
-  border: '1px solid #e5e7eb',
-  background: 'white',
-  marginBottom: '20px',
-};
-
 const cardTitleStyle: React.CSSProperties = {
   color: '#111827',
   fontSize: '20px',
@@ -167,6 +159,7 @@ const buttonStyle: React.CSSProperties = {
   fontSize: '14px',
   textAlign: 'center',
   marginBottom: '30px',
+  boxSizing: 'border-box',
 };
 
 const otpContainerStyle: React.CSSProperties = {
