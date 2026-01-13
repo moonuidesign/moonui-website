@@ -356,7 +356,7 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
                 </p>
                 <button
                   onClick={onCtaClick}
-                  className="group flex cursor-pointer items-center gap-2 rounded-full bg-[#1A1A1A] py-2.5 pr-4 pl-5 text-sm font-medium text-white shadow-lg transition-all hover:bg-black hover:shadow-xl"
+                  className="group flex cursor-pointer items-center gap-2 rounded-full bg-[#1A1A1A] py-2.5 pr-4 pl-5 text-sm font-medium text-white shadow-lg transition-all hover:bg-black"
                 >
                   {activeTab.ctaButtonText || ctaButtonText}
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px] transition-transform group-hover:translate-x-0.5">
@@ -561,7 +561,7 @@ const InteractiveShowcase: React.FC<InteractiveShowcaseProps> = ({
                     </p>
                     <button
                       onClick={onCtaClick}
-                      className="group flex cursor-pointer items-center gap-2 rounded-full bg-[#2E2E2E] py-2.5 pr-4 pl-5 text-sm font-medium text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-all hover:-translate-y-0.5 hover:bg-black hover:shadow-xl"
+                      className="group flex cursor-pointer items-center gap-2 rounded-full bg-[#2E2E2E] py-2.5 pr-4 pl-5 text-sm font-medium text-white shadow-[0_8px_16px_rgba(0,0,0,0.1),0_0_0_1px_#000] transition-all hover:bg-black"
                     >
                       {activeTab.ctaButtonText || ctaButtonText}
                       <div className="relative flex h-full w-5 items-center justify-center">

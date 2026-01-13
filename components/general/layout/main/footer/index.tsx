@@ -259,8 +259,13 @@ const Footer: React.FC<FooterProps> = ({
               );
             })}
           </div>
-          <div className="mt-5 flex w-full items-center justify-center text-center font-sans text-[20px] font-semibold text-orange-600 underline transition-colors hover:text-orange-700 md:mt-0 md:w-full md:text-2xl">
-            <Link href={`mailto:${email}`}>{email}</Link>
+          <div className="mt-5 flex w-full items-center justify-center text-center font-sans text-[20px] font-semibold md:mt-0 md:w-full md:text-2xl">
+            <Link
+              className="w-fit text-orange-600 underline transition-colors hover:text-orange-700"
+              href={`mailto:${email}`}
+            >
+              {email}
+            </Link>
           </div>
         </div>
         <p className="mt-[20px] text-center font-sans text-[12px] font-medium text-neutral-400 md:mt-[30px] md:text-sm lg:mt-[30px]">
