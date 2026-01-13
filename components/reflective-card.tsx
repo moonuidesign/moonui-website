@@ -76,7 +76,7 @@ const ReflectiveCard: React.FC<ReflectiveCardProps> = ({
 
   return (
     <div
-      className={`group relative h-[400px] w-full cursor-pointer rounded-[20px] [perspective:1000px] ${className}`}
+      className={`group relative h-[435px] w-full cursor-pointer rounded-[20px] [perspective:1000px] ${className}`}
       style={style}
       onClick={handleFlip}
     >

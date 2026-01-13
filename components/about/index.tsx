@@ -399,7 +399,7 @@ const AboutSection = () => {
                 name="Achmad Qomarudin"
                 role="Product Designer"
                 email="jane@baggy.co"
-                imageSrc="/Achmad - Profile.png"
+                imageSrc="/Achmad - Profile.jpg"
                 blurStrength={0.5}
                 metalness={0.7}
                 roughness={0.7}
@@ -438,7 +438,7 @@ const AboutSection = () => {
                 name="Dera Ananta"
                 role="Graphic Designer"
                 email="jane@baggy.co"
-                imageSrc="/Dera - Profile.jpeg"
+                imageSrc="/Dera - Profile.jpg"
                 blurStrength={0.5}
                 metalness={0.7}
                 roughness={0.7}
@@ -477,7 +477,7 @@ const AboutSection = () => {
                 name="Fajar Fernandi"
                 role="FULLSTACK DEVELOPER"
                 email="fajarfernandi.id@gmail.com"
-                imageSrc="/Fajar - Profile.png"
+                imageSrc="/Fajar - Profile.jpg"
                 blurStrength={0.5}
                 metalness={0.7}
                 roughness={0.7}

@@ -343,7 +343,7 @@ export default function Bennefits() {
         <div className="relative flex min-h-[600px] w-full justify-center">
           <span
             style={{ zIndex: 100 }}
-            className="pointer-events-none absolute -bottom-10 flex h-[calc(100%+70px)] w-full rounded-b-4xl border-2 border-x border-t-0 border-[#D3D3D3]"
+            className="pointer-events-none absolute -bottom-10 flex h-[calc(100%+70px)] w-full rounded-b-4xl border-x border-t-0 border-b border-[#D3D3D3]"
           >
             <span className="absolute top-0 -left-[3px] h-1.5 w-1.5 rounded-full bg-[#D3D3D3]" />
             <span className="absolute top-0 -right-[3.5px] h-1.5 w-1.5 rounded-full bg-[#D3D3D3]" />
