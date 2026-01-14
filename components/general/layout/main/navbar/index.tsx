@@ -139,7 +139,7 @@ export default function Navbar() {
   }, [isOpen]);
 
   return (
-    <section className="relative z-[1010] h-24">
+    <section className="relative z-[1050] h-24">
       <SearchCommand open={isSearchOpen} setOpen={setIsSearchOpen} />
 
       <div className="pointer-events-none fixed top-10 right-0 left-0 z-[60] container mx-auto flex justify-center pt-6">

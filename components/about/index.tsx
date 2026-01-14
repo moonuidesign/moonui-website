@@ -367,206 +367,213 @@ const AboutSection = () => {
         </div>
 
         {/* --- BLOCK 4: TEAM SECTION --- */}
-        <div className="mx-auto w-full max-w-7xl rounded-4xl bg-zinc-900 px-4 py-10 shadow-xl md:px-0 lg:rounded-[40px]">
-          <div className="container mx-auto flex flex-col items-start gap-12 md:max-w-xl lg:max-w-5xl">
-            <div className="flex w-full flex-col gap-5">
-              <div className="relative flex items-center gap-6 md:gap-10">
-                <div className="flex h-8 items-center gap-1.5 rounded-lg bg-[#ff4f00] py-1.5 pr-3 pl-2 shadow-sm md:flex">
-                  <People type="Outline" color="white" size={17} />
-                  <span className="text-sm font-medium text-white">Our Team</span>
-                  <div className="flex items-start rounded-[5px] bg-white/50 px-1.5 py-[3px]">
-                    <span className="text-[11px] leading-[10px] font-semibold text-white">
-                      CREW
-                    </span>
+        <div className="mx-auto w-full max-w-7xl px-2 md:px-4 lg:px-0">
+          <div className="w-full rounded-4xl bg-zinc-900 px-4 py-10 shadow-xl md:px-0 lg:rounded-[40px]">
+            <div className="container mx-auto flex flex-col items-start gap-12 md:max-w-xl lg:max-w-5xl">
+              <div className="flex w-full flex-col gap-5">
+                <div className="relative flex items-center gap-6 md:gap-10">
+                  <div className="flex h-8 items-center gap-1.5 rounded-lg bg-[#ff4f00] py-1.5 pr-3 pl-2 shadow-sm md:flex">
+                    <People type="Outline" color="white" size={17} />
+                    <span className="text-sm font-medium text-white">Our Team</span>
+                    <div className="flex items-start rounded-[5px] bg-white/50 px-1.5 py-[3px]">
+                      <span className="text-[11px] leading-[10px] font-semibold text-white">
+                        CREW
+                      </span>
+                    </div>
                   </div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <MainHeading className="font-jakarta text-white">
+                    Meet the heart of MoonUI
+                  </MainHeading>
+                  <p className="font-sans text-base md:text-lg">
+                    <span className="font-medium text-zinc-400">Our team</span>
+                    <span className="text-white"> creates </span>
+                    <span className="font-medium text-zinc-400">beautiful design system.</span>
+                  </p>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4">
-                <MainHeading className="font-jakarta text-white">
-                  Meet the heart of MoonUI
-                </MainHeading>
-                <p className="font-sans text-base md:text-lg">
-                  <span className="font-medium text-zinc-400">Our team</span>
-                  <span className="text-white"> creates </span>
-                  <span className="font-medium text-zinc-400">beautiful design system.</span>
+              <div className="grid w-full grid-cols-1 gap-6 px-4 sm:grid-cols-2 md:px-0 lg:grid-cols-3">
+                <ReflectiveCard
+                  name="Achmad Qomarudin"
+                  role="Product Designer"
+                  email="jane@baggy.co"
+                  imageSrc="/Achmad - Profile.jpg"
+                  blurStrength={0.5}
+                  metalness={0.7}
+                  roughness={0.7}
+                  displacementStrength={15}
+                  specularConstant={0.5}
+                  grayscale={0.8}
+                  backContent={
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <p className="text-sm text-zinc-300">
+                        Design is not just what it looks like and feels like. Design is how it
+                        works.
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <SocialButton
+                          href=" https://x.com/achmaduiux"
+                          icon={<XIcon className="h-4 w-4" />}
+                          label="Follow Achmad on X"
+                          className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
+                        />
+                        <SocialButton
+                          href="https://www.instagram.com/achmad.uiux"
+                          icon={<InstagramIcon className="h-4 w-4" />}
+                          label="Follow Achmad on Instagram"
+                          className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
+                        />
+                        <SocialButton
+                          href="https://www.linkedin.com/in/achmad-qomarudin"
+                          icon={<LinkedInIcon className="h-4 w-4" />}
+                          label="Follow Achmad on LinkedIn"
+                          className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
+                        />
+                      </div>
+                    </div>
+                  }
+                />
+                <ReflectiveCard
+                  name="Dera Ananta"
+                  role="Graphic Designer"
+                  email="jane@baggy.co"
+                  imageSrc="/Dera - Profile.jpg"
+                  blurStrength={0.5}
+                  metalness={0.7}
+                  roughness={0.7}
+                  displacementStrength={15}
+                  specularConstant={0.5}
+                  grayscale={0.8}
+                  backContent={
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <p className="text-sm text-zinc-300">
+                        In every design process, clarity is important.
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <SocialButton
+                          href="https://x.com/DeraAnanta7"
+                          icon={<XIcon className="h-4 w-4" />}
+                          label="Follow Dera on X"
+                          className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
+                        />
+                        <SocialButton
+                          href="https://www.instagram.com/deraananta/"
+                          icon={<InstagramIcon className="h-4 w-4" />}
+                          label="Follow Dera on Instagram"
+                          className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
+                        />
+                        <SocialButton
+                          href="https://www.linkedin.com/in/dera-ananta"
+                          icon={<LinkedInIcon className="h-4 w-4" />}
+                          label="Follow Dera on LinkedIn"
+                          className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
+                        />
+                      </div>
+                    </div>
+                  }
+                />
+                <ReflectiveCard
+                  name="Fajar Fernandi"
+                  role="FULLSTACK DEVELOPER"
+                  email="fajarfernandi.id@gmail.com"
+                  imageSrc="/Fajar - Profile.jpg"
+                  blurStrength={0.5}
+                  metalness={0.7}
+                  roughness={0.7}
+                  displacementStrength={15}
+                  specularConstant={0.5}
+                  grayscale={0.8}
+                  backContent={
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <p className="text-sm text-zinc-300">
+                        The biggest risk is not taking any risk.
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <SocialButton
+                          href="https://www.instagram.com/"
+                          icon={<XIcon className="h-4 w-4" />}
+                          label="Follow Fajar on X"
+                          className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
+                        />
+                        <SocialButton
+                          href="https://www.instagram.com/"
+                          icon={<InstagramIcon className="h-4 w-4" />}
+                          label="Follow Fajar on Instagram"
+                          className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
+                        />
+                        <SocialButton
+                          href="https://www.instagram.com/"
+                          icon={<LinkedInIcon className="h-4 w-4" />}
+                          label="Follow Fajar on LinkedIn"
+                          className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
+                        />
+                      </div>
+                    </div>
+                  }
+                />
+              </div>
+
+              <div className="w-full px-0 text-left">
+                <p className="text-sm text-white">
+                  We make <span className="text-zinc-400">design & code work easier</span> and{' '}
+                  <span className="text-white">better</span>.
                 </p>
               </div>
-            </div>
-
-            <div className="grid w-full grid-cols-1 gap-6 px-4 sm:grid-cols-2 md:px-0 lg:grid-cols-3">
-              <ReflectiveCard
-                name="Achmad Qomarudin"
-                role="Product Designer"
-                email="jane@baggy.co"
-                imageSrc="/Achmad - Profile.jpg"
-                blurStrength={0.5}
-                metalness={0.7}
-                roughness={0.7}
-                displacementStrength={15}
-                specularConstant={0.5}
-                grayscale={0.8}
-                backContent={
-                  <div className="flex flex-col items-center justify-center gap-4">
-                    <p className="text-sm text-zinc-300">
-                      Design is not just what it looks like and feels like. Design is how it works.
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <SocialButton
-                        href=" https://x.com/achmaduiux"
-                        icon={<XIcon className="h-4 w-4" />}
-                        label="Follow Achmad on X"
-                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
-                      />
-                      <SocialButton
-                        href="https://www.instagram.com/achmad.uiux"
-                        icon={<InstagramIcon className="h-4 w-4" />}
-                        label="Follow Achmad on Instagram"
-                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
-                      />
-                      <SocialButton
-                        href="https://www.linkedin.com/in/achmad-qomarudin"
-                        icon={<LinkedInIcon className="h-4 w-4" />}
-                        label="Follow Achmad on LinkedIn"
-                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
-                      />
-                    </div>
-                  </div>
-                }
-              />
-              <ReflectiveCard
-                name="Dera Ananta"
-                role="Graphic Designer"
-                email="jane@baggy.co"
-                imageSrc="/Dera - Profile.jpg"
-                blurStrength={0.5}
-                metalness={0.7}
-                roughness={0.7}
-                displacementStrength={15}
-                specularConstant={0.5}
-                grayscale={0.8}
-                backContent={
-                  <div className="flex flex-col items-center justify-center gap-4">
-                    <p className="text-sm text-zinc-300">
-                      Creative developer with a love for motion graphics and interactive design.
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <SocialButton
-                        href="https://x.com/DeraAnanta7"
-                        icon={<XIcon className="h-4 w-4" />}
-                        label="Follow Dera on X"
-                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
-                      />
-                      <SocialButton
-                        href="https://www.instagram.com/deraananta/"
-                        icon={<InstagramIcon className="h-4 w-4" />}
-                        label="Follow Dera on Instagram"
-                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
-                      />
-                      <SocialButton
-                        href="https://www.linkedin.com/in/dera-ananta"
-                        icon={<LinkedInIcon className="h-4 w-4" />}
-                        label="Follow Dera on LinkedIn"
-                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
-                      />
-                    </div>
-                  </div>
-                }
-              />
-              <ReflectiveCard
-                name="Fajar Fernandi"
-                role="FULLSTACK DEVELOPER"
-                email="fajarfernandi.id@gmail.com"
-                imageSrc="/Fajar - Profile.jpg"
-                blurStrength={0.5}
-                metalness={0.7}
-                roughness={0.7}
-                displacementStrength={15}
-                specularConstant={0.5}
-                grayscale={0.8}
-                backContent={
-                  <div className="flex flex-col items-center justify-center gap-4">
-                    <p className="text-sm text-zinc-300">Talk is cheap. Show me the code.</p>
-                    <div className="flex items-center gap-3">
-                      <SocialButton
-                        href="https://www.instagram.com/"
-                        icon={<XIcon className="h-4 w-4" />}
-                        label="Follow Fajar on X"
-                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
-                      />
-                      <SocialButton
-                        href="https://www.instagram.com/"
-                        icon={<InstagramIcon className="h-4 w-4" />}
-                        label="Follow Fajar on Instagram"
-                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
-                      />
-                      <SocialButton
-                        href="https://www.instagram.com/"
-                        icon={<LinkedInIcon className="h-4 w-4" />}
-                        label="Follow Fajar on LinkedIn"
-                        className="bg-[#6f6e7e] text-white hover:bg-[#FF4F00]"
-                      />
-                    </div>
-                  </div>
-                }
-              />
-            </div>
-
-            <div className="w-full px-0 text-left">
-              <p className="text-sm text-white">
-                We make <span className="text-zinc-400">design & code work easier</span> and{' '}
-                <span className="text-white">better</span>.
-              </p>
             </div>
           </div>
         </div>
 
         {/* --- BLOCK 5: VALUES / PROCESS --- */}
-        <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-12 rounded-t-4xl border-x border-t border-[#D3D3D3] pt-10 md:mt-10 md:mb-[60px] md:gap-16 md:pt-10">
-          <span className="absolute bottom-0 -left-[3px] size-1.5 rounded-full bg-[#D3D3D3]" />
-          <span className="absolute -right-[3.5px] bottom-0 size-1.5 rounded-full bg-[#D3D3D3]" />
-          <div className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-orange-600 py-1.5 pr-3 pl-2 shadow-sm">
-            <Crown1 variant="Outline" color="white" size={16} />
-            <span className="font-sans text-sm leading-5 font-medium text-white">Values</span>
-          </div>
-
-          <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 md:grid-cols-3 md:gap-12 lg:gap-16">
-            <div className="flex flex-col items-center gap-4 p-4 text-center md:p-0">
-              <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
-                <Card variant="Bold" className="h-8 w-8 text-zinc-800" />
-              </div>
-              <div className="flex flex-col gap-2">
-                <h4 className="text-lg font-medium text-[#3D3D3D]">Understanding Needs</h4>
-                <p className="text-sm leading-6 text-zinc-500">
-                  We research extensively to deeply understand designers needs and deliver exact
-                  solutions.
-                </p>
-              </div>
+        <div className="mx-auto w-full max-w-7xl px-2 md:px-4 lg:px-0">
+          <div className="relative flex w-full flex-col items-center gap-12 rounded-t-4xl border-x border-t border-[#D3D3D3] pt-10 md:mt-10 md:mb-[60px] md:gap-16 md:pt-10">
+            <span className="absolute bottom-0 -left-[3px] size-1.5 rounded-full bg-[#D3D3D3]" />
+            <span className="absolute -right-[3.5px] bottom-0 size-1.5 rounded-full bg-[#D3D3D3]" />
+            <div className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-orange-600 py-1.5 pr-3 pl-2 shadow-sm">
+              <Crown1 variant="Outline" color="white" size={16} />
+              <span className="font-sans text-sm leading-5 font-medium text-white">Values</span>
             </div>
 
-            <div className="flex flex-col items-center gap-4 p-4 text-center md:p-0">
-              <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
-                <ImportCurve variant="Bold" className="h-8 w-8 text-zinc-800" />
+            <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 md:grid-cols-3 md:gap-12 lg:gap-16">
+              <div className="flex flex-col items-center gap-4 p-4 text-center md:p-0">
+                <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
+                  <Card variant="Bold" className="h-8 w-8 text-zinc-800" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-lg font-medium text-[#3D3D3D]">Understanding Needs</h4>
+                  <p className="text-sm leading-6 text-zinc-500">
+                    We research extensively to deeply understand designers needs and deliver exact
+                    solutions.
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <h4 className="text-lg font-medium text-[#3D3D3D]">Continuous Improvement</h4>
-                <p className="text-sm leading-6 text-zinc-500">
-                  We shape our solutions through customer feedback to ensure continuous quality and
-                  innovation.
-                </p>
-              </div>
-            </div>
 
-            <div className="flex flex-col items-center gap-4 p-4 text-center md:p-0">
-              <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
-                <Command variant="Bold" className="h-8 w-8 text-zinc-800" />
+              <div className="flex flex-col items-center gap-4 p-4 text-center md:p-0">
+                <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
+                  <ImportCurve variant="Bold" className="h-8 w-8 text-zinc-800" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-lg font-medium text-[#3D3D3D]">Continuous Improvement</h4>
+                  <p className="text-sm leading-6 text-zinc-500">
+                    We shape our solutions through customer feedback to ensure continuous quality
+                    and innovation.
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <h4 className="text-lg font-medium text-[#3D3D3D]">Responsive Communication</h4>
-                <p className="text-sm leading-6 text-zinc-500">
-                  We provide prompt responses to customer inquiries via various channels and fast
-                  support.
-                </p>
+
+              <div className="flex flex-col items-center gap-4 p-4 text-center md:p-0">
+                <div className="rounded-lg border border-zinc-100 p-2 shadow-sm">
+                  <Command variant="Bold" className="h-8 w-8 text-zinc-800" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-lg font-medium text-[#3D3D3D]">Responsive Communication</h4>
+                  <p className="text-sm leading-6 text-zinc-500">
+                    We provide prompt responses to customer inquiries via various channels and fast
+                    support.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
