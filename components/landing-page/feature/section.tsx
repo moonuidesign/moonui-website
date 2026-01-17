@@ -14,7 +14,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
       className={`mx-auto mt-10 h-fit w-full max-w-[1440px] px-1 md:mt-0 md:w-3xl lg:w-full lg:p-20 ${className}`}
     >
       {/* Main Container Card */}
-      <div className="relative flex w-full flex-col gap-4 overflow-hidden rounded-[28px] bg-zinc-900 px-6 py-8 shadow-xl md:rounded-[40px] md:p-16 lg:p-8">
+      <div className="relative flex w-full flex-col gap-4 overflow-hidden rounded-[28px] bg-zinc-900 px-6 py-8 shadow-xl md:rounded-[40px] md:px-8 md:pt-16 md:pb-8">
         {/* Header Section */}
         <div className="relative z-10 flex w-full items-start gap-4 lg:items-center">
           <div className="hidden h-px flex-1 bg-gradient-to-r from-transparent via-neutral-800 to-transparent md:block" />

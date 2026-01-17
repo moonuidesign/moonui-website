@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { useFilter } from '@/contexts';
 import { SkeletonNavbar } from '../main';
 import Navbar from '../main/navbar';
+import Link from 'next/link';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const { isFilterOpen, setFilterOpen } = useFilter();
@@ -40,9 +41,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               Build your business faster with <span className="font-medium text-white">MoonUI</span>{' '}
               premium design assets!{' '}
               {/* Gunakan span/link untuk Learn more di SINI, bukan dipisah */}
-              <span className="cursor-pointer font-medium text-white underline transition-colors hover:text-gray-200">
+              <Link
+                href="/about"
+                className="cursor-pointer font-medium text-white underline transition-colors hover:text-gray-200"
+              >
                 Learn more
-              </span>
+              </Link>
             </p>
           </div>
         </div>
