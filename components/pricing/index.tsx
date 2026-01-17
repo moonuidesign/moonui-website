@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TicketPercent } from 'lucide-react';
 import { ArrowRight2 } from 'iconsax-reactjs';
 import Image from 'next/image';
+import Link from 'next/link';
 
 // ==========================================
 // 2. DATA PAKET
@@ -389,7 +390,10 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
               </p>
             </div>
           </div>
-          <button className="shadow-button group flex h-12 w-full flex-shrink-0 cursor-pointer items-center justify-center gap-3.5 overflow-hidden rounded-xl bg-[#2E2E2E] px-6 text-base font-semibold text-white transition-colors hover:bg-black md:h-14 md:w-auto md:px-8">
+          <Link
+            href="/contact"
+            className="shadow-button group flex h-12 w-full flex-shrink-0 cursor-pointer items-center justify-center gap-3.5 overflow-hidden rounded-xl bg-[#2E2E2E] px-6 text-base font-semibold text-white transition-colors hover:bg-black md:h-14 md:w-auto md:px-8"
+          >
             Let’s Talk
             <div className="relative flex h-full w-5 items-center justify-center">
               <div className="absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 transform flex-col items-center justify-center overflow-hidden text-white">
@@ -398,7 +402,7 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
                 </div>
               </div>
             </div>
-          </button>
+          </Link>
         </div>
       </div>
     </section>
