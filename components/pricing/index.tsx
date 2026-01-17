@@ -392,7 +392,7 @@ const PricingSection = ({ activeDiscount }: PricingSectionProps) => {
           </div>
           <Link
             href="/contact"
-            className="shadow-button group flex h-12 w-full flex-shrink-0 cursor-pointer items-center justify-center gap-3.5 overflow-hidden rounded-xl bg-[#2E2E2E] px-6 text-base font-semibold text-white transition-colors hover:bg-black md:h-14 md:w-auto md:px-8"
+            className="shadow-button group flex h-12 w-full shrink-0 cursor-pointer items-center justify-center gap-3.5 overflow-hidden rounded-xl bg-[#2E2E2E] px-6 text-base font-semibold text-white transition-colors hover:bg-black md:h-14 md:w-auto md:px-8"
           >
             Let’s Talk
             <div className="relative flex h-full w-5 items-center justify-center">
